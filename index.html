@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MemeStudio - Viral Asset Creator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            accent: {
+              DEFAULT: '#DEFD41',
+              hover: '#c8e632',
+              dim: '#DEFD4120'
+            },
+            navy: {
+              950: '#02040A', // Main bg
+              900: '#0B1221', // Card bg
+              800: '#151E32', // Border/Hover
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          animation: {
+            'scan': 'scan 2s ease-in-out infinite',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: #02040A;
+      font-family: 'Inter', sans-serif;
+      color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Tech Grid Fade */
+    .bg-grid-fade {
+      mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @keyframes scan {
+
+      0%,
+      100% {
+        top: 0%;
+        opacity: 0;
+      }
+
+      15% {
+        opacity: 1;
+      }
+
+      85% {
+        opacity: 1;
+      }
+
+      50% {
+        top: 95%;
+      }
+    }
+
+    /* Cyberpunk Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #02040A;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #151E32;
+      border-radius: 0px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #DEFD41;
+    }
+  </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "jszip": "https://esm.run/jszip",
+    "file-saver": "https://esm.run/file-saver"
+  }
+}
+</script>
+  <meta name="description"
+    content="MemeStudio — AI-powered viral meme asset creation platform. Generate characters, scenes, and research trends.">
+  <link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/css/landing.css">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

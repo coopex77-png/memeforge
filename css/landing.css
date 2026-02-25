@@ -1,0 +1,213 @@
+/* landing.css - MemeStudio Landing Page Styles */
+
+/* Base animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes slideLeft {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+
+  /* Assuming content is doubled for infinite scroll */
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sparkle {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes glow-pulse {
+  0% {
+    box-shadow: 0 0 10px rgba(222, 253, 65, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(222, 253, 65, 0.5);
+  }
+
+  100% {
+    box-shadow: 0 0 10px rgba(222, 253, 65, 0.2);
+  }
+}
+
+
+/* Background Utility */
+.bg-grid-white {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* Utility Classes */
+.glass {
+  background: rgba(11, 18, 33, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.floating-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.floating-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* Horizontal Slider */
+.slider-container {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.slider-container::before,
+.slider-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 150px;
+  height: 100%;
+  z-index: 2;
+}
+
+.slider-container::before {
+  left: 0;
+  background: linear-gradient(to right, #02040A 0%, transparent 100%);
+}
+
+.slider-container::after {
+  right: 0;
+  background: linear-gradient(to left, #02040A 0%, transparent 100%);
+}
+
+.slider-track {
+  display: flex;
+  width: max-content;
+  animation: slideLeft 80s linear infinite;
+}
+
+.slider-track:hover {
+  animation-play-state: paused;
+}
+
+/* Vertical Slider */
+.vertical-slider-container {
+  overflow: hidden;
+  position: relative;
+  height: 600px;
+  /* match the left screenshot height */
+  width: 100%;
+}
+
+.vertical-slider-container::before,
+.vertical-slider-container::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.vertical-slider-container::before {
+  top: 0;
+  background: linear-gradient(to bottom, #02040A 0%, transparent 100%);
+}
+
+.vertical-slider-container::after {
+  bottom: 0;
+  background: linear-gradient(to top, #02040A 0%, transparent 100%);
+}
+
+.vertical-slider-track {
+  display: flex;
+  flex-direction: column;
+  height: max-content;
+  animation: slideDown 30s linear infinite;
+}
+
+.vertical-slider-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-50%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Pricing Cards */
+.pricing-card {
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pricing-card.premium::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #DEFD41, transparent, #DEFD41);
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0.3;
+  transition: opacity 0.3s;
+}
+
+.pricing-card.premium:hover::before {
+  opacity: 0.8;
+}
+
+.pricing-card:hover {
+  transform: translateY(-10px);
+}

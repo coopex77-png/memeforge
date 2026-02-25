@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN subscription_days INTEGER DEFAULT 0;
+ALTER TABLE users ADD COLUMN subscription_start TIMESTAMPTZ DEFAULT NULL;
