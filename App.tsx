@@ -1248,7 +1248,7 @@ const App: React.FC = () => {
             <nav className="border-b border-white/5 bg-navy-950/90 backdrop-blur-md sticky top-0 z-40 h-20 flex items-center">
                 <div className="w-full max-w-[1800px] mx-auto px-6 flex items-center justify-between">
                     <div className="flex items-center gap-6">
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 flex items-center gap-3 relative">
                             <img
                                 src="/pepe_forge.png"
                                 alt="Forge Logo"
@@ -1258,6 +1258,9 @@ const App: React.FC = () => {
                                     e.currentTarget.src = "https://placehold.co/250x65/transparent/DEFD41?text=FORGE";
                                 }}
                             />
+                            <span className="bg-accent text-black text-[9px] font-black px-2 py-0.5 rounded-full tracking-widest uppercase shadow-[0_0_15px_rgba(222,253,65,0.4)] absolute -right-12 top-2">
+                                Beta
+                            </span>
                         </div>
                     </div>
 

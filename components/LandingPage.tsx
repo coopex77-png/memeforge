@@ -124,16 +124,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             <nav className={`fixed top-0 w-full z-40 transition-all duration-300 ${scrolled ? 'bg-navy-950/80 backdrop-blur-md py-4 shadow-2xl' : 'bg-transparent py-6'}`}>
                 <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
                     <div className="flex items-center gap-6">
-                        <img
-                            src="/pepe_forge.png"
-                            alt="Forge Logo"
-                            className="h-[65px] w-auto object-contain cursor-pointer hover:scale-105 transition-transform duration-300 drop-shadow-xl"
-                            onError={(e) => {
-                                e.currentTarget.onerror = null;
-                                e.currentTarget.src = "https://placehold.co/200x65/transparent/DEFD41?text=FORGE";
-                            }}
-                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        />
+                        <div className="flex-shrink-0 flex items-center gap-3 relative cursor-pointer hover:scale-105 transition-transform duration-300" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                            <img
+                                src="/pepe_forge.png"
+                                alt="Forge Logo"
+                                className="h-[65px] w-auto object-contain drop-shadow-xl"
+                                onError={(e) => {
+                                    e.currentTarget.onerror = null;
+                                    e.currentTarget.src = "https://placehold.co/200x65/transparent/DEFD41?text=FORGE";
+                                }}
+                            />
+                            <span className="bg-accent text-black text-[9px] font-black px-2 py-0.5 rounded-full tracking-widest uppercase shadow-[0_0_15px_rgba(222,253,65,0.4)] absolute -right-12 top-2">
+                                Beta
+                            </span>
+                        </div>
                     </div>
 
                     <div className="hidden md:flex items-center gap-10">
