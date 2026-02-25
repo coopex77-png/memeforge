@@ -15,6 +15,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     const [scrapeFeed, setScrapeFeed] = useState<{ id: string; img: string }[]>([]);
     const [isSlidersHovered, setIsSlidersHovered] = useState(false);
     const [activeSliderMode, setActiveSliderMode] = useState<'trait' | 'remix'>('trait');
+    const [activeModal, setActiveModal] = useState<'about' | 'terms' | 'privacy' | null>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -177,23 +178,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                     </div>
 
                     <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed relative z-30">
-                        AI-driven character generation, dynamic scene creation, and deep trend research — all centralized in one powerful platform.
+                        Create mascots, art, banners, and more with dynamic scene creation for your token. Scrape the whole web for viral ideas with one click — all centralized in one powerful platform.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-30">
                         <button
                             onClick={() => setShowLoginModal(true)}
-                            className="w-full sm:w-auto px-8 py-4 bg-accent hover:bg-accent/90 text-navy-950 rounded-xl font-black text-lg shadow-[0_0_30px_rgba(222,253,65,0.4)] transition-transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto px-8 py-3 bg-accent hover:bg-accent/90 text-navy-950 rounded-full font-medium text-lg shadow-[0_0_30px_rgba(222,253,65,0.4)] transition-transform hover:-translate-y-1 flex items-center justify-center gap-2"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                            GET STARTED
+                            Get Started
                         </button>
 
                         <div className="flex items-center gap-4 mt-4 sm:mt-0">
-                            <a href="#" className="w-14 h-14 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/30 rounded-xl flex items-center justify-center text-white transition-all hover:-translate-y-1 backdrop-blur-md">
-                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-                            </a>
-                            <a href="#" className="w-14 h-14 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/30 rounded-xl flex items-center justify-center text-white transition-all hover:-translate-y-1 backdrop-blur-md">
+                            <a href="https://t.me/memeforgeapp" target="_blank" rel="noopener noreferrer" className="w-12 h-12 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/30 rounded-full flex items-center justify-center text-white transition-all hover:-translate-y-1 backdrop-blur-md">
                                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
                             </a>
                         </div>
@@ -230,7 +227,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                 </section>
 
                 {/* Section 2: App Screen Showcase */}
-                <section id="features" className="pt-4 pb-24 md:-mt-12 overflow-hidden relative z-20">
+                <section id="features" className="scroll-mt-32 pt-4 pb-24 md:-mt-12 overflow-hidden relative z-20">
                     <div className="px-6 max-w-[1400px] mx-auto relative z-10">
                         <div className="relative max-w-[1400px] mx-auto mb-20 group perspective-1000">
                             {/* Inner App Window Screenshot (macOS Style) */}
@@ -374,7 +371,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[256px] bg-[#02040A] blur-[60px] rounded-[100%] z-0 pointer-events-none opacity-90 transition-all duration-500"></div>
 
                                 <div className="flex-shrink-0 w-64 h-64 bg-navy-950/80 border-[3px] border-accent/70 p-2.5 shadow-[0_0_40px_rgba(222,253,65,0.25)] rounded-3xl relative flex items-center justify-center group transform transition duration-500 hover:scale-[1.02] z-10 animate-in zoom-in-95">
-                                    <div className="absolute inset-x-0 top-3 pt-3 pb-10 z-10 flex justify-center bg-gradient-to-b from-black/80 via-black/40 to-transparent pointer-events-none rounded-t-2xl">
+                                    <div className="absolute inset-x-0 top-4 z-10 flex justify-center pointer-events-none">
                                         <div className="bg-black/60 px-4 py-1.5 rounded-full border border-white/20 flex items-center backdrop-blur-md shadow-lg h-fit transition-all duration-300">
                                             <span className="text-xs font-bold text-accent uppercase tracking-widest drop-shadow-[0_0_8px_rgba(222,253,65,0.5)]">
                                                 Main Mascot
@@ -494,7 +491,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                 </section>
 
                 {/* Section 4: Pricing */}
-                <section id="pricing" className="py-24 px-6 max-w-[1400px] mx-auto relative">
+                <section id="pricing" className="scroll-mt-32 py-24 px-6 max-w-[1400px] mx-auto relative">
                     <div className="absolute inset-0 bg-yellow-500/5 blur-[150px] rounded-full pointer-events-none w-[60%] mx-auto hidden md:block"></div>
 
                     <div className="text-center mb-16 relative z-10">
@@ -568,14 +565,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         <img
                             src="/pepe_forge.png"
                             alt="Forge Logo"
-                            className="h-[40px] w-auto object-contain mb-6 opacity-80"
+                            className="h-[60px] w-auto object-contain mb-6 opacity-80 transition-transform hover:scale-105"
                             onError={(e) => {
                                 e.currentTarget.onerror = null;
-                                e.currentTarget.src = "https://placehold.co/200x40/transparent/DEFD41?text=FORGE";
+                                e.currentTarget.src = "https://placehold.co/200x60/transparent/DEFD41?text=FORGE";
                             }}
                         />
-                        <p className="text-slate-500 text-sm leading-relaxed">
-                            The ulimate AI infrastructure for creating, iterating, and researching viral assets on the fly.
+                        <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+                            Create mascots, art, and banners for your token. Scrape the web for viral ideas — all centralized in one powerful platform.
                         </p>
                     </div>
 
@@ -585,24 +582,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                             <ul className="space-y-4 text-slate-400 text-sm">
                                 <li><a href="#features" className="hover:text-accent transition-colors">Features</a></li>
                                 <li><a href="#pricing" className="hover:text-accent transition-colors">Pricing</a></li>
-                                <li><a href="#" className="hover:text-accent transition-colors">API Limits</a></li>
                             </ul>
                         </div>
                         <div>
                             <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">Company</h4>
-                            <ul className="space-y-4 text-slate-400 text-sm">
-                                <li><a href="#" className="hover:text-accent transition-colors">About</a></li>
-                                <li><a href="#" className="hover:text-accent transition-colors">Terms of Service</a></li>
-                                <li><a href="#" className="hover:text-accent transition-colors">Privacy Policy</a></li>
+                            <ul className="space-y-4 text-slate-400 text-sm flex flex-col items-start">
+                                <li><button onClick={() => setActiveModal('about')} className="hover:text-accent transition-colors text-left">About</button></li>
+                                <li><button onClick={() => setActiveModal('terms')} className="hover:text-accent transition-colors text-left">Terms of Service</button></li>
+                                <li><button onClick={() => setActiveModal('privacy')} className="hover:text-accent transition-colors text-left">Privacy Policy</button></li>
                             </ul>
                         </div>
                         <div className="col-span-2 md:col-span-1">
-                            <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">Community</h4>
+                            <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">Contact</h4>
                             <div className="flex gap-4">
-                                <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-accent hover:border-accent hover:text-black transition-all">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-                                </a>
-                                <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-accent hover:border-accent hover:text-black transition-all">
+                                <a href="https://t.me/memeforgeapp" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-accent hover:border-accent hover:text-black transition-all">
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
                                 </a>
                             </div>
@@ -670,6 +663,81 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 ) : "Authenticate"}
                             </button>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* --- Info Modals --- */}
+            {activeModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setActiveModal(null)}
+                    ></div>
+
+                    <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0B1221] border border-white/10 rounded-2xl p-8 shadow-2xl glass animate-in fade-in zoom-in-95 duration-200 custom-scrollbar">
+                        {/* Internal Glow */}
+                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                        <button
+                            onClick={() => setActiveModal(null)}
+                            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors z-20"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+
+                        <div className="relative z-10 text-slate-300">
+                            {activeModal === 'about' && (
+                                <div className="space-y-6">
+                                    <h3 className="text-3xl font-black text-white mb-2 tracking-tight">About MemeForge</h3>
+                                    <div className="w-12 h-1 bg-accent mb-6"></div>
+                                    <p className="leading-relaxed text-lg text-white">MemeForge is the ultimate all-in-one AI platform designed specifically for the crypto, Web3, and memecoin communities.</p>
+                                    <p className="leading-relaxed">We empower creators and developers to generate unique mascots, high-quality art, and compelling banners in seconds using our advanced Art Engine.</p>
+                                    <p className="leading-relaxed">Beyond art generation, MemeForge provides a powerful Viral Narrative Scraper that monitors the deep web and social networks (X, TikTok, Reddit, etc.) to uncover the next big meta before it goes mainstream. Our mission is to centralize the creative and research process, making viral asset creation accessible and dynamic.</p>
+                                </div>
+                            )}
+                            {activeModal === 'terms' && (
+                                <div className="space-y-6">
+                                    <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Terms of Service</h3>
+                                    <div className="w-12 h-1 bg-accent mb-6"></div>
+                                    <p className="leading-relaxed">By accessing and using MemeForge, you agree to be bound by our Terms of Service. You must use our platform responsibly and in compliance with all applicable laws.</p>
+                                    <div className="bg-white/5 p-5 rounded-xl border border-white/10">
+                                        <h4 className="text-white font-bold mb-2">1. Usage Rights</h4>
+                                        <p className="text-sm leading-relaxed">Users retain the rights to the AI-generated art they create, subject to their subscription tier. MemeForge is not responsible for copyright infringements resulting from user-provided prompts or scraped content.</p>
+                                    </div>
+                                    <div className="bg-white/5 p-5 rounded-xl border border-white/10">
+                                        <h4 className="text-white font-bold mb-2">2. Prohibited Conduct</h4>
+                                        <p className="text-sm leading-relaxed">You agree not to use MemeForge to generate illegal, hateful, or harmful content. We reserve the right to suspend or terminate accounts violating these terms without refund.</p>
+                                    </div>
+                                    <div className="bg-white/5 p-5 rounded-xl border border-white/10">
+                                        <h4 className="text-white font-bold mb-2">3. Service Availability</h4>
+                                        <p className="text-sm leading-relaxed">While we strive for 99.9% uptime, MemeForge is provided "as is". We are not liable for temporary service interruptions or data loss during system updates.</p>
+                                    </div>
+                                </div>
+                            )}
+                            {activeModal === 'privacy' && (
+                                <div className="space-y-6">
+                                    <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Privacy Policy</h3>
+                                    <div className="w-12 h-1 bg-accent mb-6"></div>
+                                    <p className="leading-relaxed text-lg text-white">Your privacy is perfectly respected at MemeForge. This policy outlines how we collect, use, and protect your data.</p>
+                                    <div className="space-y-6 mt-8">
+                                        <div className="border-l-2 border-accent pl-5 py-1">
+                                            <h4 className="text-white font-bold mb-2 text-lg">Information Collection</h4>
+                                            <p className="text-sm leading-relaxed">We collect necessary data such as your access code, usage metrics (images generated, credits spent), and generated content to provide our services effectively.</p>
+                                        </div>
+                                        <div className="border-l-2 border-accent pl-5 py-1">
+                                            <h4 className="text-white font-bold mb-2 text-lg">Data Usage</h4>
+                                            <p className="text-sm leading-relaxed">We use your data securely to authenticate users, manage subscription tiers, and improve our AI models. We do not sell your personal data to third parties.</p>
+                                        </div>
+                                        <div className="border-l-2 border-accent pl-5 py-1">
+                                            <h4 className="text-white font-bold mb-2 text-lg">Security</h4>
+                                            <p className="text-sm leading-relaxed">All user data is encrypted and stored securely using industry-standard protocols. Scraped data from public networks is anonymized and aggregated for our research engine.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
