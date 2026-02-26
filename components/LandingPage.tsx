@@ -15,7 +15,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     const [scrapeFeed, setScrapeFeed] = useState<{ id: string; img: string }[]>([]);
     const [isSlidersHovered, setIsSlidersHovered] = useState(false);
     const [activeSliderMode, setActiveSliderMode] = useState<'trait' | 'remix'>('trait');
-    const [activeModal, setActiveModal] = useState<'about' | 'terms' | 'privacy' | null>(null);
+    const [activeModal, setActiveModal] = useState<'about' | 'terms' | 'privacy' | 'support' | 'payment' | null>(null);
+    const [billingCycle, setBillingCycle] = useState<'weekly' | 'monthly'>('weekly');
+    const [showQuotaFull, setShowQuotaFull] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -155,7 +157,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </a>
                     </div>
 
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-6">
+                        <button
+                            onClick={() => setActiveModal('support')}
+                            className="text-slate-400 hover:text-white text-[11px] uppercase font-bold tracking-widest transition-colors flex items-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            Support
+                        </button>
                         <button
                             onClick={() => setShowLoginModal(true)}
                             className="flex items-center gap-2 px-6 py-2.5 bg-accent/10 hover:bg-accent/20 border border-accent/20 hover:border-accent text-accent rounded-full font-black uppercase tracking-widest transition-all hover:scale-105"
@@ -356,7 +365,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                     ) : (
                                         <div className="slider-track gap-6 h-full absolute flex animate-in fade-in duration-500" style={{ animationDirection: 'reverse', animationPlayState: isSlidersHovered ? 'paused' : 'running' }}>
                                             {/* Duplicated for infinite scroll illusion */}
-                                            {[...Array(2)].flatMap(() => ['photo_2026-02-25 16.36.28.jpeg', 'photo_2026-02-25 16.36.29.jpeg', 'photo_2026-02-25 16.36.46.jpeg', 'photo_2026-02-25 16.36.51.jpeg', 'photo_2026-02-25 16.36.55.jpeg', 'photo_2026-02-25 16.36.56.jpeg', 'photo_2026-02-25 16.36.58.jpeg', 'photo_2026-02-25 16.37.00.jpeg', 'photo_2026-02-25 16.37.01.jpeg', 'photo_2026-02-25 16.37.02.jpeg', 'photo_2026-02-25 16.37.03.jpeg', 'photo_2026-02-25 16.37.04.jpeg', 'photo_2026-02-25 16.37.05.jpeg', 'photo_2026-02-25 16.37.10.jpeg', 'photo_2026-02-25 16.37.15.jpeg', 'photo_2026-02-25 16.37.16.jpeg', 'photo_2026-02-25 16.37.18.jpeg', 'photo_2026-02-25 16.37.19.jpeg', 'photo_2026-02-25 16.37.24.jpeg']).map((item, idx) => (
+                                            {[...Array(2)].flatMap(() => ['photo_2026-02-25 16.36.28.jpeg', 'photo_2026-02-25 16.36.29.jpeg', 'photo_2026-02-25 16.36.46.jpeg', 'photo_2026-02-25 16.36.51.jpeg', 'photo_2026-02-25 16.36.55.jpeg', 'photo_2026-02-25 16.36.56.jpeg', 'photo_2026-02-25 16.37.00.jpeg', 'photo_2026-02-25 16.37.01.jpeg', 'photo_2026-02-25 16.37.02.jpeg', 'photo_2026-02-25 16.37.03.jpeg', 'photo_2026-02-25 16.37.04.jpeg', 'photo_2026-02-25 16.37.05.jpeg', 'photo_2026-02-25 16.37.10.jpeg', 'photo_2026-02-25 16.37.15.jpeg', 'photo_2026-02-25 16.37.16.jpeg', 'photo_2026-02-25 16.37.18.jpeg', 'photo_2026-02-25 16.37.19.jpeg', 'photo_2026-02-25 16.37.24.jpeg']).map((item, idx) => (
                                                 <div key={idx} className="w-48 h-48 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-accent/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
                                                     <img src={`/remix_images/${item}`} alt={`Remix Scene ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                 </div>
@@ -495,69 +504,292 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                 </section>
 
                 {/* Section 4: Pricing */}
-                <section id="pricing" className="scroll-mt-32 py-24 px-6 max-w-[1400px] mx-auto relative">
-                    <div className="absolute inset-0 bg-yellow-500/5 blur-[150px] rounded-full pointer-events-none w-[60%] mx-auto hidden md:block"></div>
+                <section id="pricing" className="scroll-mt-32 py-32 px-6 max-w-[1400px] mx-auto relative">
+                    {/* Background Glows */}
+                    <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-accent/5 blur-[200px] rounded-full pointer-events-none hidden md:block"></div>
+                    <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-purple-500/5 blur-[200px] rounded-full pointer-events-none hidden md:block"></div>
 
                     <div className="text-center mb-16 relative z-10">
-                        <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight uppercase mb-4">Choose Your Plan</h2>
-                        <p className="text-slate-400 text-lg">Scalable power for every level of meme creation.</p>
+                        <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">Choose Your Plan</h2>
+                        <p className="text-slate-400 text-lg max-w-xl mx-auto leading-relaxed mb-10">From solo builders to full-blown degen operations. Pick the plan that matches your grind.</p>
+
+                        {/* Weekly / Monthly Toggle */}
+                        <div className="inline-flex items-center p-1 bg-white/5 border border-white/10 rounded-full mx-auto relative backdrop-blur-md">
+                            <button
+                                onClick={() => setBillingCycle('weekly')}
+                                className={`relative z-10 px-8 py-3 rounded-full text-sm font-bold uppercase tracking-widest transition-all ${billingCycle === 'weekly' ? 'text-black' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                Weekly
+                            </button>
+                            <button
+                                onClick={() => setBillingCycle('monthly')}
+                                className={`relative z-10 px-8 py-3 rounded-full text-sm font-bold uppercase tracking-widest transition-all ${billingCycle === 'monthly' ? 'text-black' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                Monthly
+                            </button>
+                            {/* Toggle Slider Background */}
+                            <div
+                                className="absolute top-1 bottom-1 w-[50%] bg-accent rounded-full transition-transform duration-300 ease-out shadow-[0_0_15px_rgba(222,253,65,0.4)]"
+                                style={{ transform: billingCycle === 'weekly' ? 'translateX(0)' : 'translateX(calc(100% - 8px))', width: 'calc(50% + 4px)' }}
+                            ></div>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto relative z-10">
-                        {/* Gold Plan */}
-                        <div className="pricing-card bg-[#0B1221] border border-yellow-500/30 rounded-3xl p-8 flex flex-col justify-between" style={{ background: 'linear-gradient(180deg, #0B1221 0%, rgba(234, 179, 8, 0.05) 100%)' }}>
-                            <div>
-                                <h3 className="text-2xl font-black text-yellow-500 uppercase tracking-widest mb-2">Gold</h3>
-                                <p className="text-slate-400 mb-8 border-b border-white/10 pb-8">Perfect for getting started with AI generation.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-[1200px] mx-auto relative z-10 items-stretch">
 
-                                <ul className="space-y-4 mb-auto">
-                                    {[1, 2, 3].map(i => (
-                                        <li key={i} className="flex items-center gap-3 text-slate-300">
-                                            <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                            [ Feature Description {i} ]
-                                        </li>
-                                    ))}
+                        {/* --- STARTER PLAN --- */}
+                        <div className={`group relative bg-[#0B1221] border border-white/10 rounded-2xl p-8 flex flex-col justify-between transition-all duration-500 overflow-hidden ${billingCycle === 'monthly' ? 'border-white/5 opacity-80' : 'hover:border-slate-400/40'}`}>
+
+                            {/* Subtle grid pattern */}
+                            <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none"></div>
+
+                            <div className={`relative z-10 transition-all duration-500`}>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-300 uppercase tracking-widest mb-1">Starter</h3>
+                                        <p className="text-[10px] text-slate-600 uppercase font-bold tracking-widest">Try MemeForge</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    </div>
+                                </div>
+
+                                <div className="mb-8 pb-8 border-b border-white/5">
+                                    <div className="flex items-end gap-1">
+                                        <span className="text-5xl font-black text-white flex items-center">
+                                            1
+                                            <img src="/solana-sol-logo.png" alt="Solana Logo" className="w-8 h-8 ml-3" />
+                                        </span>
+                                        <span className="text-slate-500 font-medium mb-1.5 ml-1">/week</span>
+                                    </div>
+                                </div>
+
+                                {/* Credits */}
+                                <div className="grid grid-cols-1 gap-3 mb-8">
+                                    <div className="bg-black/40 border border-white/5 rounded-xl p-3 text-center">
+                                        <div className="text-2xl font-black text-white">40</div>
+                                        <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Art Credits</div>
+                                    </div>
+                                </div>
+
+                                {/* Features */}
+                                <ul className="space-y-4 mb-8">
+                                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Art Styles
+                                    </li>
+                                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Formats (DEX, X Banner)
+                                    </li>
+                                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Image Gen Modes
+                                    </li>
+                                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        Optional credit top ups
+                                    </li>
+                                    <li className="flex items-center gap-3 text-slate-500 text-sm line-through">
+                                        <svg className="w-4 h-4 text-slate-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                        Full Scraper + God Mode
+                                    </li>
                                 </ul>
                             </div>
 
-                            <div className="mt-10 border-t border-white/10 pt-8">
-                                <div className="text-4xl font-black text-white mb-6">$XX<span className="text-lg text-slate-500 font-normal">/mo</span></div>
-                                <button className="w-full py-4 rounded-xl border border-yellow-500 text-yellow-500 font-bold tracking-widest uppercase hover:bg-yellow-500 hover:text-black transition-colors">
-                                    Select Gold
-                                </button>
-                            </div>
+                            <button onClick={() => setActiveModal('payment')} disabled={billingCycle === 'monthly'} className={`w-full py-4 rounded-xl border text-sm font-black tracking-widest uppercase transition-all flex items-center justify-center gap-2 ${billingCycle === 'monthly' ? 'border-white/5 bg-white/5 text-slate-400 cursor-not-allowed opacity-80' : 'border-white/10 text-slate-300 hover:bg-white/5 hover:border-white/30'}`}>
+                                {billingCycle === 'monthly' ? (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        Weekly Only
+                                    </>
+                                ) : 'Get Started'}
+                            </button>
                         </div>
 
-                        {/* Premium Plan */}
-                        <div className="pricing-card premium bg-[#070b14] border border-accent rounded-3xl p-8 flex flex-col justify-between relative shadow-2xl shadow-accent/10">
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-accent text-black font-black uppercase tracking-widest text-xs py-1.5 px-4 rounded-full">
+                        {/* --- PRO PLAN (RECOMMENDED) --- */}
+                        <div className="group relative bg-[#070b14] border-2 border-accent/50 rounded-2xl p-8 flex flex-col justify-between shadow-[0_0_60px_rgba(222,253,65,0.08)] hover:shadow-[0_0_80px_rgba(222,253,65,0.15)] transition-all duration-500">
+                            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                                {/* Top Glow Bar */}
+                                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+                                {/* Corner Glow */}
+                                <div className="absolute -top-20 -right-20 w-40 h-40 bg-accent/10 rounded-full blur-3xl"></div>
+                            </div>
+
+                            {/* Recommended Badge */}
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-accent text-black font-black uppercase tracking-[0.15em] text-[10px] py-1.5 px-5 rounded-full shadow-[0_0_20px_rgba(222,253,65,0.4)] z-20">
                                 Recommended
                             </div>
 
-                            <div>
-                                <h3 className="text-2xl font-black text-accent uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <span className="text-xl">✦</span> Premium <span className="text-xl">✦</span>
-                                </h3>
-                                <p className="text-slate-400 mb-8 border-b border-white/10 pb-8">Maximum power and priority access for professionals.</p>
+                            <div className="relative z-10 mt-2">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="text-xl font-black text-accent uppercase tracking-widest mb-1">Pro</h3>
+                                        <p className="text-[10px] text-accent/50 uppercase font-bold tracking-widest">For everyday deployers</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                    </div>
+                                </div>
 
-                                <ul className="space-y-4 mb-auto">
-                                    {[1, 2, 3, 4, 5].map(i => (
-                                        <li key={i} className="flex items-center gap-3 text-white font-medium">
-                                            <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                            [ Premium Feature {i} ]
-                                        </li>
-                                    ))}
+                                <div className="relative mb-8 pb-8 border-b border-accent/10 flex items-center justify-between">
+                                    <div className="flex items-end gap-1">
+                                        <span className="text-5xl font-black text-white flex items-center">
+                                            {billingCycle === 'monthly' ? '8' : '3'}
+                                            <img src="/solana-sol-logo.png" alt="Solana Logo" className="w-8 h-8 ml-3" />
+                                        </span>
+                                        <span className="text-accent/60 font-medium mb-1.5 ml-1">
+                                            {billingCycle === 'monthly' ? '/month' : '/week'}
+                                        </span>
+                                    </div>
+                                    {/* Discount / Savings Highlight Badge */}
+                                    <div className={`transition-all duration-500 ease-in-out absolute right-0 -translate-y-2 mb-4 md:mb-0 md:-translate-y-0 md:static ${billingCycle === 'monthly' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none hidden md:block'}`}>
+                                        <div className="inline-flex animate-fade-in-up items-center gap-1.5 bg-accent text-black px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-[0_0_20px_rgba(222,253,65,0.4)]">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                            Save 5 SOL
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Credits */}
+                                <div className="grid grid-cols-2 gap-3 mb-8">
+                                    <div className="bg-accent/5 border border-accent/10 rounded-xl p-3 text-center transition-all duration-300">
+                                        <div className="text-2xl font-black text-accent">{billingCycle === 'monthly' ? '480' : '120'}</div>
+                                        <div className="text-[9px] font-bold text-accent/40 uppercase tracking-widest">Art Credits</div>
+                                    </div>
+                                    <div className="bg-accent/5 border border-accent/10 rounded-xl p-3 text-center transition-all duration-300">
+                                        <div className="text-2xl font-black text-accent">{billingCycle === 'monthly' ? '960' : '240'}</div>
+                                        <div className="text-[9px] font-bold text-accent/40 uppercase tracking-widest">Lore Credits</div>
+                                    </div>
+                                </div>
+
+                                {/* Features */}
+                                <ul className="space-y-4 mb-8">
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Art Styles
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Formats (DEX, X Banner)
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Image Gen Modes
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        Viral News Scraper
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        Optional credit top ups
+                                    </li>
                                 </ul>
                             </div>
 
-                            <div className="mt-10 border-t border-white/10 pt-8">
-                                <div className="text-4xl font-black text-white mb-6">$XX<span className="text-lg text-slate-500 font-normal">/mo</span></div>
-                                <button className="w-full py-4 rounded-xl bg-accent text-black font-black tracking-widest uppercase hover:bg-white transition-colors animate-[glow-pulse_3s_infinite]">
-                                    Select Premium
+                            <button onClick={() => setActiveModal('payment')} className="w-full py-4 rounded-xl bg-accent text-black font-black tracking-widest uppercase text-sm hover:bg-white transition-all shadow-[0_0_25px_rgba(222,253,65,0.2)] hover:shadow-[0_0_35px_rgba(222,253,65,0.4)]">
+                                Go Pro
+                            </button>
+                        </div>
+
+                        {/* --- MAX PLAN --- */}
+                        <div className="group relative bg-[#0a0717] border border-purple-500/30 rounded-2xl p-8 flex flex-col justify-between hover:border-purple-400/60 transition-all duration-500" style={{ background: 'linear-gradient(180deg, #0B0820 0%, rgba(139, 92, 246, 0.05) 100%)' }}>
+                            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                                {/* Top Glow Bar */}
+                                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
+                                {/* Corner Glow */}
+                                <div className="absolute -top-20 -left-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl"></div>
+                            </div>
+
+
+
+                            <div className="relative z-10 mt-2">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="text-xl font-black text-purple-400 uppercase tracking-widest mb-1">Max</h3>
+                                        <p className="text-[10px] text-purple-500/50 uppercase font-bold tracking-widest">Deploy best narratives</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    </div>
+                                </div>
+
+                                <div className="relative mb-8 pb-8 border-b border-purple-500/10 flex items-center justify-between">
+                                    <div className="flex items-end gap-1">
+                                        <span className="text-5xl font-black text-white flex items-center">
+                                            {billingCycle === 'monthly' ? '30' : '10'}
+                                            <img src="/solana-sol-logo.png" alt="Solana Logo" className="w-8 h-8 ml-3" />
+                                        </span>
+                                        <span className="text-purple-500/60 font-medium mb-1.5 ml-1">
+                                            {billingCycle === 'monthly' ? '/month' : '/week'}
+                                        </span>
+                                    </div>
+                                    {/* Discount / Savings Highlight Badge */}
+                                    <div className={`transition-all duration-500 ease-in-out absolute right-0 -translate-y-2 mb-4 md:mb-0 md:-translate-y-0 md:static ${billingCycle === 'monthly' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none hidden md:block'}`}>
+                                        <div className="inline-flex animate-fade-in-up items-center gap-1.5 bg-purple-500 text-white px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-[0_0_20px_rgba(139,92,246,0.4)]">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                            Save 10 SOL
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Credits */}
+                                <div className="grid grid-cols-2 gap-3 mb-8">
+                                    <div className="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3 text-center transition-all duration-300">
+                                        <div className="text-2xl font-black text-purple-400">{billingCycle === 'monthly' ? '480' : '120'}</div>
+                                        <div className="text-[9px] font-bold text-purple-500/40 uppercase tracking-widest">Art Credits</div>
+                                    </div>
+                                    <div className="bg-purple-500/5 border border-purple-500/10 rounded-xl p-3 text-center transition-all duration-300">
+                                        <div className="text-2xl font-black text-purple-400">{billingCycle === 'monthly' ? '960' : '240'}</div>
+                                        <div className="text-[9px] font-bold text-purple-500/40 uppercase tracking-widest">Lore Credits</div>
+                                    </div>
+                                </div>
+
+                                {/* Features */}
+                                <ul className="space-y-4 mb-8">
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Art Styles
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Formats (DEX, X Banner)
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Image Gen Modes
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        Full Scraper + God Mode
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        Optional credit top ups
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="relative w-full mt-4">
+                                {/* Quota Full Message - Floating and transient */}
+                                <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-3 text-center transition-all duration-300 pointer-events-none z-20 ${showQuotaFull ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+                                    <span className="inline-flex items-center gap-1.5 bg-[#0B0820] border border-purple-500/30 text-purple-400 text-[10px] uppercase font-bold tracking-[0.2em] px-3 py-1.5 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.15)] whitespace-nowrap">
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                        Quota Full
+                                    </span>
+                                </div>
+                                <button onClick={() => { setShowQuotaFull(true); setTimeout(() => setShowQuotaFull(false), 2500); }} className="w-full relative overflow-hidden py-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400/60 font-black tracking-widest uppercase text-sm cursor-not-allowed transition-all duration-300 hover:bg-purple-500/20">
+                                    SOLD OUT
+                                    <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(139,92,246,0.05)_10px,rgba(139,92,246,0.05)_20px)] pointer-events-none"></div>
                                 </button>
                             </div>
                         </div>
+
                     </div>
+
+                    {/* Footer Note */}
+                    <p className="text-center text-slate-600 text-sm mt-12 relative z-10">Need more? <button onClick={() => setActiveModal('support')} className="text-accent hover:text-white transition-colors underline underline-offset-2">Contact us</button> for custom plans.</p>
                 </section>
 
             </main>
@@ -598,11 +830,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </div>
                         <div className="col-span-2 md:col-span-1">
                             <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">Contact</h4>
-                            <div className="flex gap-4">
-                                <a href="https://t.me/memeforgeapp" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-accent hover:border-accent hover:text-black transition-all">
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
-                                </a>
-                            </div>
+                            <ul className="space-y-4 text-slate-400 text-sm flex flex-col items-start">
+                                <li>
+                                    <a href="https://t.me/memeforgeapp" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-white transition-colors group">
+                                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:bg-accent group-hover:border-accent group-hover:text-black transition-all">
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
+                                        </div>
+                                        <span>Channel</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <button onClick={() => setActiveModal('support')} className="flex items-center gap-3 hover:text-accent transition-colors text-left group">
+                                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-accent group-hover:bg-accent group-hover:border-accent group-hover:text-black transition-all">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                        </div>
+                                        <span className="font-bold text-accent">Support</span>
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -617,134 +862,170 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </footer>
 
             {/* --- Login Modal --- */}
-            {showLoginModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                        onClick={() => setShowLoginModal(false)}
-                    ></div>
-
-                    <div className="relative w-full max-w-md bg-[#0B1221] border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden glass  animate-in fade-in zoom-in-95 duration-200">
-                        {/* Internal Glow */}
-                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
-                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
-
-                        <button
+            {
+                showLoginModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                             onClick={() => setShowLoginModal(false)}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
+                        ></div>
 
-                        <div className="text-center mb-8 relative z-10">
-                            <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Access Port</h3>
-                            <p className="text-slate-400 text-sm">Enter your secure access code to continue.</p>
-                        </div>
-
-                        <form onSubmit={handleLogin} className="relative z-10 space-y-4">
-                            <div>
-                                <input
-                                    type="password"
-                                    placeholder="Access Code"
-                                    value={accessCode}
-                                    onChange={(e) => setAccessCode(e.target.value)}
-                                    className="w-full bg-black/50 border border-white/10 text-white p-4 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent text-center tracking-widest text-lg transition-all placeholder:text-slate-600"
-                                />
-                            </div>
-
-                            {error && <div className="text-red-400 text-sm text-center font-bold bg-red-400/10 py-2 border border-red-400/20 rounded-lg">{error}</div>}
+                        <div className="relative w-full max-w-md bg-[#0B1221] border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden glass  animate-in fade-in zoom-in-95 duration-200">
+                            {/* Internal Glow */}
+                            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
 
                             <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-accent hover:bg-white text-black font-black p-4 rounded-xl tracking-widest uppercase transition-colors flex justify-center items-center gap-2 mt-4"
+                                onClick={() => setShowLoginModal(false)}
+                                className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
                             >
-                                {loading ? (
-                                    <svg className="animate-spin h-5 w-5 text-black" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                ) : "Authenticate"}
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
-                        </form>
-                    </div>
-                </div>
-            )}
 
-            {/* --- Info Modals --- */}
-            {activeModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                        onClick={() => setActiveModal(null)}
-                    ></div>
+                            <div className="text-center mb-8 relative z-10">
+                                <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Access Port</h3>
+                                <p className="text-slate-400 text-sm">Enter your secure access code to continue.</p>
+                            </div>
 
-                    <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0B1221] border border-white/10 rounded-2xl p-8 shadow-2xl glass animate-in fade-in zoom-in-95 duration-200 custom-scrollbar">
-                        {/* Internal Glow */}
-                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
-                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
-
-                        <button
-                            onClick={() => setActiveModal(null)}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors z-20"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-
-                        <div className="relative z-10 text-slate-300">
-                            {activeModal === 'about' && (
-                                <div className="space-y-6">
-                                    <h3 className="text-3xl font-black text-white mb-2 tracking-tight">About MemeForge</h3>
-                                    <div className="w-12 h-1 bg-accent mb-6"></div>
-                                    <p className="leading-relaxed text-lg text-white">MemeForge is the ultimate all-in-one AI platform designed specifically for the crypto, Web3, and memecoin communities.</p>
-                                    <p className="leading-relaxed">We empower creators and developers to generate unique mascots, high-quality art, and compelling banners in seconds using our advanced Art Engine.</p>
-                                    <p className="leading-relaxed">Beyond art generation, MemeForge provides a powerful Viral Narrative Scraper that monitors the deep web and social networks (X, TikTok, Reddit, etc.) to uncover the next big meta before it goes mainstream. Our mission is to centralize the creative and research process, making viral asset creation accessible and dynamic.</p>
+                            <form onSubmit={handleLogin} className="relative z-10 space-y-4">
+                                <div>
+                                    <input
+                                        type="password"
+                                        placeholder="Access Code"
+                                        value={accessCode}
+                                        onChange={(e) => setAccessCode(e.target.value)}
+                                        className="w-full bg-black/50 border border-white/10 text-white p-4 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent text-center tracking-widest text-lg transition-all placeholder:text-slate-600"
+                                    />
                                 </div>
-                            )}
-                            {activeModal === 'terms' && (
-                                <div className="space-y-6">
-                                    <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Terms of Service</h3>
-                                    <div className="w-12 h-1 bg-accent mb-6"></div>
-                                    <p className="leading-relaxed">By accessing and using MemeForge, you agree to be bound by our Terms of Service. You must use our platform responsibly and in compliance with all applicable laws.</p>
-                                    <div className="bg-white/5 p-5 rounded-xl border border-white/10">
-                                        <h4 className="text-white font-bold mb-2">1. Usage Rights</h4>
-                                        <p className="text-sm leading-relaxed">Users retain the rights to the AI-generated art they create, subject to their subscription tier. MemeForge is not responsible for copyright infringements resulting from user-provided prompts or scraped content.</p>
-                                    </div>
-                                    <div className="bg-white/5 p-5 rounded-xl border border-white/10">
-                                        <h4 className="text-white font-bold mb-2">2. Prohibited Conduct</h4>
-                                        <p className="text-sm leading-relaxed">You agree not to use MemeForge to generate illegal, hateful, or harmful content. We reserve the right to suspend or terminate accounts violating these terms without refund.</p>
-                                    </div>
-                                    <div className="bg-white/5 p-5 rounded-xl border border-white/10">
-                                        <h4 className="text-white font-bold mb-2">3. Service Availability</h4>
-                                        <p className="text-sm leading-relaxed">While we strive for 99.9% uptime, MemeForge is provided "as is". We are not liable for temporary service interruptions or data loss during system updates.</p>
-                                    </div>
-                                </div>
-                            )}
-                            {activeModal === 'privacy' && (
-                                <div className="space-y-6">
-                                    <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Privacy Policy</h3>
-                                    <div className="w-12 h-1 bg-accent mb-6"></div>
-                                    <p className="leading-relaxed text-lg text-white">Your privacy is perfectly respected at MemeForge. This policy outlines how we collect, use, and protect your data.</p>
-                                    <div className="space-y-6 mt-8">
-                                        <div className="border-l-2 border-accent pl-5 py-1">
-                                            <h4 className="text-white font-bold mb-2 text-lg">Information Collection</h4>
-                                            <p className="text-sm leading-relaxed">We collect necessary data such as your access code, usage metrics (images generated, credits spent), and generated content to provide our services effectively.</p>
-                                        </div>
-                                        <div className="border-l-2 border-accent pl-5 py-1">
-                                            <h4 className="text-white font-bold mb-2 text-lg">Data Usage</h4>
-                                            <p className="text-sm leading-relaxed">We use your data securely to authenticate users, manage subscription tiers, and improve our AI models. We do not sell your personal data to third parties.</p>
-                                        </div>
-                                        <div className="border-l-2 border-accent pl-5 py-1">
-                                            <h4 className="text-white font-bold mb-2 text-lg">Security</h4>
-                                            <p className="text-sm leading-relaxed">All user data is encrypted and stored securely using industry-standard protocols. Scraped data from public networks is anonymized and aggregated for our research engine.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+
+                                {error && <div className="text-red-400 text-sm text-center font-bold bg-red-400/10 py-2 border border-red-400/20 rounded-lg">{error}</div>}
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-accent hover:bg-white text-black font-black p-4 rounded-xl tracking-widest uppercase transition-colors flex justify-center items-center gap-2 mt-4"
+                                >
+                                    {loading ? (
+                                        <svg className="animate-spin h-5 w-5 text-black" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    ) : "Authenticate"}
+                                </button>
+                            </form>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+
+            {/* --- Info Modals --- */}
+            {
+                activeModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            onClick={() => setActiveModal(null)}
+                        ></div>
+
+                        <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0B1221] border border-white/10 rounded-2xl p-8 shadow-2xl glass animate-in fade-in zoom-in-95 duration-200 custom-scrollbar">
+                            {/* Internal Glow */}
+                            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                            <button
+                                onClick={() => setActiveModal(null)}
+                                className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors z-20"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+
+                            <div className="relative z-10 text-slate-300">
+                                {activeModal === 'about' && (
+                                    <div className="space-y-6">
+                                        <h3 className="text-3xl font-black text-white mb-2 tracking-tight">About MemeForge</h3>
+                                        <div className="w-12 h-1 bg-accent mb-6"></div>
+                                        <p className="leading-relaxed text-lg text-white">MemeForge is the ultimate all-in-one AI platform designed specifically for the crypto, Web3, and memecoin communities.</p>
+                                        <p className="leading-relaxed">We empower creators and developers to generate unique mascots, high-quality art, and compelling banners in seconds using our advanced Art Engine.</p>
+                                        <p className="leading-relaxed">Beyond art generation, MemeForge provides a powerful Viral Narrative Scraper that monitors the deep web and social networks (X, TikTok, Reddit, etc.) to uncover the next big meta before it goes mainstream. Our mission is to centralize the creative and research process, making viral asset creation accessible and dynamic.</p>
+                                    </div>
+                                )}
+                                {activeModal === 'terms' && (
+                                    <div className="space-y-6">
+                                        <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Terms of Service</h3>
+                                        <div className="w-12 h-1 bg-accent mb-6"></div>
+                                        <p className="leading-relaxed">By accessing and using MemeForge, you agree to be bound by our Terms of Service. You must use our platform responsibly and in compliance with all applicable laws.</p>
+                                        <div className="bg-white/5 p-5 rounded-xl border border-white/10">
+                                            <h4 className="text-white font-bold mb-2">1. Usage Rights</h4>
+                                            <p className="text-sm leading-relaxed">Users retain the rights to the AI-generated art they create, subject to their subscription tier. MemeForge is not responsible for copyright infringements resulting from user-provided prompts or scraped content.</p>
+                                        </div>
+                                        <div className="bg-white/5 p-5 rounded-xl border border-white/10">
+                                            <h4 className="text-white font-bold mb-2">2. Prohibited Conduct</h4>
+                                            <p className="text-sm leading-relaxed">You agree not to use MemeForge to generate illegal, hateful, or harmful content. We reserve the right to suspend or terminate accounts violating these terms without refund.</p>
+                                        </div>
+                                        <div className="bg-white/5 p-5 rounded-xl border border-white/10">
+                                            <h4 className="text-white font-bold mb-2">3. Service Availability</h4>
+                                            <p className="text-sm leading-relaxed">While we strive for 99.9% uptime, MemeForge is provided "as is". We are not liable for temporary service interruptions or data loss during system updates.</p>
+                                        </div>
+                                    </div>
+                                )}
+                                {activeModal === 'privacy' && (
+                                    <div className="space-y-6">
+                                        <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Privacy Policy</h3>
+                                        <div className="w-12 h-1 bg-accent mb-6"></div>
+                                        <p className="leading-relaxed text-lg text-white">Your privacy is perfectly respected at MemeForge. This policy outlines how we collect, use, and protect your data.</p>
+                                        <div className="space-y-6 mt-8">
+                                            <div className="border-l-2 border-accent pl-5 py-1">
+                                                <h4 className="text-white font-bold mb-2 text-lg">Information Collection</h4>
+                                                <p className="text-sm leading-relaxed">We collect necessary data such as your access code, usage metrics (images generated, credits spent), and generated content to provide our services effectively.</p>
+                                            </div>
+                                            <div className="border-l-2 border-accent pl-5 py-1">
+                                                <h4 className="text-white font-bold mb-2 text-lg">Data Usage</h4>
+                                                <p className="text-sm leading-relaxed">We use your data securely to authenticate users, manage subscription tiers, and improve our AI models. We do not sell your personal data to third parties.</p>
+                                            </div>
+                                            <div className="border-l-2 border-accent pl-5 py-1">
+                                                <h4 className="text-white font-bold mb-2 text-lg">Security</h4>
+                                                <p className="text-sm leading-relaxed">All user data is encrypted and stored securely using industry-standard protocols. Scraped data from public networks is anonymized and aggregated for our research engine.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {activeModal === 'support' && (
+                                    <div className="space-y-6 text-center py-8">
+                                        <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-accent/20">
+                                            <svg className="w-10 h-10 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                        </div>
+                                        <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Need Help?</h3>
+                                        <p className="leading-relaxed text-lg text-slate-400 mb-8 max-w-sm mx-auto">Whether you're struggling with generations, account limits, or have a partnership inquiry, we're here to assist you.</p>
+
+                                        <div className="pt-4">
+                                            <a href="https://t.me/fizzd3gen" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 px-8 py-5 w-full sm:w-auto bg-accent text-black rounded-xl font-black text-[15px] uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(222,253,65,0.2)] hover:shadow-[0_0_40px_rgba(222,253,65,0.5)] hover:-translate-y-1">
+                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
+                                                Contact Admin on Telegram
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+                                {activeModal === 'payment' && (
+                                    <div className="space-y-6 text-center py-8">
+                                        <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-accent/20">
+                                            <svg className="w-10 h-10 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                                        </div>
+                                        <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Complete Purchase</h3>
+                                        <p className="leading-relaxed text-lg text-slate-400 mb-8 max-w-sm mx-auto">To continue with your transaction, please contact our team on Telegram. We will verify and process your purchase immediately.</p>
+
+                                        <div className="pt-4">
+                                            <a href="https://t.me/fizzd3gen" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 px-8 py-5 w-full sm:w-auto bg-accent text-black rounded-xl font-black text-[15px] uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(222,253,65,0.2)] hover:shadow-[0_0_40px_rgba(222,253,65,0.5)] hover:-translate-y-1">
+                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
+                                                Contact on Telegram
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };

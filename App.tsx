@@ -126,6 +126,7 @@ const App: React.FC = () => {
     const [showAdmin, setShowAdmin] = useState(false);
     const [showAccessCode, setShowAccessCode] = useState(false);
     const [showAccountPopup, setShowAccountPopup] = useState(false);
+    const [showSupportModal, setShowSupportModal] = useState(false);
     const accountPopupRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -1275,6 +1276,14 @@ const App: React.FC = () => {
                             </Button>
                         )}
                         <Button
+                            onClick={() => setShowSupportModal(true)}
+                            variant="ghost"
+                            className="text-slate-500 hover:text-white text-[10px] px-2 uppercase font-bold flex items-center gap-1.5"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            Support
+                        </Button>
+                        <Button
                             onClick={() => setCurrentUser(null)}
                             variant="ghost"
                             className="text-slate-500 hover:text-white text-[10px] px-2 uppercase font-bold"
@@ -2221,6 +2230,46 @@ const App: React.FC = () => {
                             >
                                 CLOSE
                             </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* --- Support Modal --- */}
+            {showSupportModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setShowSupportModal(false)}
+                    ></div>
+
+                    <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0B1221] border border-white/10 rounded-2xl p-8 shadow-2xl glass animate-in fade-in zoom-in-95 duration-200 custom-scrollbar">
+                        {/* Internal Glow */}
+                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                        <button
+                            onClick={() => setShowSupportModal(false)}
+                            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors z-20"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+
+                        <div className="relative z-10 text-slate-300">
+                            <div className="space-y-6 text-center py-8">
+                                <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-accent/20">
+                                    <svg className="w-10 h-10 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                </div>
+                                <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Need Help?</h3>
+                                <p className="leading-relaxed text-lg text-slate-400 mb-8 max-w-sm mx-auto">Whether you're struggling with generations, account limits, or have a partnership inquiry, we're here to assist you.</p>
+
+                                <div className="pt-4">
+                                    <a href="https://t.me/fizzd3gen" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 px-8 py-5 w-full sm:w-auto bg-accent text-black rounded-xl font-black text-[15px] uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(222,253,65,0.2)] hover:shadow-[0_0_40px_rgba(222,253,65,0.5)] hover:-translate-y-1">
+                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
+                                        Contact Admin on Telegram
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
