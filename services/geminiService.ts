@@ -1491,85 +1491,146 @@ export const performMetaResearch = async (metaKeyword: string, excludedTopics: s
 
 export const performGlobalNewsResearch = async (excludedTopics: string[] = [], timeRange: '24h' | '48h' | '1w' = '24h', targetKeyword?: string): Promise<XTrend[]> => {
     const exclusionList = excludedTopics.length > 0 ? `DO NOT include these topics that were already found: ${JSON.stringify(excludedTopics)}` : "";
+
+    // Explicit Date Enforcements
     const now = new Date();
-    const todayStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const past = new Date();
-    let timeLabel = "Last 24 Hours";
-    if (timeRange === '24h') { past.setDate(now.getDate() - 1); timeLabel = "Last 24 Hours"; }
-    else if (timeRange === '48h') { past.setDate(now.getDate() - 2); timeLabel = "Last 48 Hours"; }
-    else if (timeRange === '1w') { past.setDate(now.getDate() - 7); timeLabel = "Last 7 Days"; }
-    const pastDateStr = past.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    if (timeRange === '24h') { past.setDate(now.getDate() - 1); }
+    else if (timeRange === '48h') { past.setDate(now.getDate() - 2); }
+    else if (timeRange === '1w') { past.setDate(now.getDate() - 7); }
+
+    const todayIso = now.toISOString().split('T')[0];
+    const pastIso = past.toISOString().split('T')[0];
+    const timeLabel = timeRange === '24h' ? 'Last 24 Hours' : timeRange === '48h' ? 'Last 48 Hours' : 'Last 7 Days';
+
     const searchFocus = targetKeyword
-        ? `TASK: Find weird, funny, or viral news stories specifically related to the keyword: "${targetKeyword}".\nPRIORITY: Look for ABSURD, FUNNY, or LORE-HEAVY angles on this topic.`
-        : `TASK: Find weird, funny, or absurd global news.`;
+        ? `PHASE 3: Search specifically for funny, absurd, or lore-heavy angles related to the keyword: "${targetKeyword}" within the dates [${pastIso} to ${todayIso}].`
+        : `PHASE 1 & 2: Search for bizarre real news from mainstream outlets AND viral internet culture/animal stories.`;
 
     const prompt = `
-        YOU ARE A "WEIRD NEWS" INVESTIGATOR & MEMECOIN SCOUT.
+        ROLE: "Viral News Memecoin Scout"
+        
+        DATE CONTEXT:
+        Current Date: ${now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} (${todayIso})
+        Lookback Start Date: ${past.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} (${pastIso})
+        
+        TIME RULE: 
+        ABSOLUTE RULE: Every result MUST have been published between ${pastIso} and ${todayIso} (${timeLabel}). 
+        Verify each result's publication date using search. If uncertain or older, DISCARD it.
+        
         ${searchFocus}
         
-        OBJECTIVE: Find news stories that have "LORE", are ABSURD, FUNNY, or highly MEMEABLE.
-        We do NOT want boring mainstream news (No politics, no stock market updates, no tragic disasters).
-        We WANT "Florida Man" energy, animals doing human things, glitches in reality, tech fails, or bizarre crimes.
+        SEARCH QUERIES TO USE (via Google Search):
+        ${targetKeyword ?
+            `- "${targetKeyword} funny absurd lore after:${pastIso} before:${todayIso}"
+        - "${targetKeyword} weird news after:${pastIso} before:${todayIso}"` :
+            `- "bizarre unusual funny news after:${pastIso} before:${todayIso}"
+        - "viral animal story OR florida man OR internet culture after:${pastIso} before:${todayIso}"`}
 
-        SEARCH WINDOW: ${pastDateStr} to ${todayStr} (${timeLabel}).
-        STRICT TIME CONTROL: Do not return old news.
-
-        SEARCH SCOPE:
-        - "${targetKeyword || 'bizarre news'} ${timeLabel}"
-        - "${targetKeyword || 'funny weird headlines'} today"
-        - "${targetKeyword || 'absurd event'} ${timeLabel}"
-        - "${targetKeyword || 'viral animal news'} ${timeLabel}"
-        - "${targetKeyword || 'internet culture news'} ${timeLabel}"
-
-        SELECTION CRITERIA (MEMECOIN POTENTIAL):
-        1. **LORE**: Does the story have a "Main Character"? (e.g. A raccoon that stole a phone).
-        2. **ABSURDITY**: Is the headline hard to believe?
-        3. **VISUAL**: Can you imagine a funny mascot for this?
+        MEMECOIN EVALUATION (Discard if boring):
+        - Main Character Energy: Person/animal/object that IS the story.
+        - Absurdity: "Not The Onion" level (unbelievable but true).
+        - Ticker Potential: Can you imagine $TICKER for this?
+        - Visual: Would this make a good mascot/meme image?
 
         ${exclusionList}
 
-        SCORING CRITERIA (Meme Score 1-10):
-        - Score 1-4: Standard news, politics, boring tech releases. (DISCARD).
-        - Score 8-10: Hilarious, weird, specific characters, "can't believe this is real".
-
-        RETURN exactly 15 trends in this JSON format:
+        OUTPUT FORMAT (Return an array of EXACTLY 15 objects):
         [ 
             { 
-                "topic": "Punchy, Funny Headline", 
-                "category": "Weird/Absurd News", 
-                "description": "Why is this funny? What is the 'Lore'?", 
+                "topic": "Punchy Headline", 
+                "publishedDate": "YYYY-MM-DD",
+                "category": "Bizarre/Animal/FloridaMan/Internet Culture", 
+                "description": "The exact lore. Why memecoin potential. What happened exactly.", 
                 "memeScore": 9, 
-                "volume": "Viral Potential", 
-                "url": "https://www.google.com/search?q=THE+EXACT+HEADLINE+HERE", 
+                "volume": "Going Viral / Regional Hit / Niche Gold", 
+                "url": "https://www.google.com/search?q=exact+headline+encoded",
                 "source": "news" 
             } 
         ]
         
-        CRITICAL: The 'url' field MUST be a Google Search link for the headline. Do not try to direct link to paywalled sites.
+        CRITICAL RULES:
+        - \`url\` MUST be a Google Search link constructed from the headline.
+        
         Return ONLY raw JSON.
     `;
+
     try {
-        return await withRetry(async (ai) => {
+        const { trends, groundingUrls } = await withRetry(async (ai) => {
             const response = await ai.models.generateContent({
                 model: "gemini-2.5-flash",
                 contents: prompt,
                 config: {
                     tools: [{ googleSearch: {} }],
-                    systemInstruction: `You are a Memecoin Hunter. You ignore boring news. You only care about stories that could be the next $DOGE or $PEPE. Stick to ${timeLabel}.`,
-                    temperature: 0.85
+                    systemInstruction: `You are a Memecoin Alpha Hunter specializing in bizarre news. ABSOLUTE TIME RULE: Only results from ${pastIso} to ${todayIso}. Verify EVERY article date. When in doubt, DISCARD.`,
+                    temperature: 0.5
                 }
             });
+
+            let trends: XTrend[] = [];
             if (response.text) {
                 const cleanedText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
                 const firstBracket = cleanedText.indexOf('[');
                 const lastBracket = cleanedText.lastIndexOf(']');
                 if (firstBracket !== -1 && lastBracket !== -1) {
                     const jsonString = cleanedText.substring(firstBracket, lastBracket + 1);
-                    return JSON.parse(jsonString) as XTrend[];
+                    trends = JSON.parse(jsonString) as XTrend[];
+                } else {
+                    throw new Error("Failed to parse Global News JSON");
+                }
+            } else {
+                throw new Error("No text response from Global News API");
+            }
+
+            // Extract real URLs from grounding metadata
+            const groundingUrls: { uri: string; title: string }[] = [];
+            const candidates = (response as any).candidates;
+            if (candidates?.[0]?.groundingMetadata?.groundingChunks) {
+                for (const chunk of candidates[0].groundingMetadata.groundingChunks) {
+                    if (chunk.web?.uri) {
+                        groundingUrls.push({ uri: chunk.web.uri, title: chunk.web.title || '' });
+                    }
                 }
             }
-            throw new Error("Failed to parse Global News");
+
+            return { trends, groundingUrls };
         });
+
+        // Validation Post-Processing and URL Matching
+        const validTrends = trends.filter(trend => {
+            if (!trend.publishedDate) return false;
+            return trend.publishedDate >= pastIso && trend.publishedDate <= todayIso;
+        });
+
+        return validTrends.map(trend => {
+            const topicWords = trend.topic.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+
+            let bestMatch = '';
+            let bestScore = 0;
+
+            for (const { uri, title } of groundingUrls) {
+                const titleLower = title.toLowerCase();
+                // Score based on how many important topic words appear in the source title
+                const score = topicWords.filter(w => titleLower.includes(w)).length;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = uri;
+                }
+            }
+
+            // If we found a good grounding match (score > 0), use it. Otherwise fallback to Google News.
+            const newsUrl = (bestScore > 0 && bestMatch)
+                ? bestMatch
+                : `https://news.google.com/search?q=${encodeURIComponent(trend.topic)}`;
+
+            return {
+                ...trend,
+                newsUrl,
+                url: `https://www.google.com/search?q=${encodeURIComponent(trend.topic)}`
+            };
+        });
+
     } catch (e) {
         console.error("Global News Research failed", e);
         return [];

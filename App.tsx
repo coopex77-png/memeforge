@@ -562,7 +562,7 @@ const App: React.FC = () => {
         }
         if (selectedStyles.length === 0) { alert("Please select at least one Art Style."); return; }
 
-        const requiredCredits = targetCount * selectedStyles.length * 4;
+        const requiredCredits = targetCount * selectedStyles.length * 1;
         const deductionSuccess = await deductCredits(currentUser.access_code, 'art', requiredCredits);
 
         if (!deductionSuccess) {
@@ -592,7 +592,7 @@ const App: React.FC = () => {
         if (!customInput.trim()) return;
         if (selectedStyles.length === 0) { alert("Please select at least one Art Style."); return; }
 
-        const requiredCredits = targetCount * selectedStyles.length * 4;
+        const requiredCredits = targetCount * selectedStyles.length * 1;
         const deductionSuccess = await deductCredits(currentUser.access_code, 'art', requiredCredits);
 
         if (!deductionSuccess) {
@@ -693,7 +693,7 @@ const App: React.FC = () => {
         if (!uploadedImage) return;
         if (selectedStyles.length === 0) { alert("Select a style first."); return; }
 
-        const requiredCredits = targetCount * selectedStyles.length * 4;
+        const requiredCredits = targetCount * selectedStyles.length * 1;
         const deductionSuccess = await deductCredits(currentUser.access_code, 'art', requiredCredits);
 
         if (!deductionSuccess) {
@@ -764,9 +764,9 @@ const App: React.FC = () => {
         if (!traitBaseImage) { alert("Please upload a base image first."); return; }
         if (!traitsInput.trim()) { alert("Please enter some traits."); return; }
 
-        const deductionSuccess = await deductCredits(currentUser.access_code, 'art', 2);
+        const deductionSuccess = await deductCredits(currentUser.access_code, 'art', 1);
         if (!deductionSuccess) {
-            setShowCreditError({ show: true, required: 2 });
+            setShowCreditError({ show: true, required: 1 });
             return;
         }
 
@@ -824,11 +824,11 @@ const App: React.FC = () => {
         // Calculate needed credits
         let requiredCredits = 0;
         for (const model of config.models) {
-            const costPerModel = model === 'pro' ? 4 : 2;
+            const costPerModel = model === 'pro' ? 1 : 1;
             requiredCredits += config.count * costPerModel;
         }
-        if (config.includeDex) requiredCredits += 6; // Dex banner
-        if (config.includeXComm) requiredCredits += 6; // X Comm banner
+        if (config.includeDex) requiredCredits += 2; // Dex banner
+        if (config.includeXComm) requiredCredits += 2; // X Comm banner
 
         if (requiredCredits > 0) {
             const deductionSuccess = await deductCredits(currentUser.access_code, 'art', requiredCredits);
@@ -1196,6 +1196,11 @@ const App: React.FC = () => {
                                                             <Button onClick={() => window.open(searchUrl, '_blank')} size="md" variant="outline" className="w-full text-[10px] uppercase font-bold border-white/10 hover:border-white">
                                                                 SOURCE ↗
                                                             </Button>
+                                                            {trend.newsUrl && (
+                                                                <Button onClick={() => window.open(trend.newsUrl, '_blank')} size="md" variant="outline" className="w-full text-[10px] uppercase font-bold border-white/10 hover:border-white">
+                                                                    📰 NEWS ↗
+                                                                </Button>
+                                                            )}
                                                         </div>
 
                                                         {/* Scan Line Effect on Hover */}
@@ -1279,13 +1284,16 @@ const App: React.FC = () => {
 
                     <div className="hidden md:flex items-center gap-4">
                         {currentUser?.is_admin && (
-                            <Button
+                            <button
                                 onClick={() => setShowAdmin(true)}
-                                variant="outline"
-                                className="border-red-500 text-red-400 hover:bg-red-500/10 text-[10px] px-4 py-2 uppercase font-black tracking-widest"
+                                className="relative group flex items-center gap-2.5 px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500 transition-all duration-300 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(239,68,68,0.1)] hover:shadow-[0_0_30px_rgba(239,68,68,0.2)]"
                             >
-                                Admin Area
-                            </Button>
+                                <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                                <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em] relative z-10 transition-colors group-hover:text-white">
+                                    Admin Area
+                                </span>
+                            </button>
                         )}
                         <Button
                             onClick={() => setShowSupportModal(true)}

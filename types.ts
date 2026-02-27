@@ -37,11 +37,13 @@ export interface Scene {
 
 export interface XTrend {
   topic: string; // The main headline (e.g. "SpaceX Launch", "GTA VI Trailer")
+  publishedDate?: string; // NEW: YYYY-MM-DD timestamp for timeline filtering
   category: string; // e.g. "Technology", "Gaming", "Politics", "Meme"
   description: string; // Context explaining WHY it is trending
   memeScore?: number; // NEW: 1-10 Score of how good this would be as a memecoin
   volume?: string; // e.g. "50K posts"
   url?: string; // Link to context
+  newsUrl?: string; // NEW: Direct link to the actual news article
   source?: 'x' | 'reddit' | '4chan' | 'tiktok' | 'kym' | 'news' | 'mixed'; // NEW: Track origin platform
 }
 
