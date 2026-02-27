@@ -781,9 +781,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                         <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                         All Image Gen Modes
                                     </li>
-                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
-                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                        Viral News Scraper
+                                    <li className="flex items-center gap-3 text-accent text-sm font-black">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                        <span>Viral News Scraper</span>
                                     </li>
                                     <li className="flex items-center gap-3 text-white text-sm font-medium">
                                         <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -872,9 +872,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                         <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                         All Image Gen Modes
                                     </li>
-                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
-                                        <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                        Full Scraper + God Mode
+                                    <li className="flex items-center gap-3 text-purple-400 text-sm font-black">
+                                        <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                        <span>Full Scraper + God Mode</span>
                                     </li>
                                     <li className="flex items-center gap-3 text-white text-sm font-medium">
                                         <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
