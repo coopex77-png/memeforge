@@ -1,0 +1,20 @@
+                                            <div className="relative w-full overflow-hidden">
+                                                <div
+                                                    className={`text-accent bg-accent/10 py-4 px-3 rounded-xl border border-accent/20 cursor-pointer transition-all w-full flex items-center justify-center gap-2 overflow-hidden ${walletCopied ? 'bg-green-500/10 border-green-500/50 text-green-400' : 'hover:bg-accent/20'}`}
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(selectedWallet);
+                                                        setWalletCopied(true);
+                                                        setTimeout(() => setWalletCopied(false), 2000);
+                                                    }}
+                                                >
+                                                    <span className="truncate flex-1 text-center font-bold tracking-tight" title={selectedWallet}>{selectedWallet}</span>
+                                                    {walletCopied ? (
+                                                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                                    ) : (
+                                                        <svg className="w-4 h-4 ml-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <span className={`text-[10px] mt-2 transition-colors ${walletCopied ? 'text-green-400 font-bold' : 'text-slate-500'}`}>
+                                                {walletCopied ? 'Copied to clipboard!' : 'Click address to copy'}
+                                            </span>

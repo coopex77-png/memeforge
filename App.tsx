@@ -325,8 +325,14 @@ const App: React.FC = () => {
             return;
         }
 
-        if (!currentUser.is_admin && (!currentUser.can_use_scrape || (currentUser.lore_credits || 0) <= 0)) {
-            alert("Insufficient Lore Credits or Scrape mode disabled for your account.");
+        const hasScrapeAccess = currentUser.is_admin || currentUser.can_use_scrape || (currentUser.can_use_news_scrape && mode === 'news');
+        if (!hasScrapeAccess) {
+            alert("Scrape mode disabled for your account.");
+            return;
+        }
+
+        if (!currentUser.is_admin && (currentUser.lore_credits || 0) <= 0) {
+            alert("Insufficient Lore Credits.");
             return;
         }
 
@@ -392,7 +398,13 @@ const App: React.FC = () => {
     const handleLoadMoreTrends = async () => {
         if (isResearching || !researchMode || !currentUser) return;
 
-        if (!currentUser.is_admin && (!currentUser.can_use_scrape || (currentUser.lore_credits || 0) <= 0)) {
+        const hasScrapeAccess = currentUser.is_admin || currentUser.can_use_scrape || (currentUser.can_use_news_scrape && researchMode === 'news');
+        if (!hasScrapeAccess) {
+            alert("Scrape mode disabled for your account.");
+            return;
+        }
+
+        if (!currentUser.is_admin && (currentUser.lore_credits || 0) <= 0) {
             alert("Out of Lore Credits. Cannot load more.");
             return;
         }
@@ -1291,80 +1303,224 @@ const App: React.FC = () => {
                             Logout
                         </Button>
                         <div ref={accountPopupRef} className="hidden md:flex items-center gap-4 relative">
-                            <button
-                                onClick={() => setShowAccountPopup(!showAccountPopup)}
-                                className={`flex items-center gap-2 px-5 py-2 border rounded-2xl shadow-xl backdrop-blur-md transition-all group ${showAccountPopup ? 'bg-black/80 border-accent' : 'bg-black/40 border-white/10 hover:border-accent/50 hover:bg-black/60'}`}
-                            >
-                                <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:bg-accent/20 transition-colors">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                </div>
-                                <span className="text-xs font-black text-white uppercase tracking-widest group-hover:text-accent transition-colors">Account</span>
-                            </button>
+                            {(() => {
+                                const pkg = currentUser?.package_name || 'Starter';
+                                let borderColor = 'border-white/10 hover:border-slate-500/50';
+                                let bgClass = 'bg-black/40 hover:bg-black/60';
+                                let activeBgClass = 'bg-black/80 border-slate-500';
+                                let textColor = 'text-white group-hover:text-slate-300';
+                                let iconBg = 'bg-white/5 group-hover:bg-white/10';
+                                let iconText = 'text-white';
+                                let iconBorder = 'border-white/20';
 
-                            {showAccountPopup && (
-                                <div className="absolute top-[120%] right-0 w-80 bg-[#0B1221] border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200">
-                                    <div className="p-5 border-b border-white/5 bg-white/5">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Access Code</span>
-                                            <button onClick={() => setShowAccessCode(!showAccessCode)} className="text-slate-500 hover:text-white transition-colors">
-                                                {showAccessCode ? (
-                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.244 4.244M9.888 9.888L3.223 3.223m13.386 13.386L20.777 20.777" /></svg>
-                                                ) : (
-                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                                )}
-                                            </button>
+                                if (pkg === 'Cookball') {
+                                    borderColor = 'border-[#FF6B00]/30 hover:border-[#FF6B00]/50';
+                                    activeBgClass = 'bg-black/80 border-[#FF6B00] shadow-[#FF6B00]/20';
+                                    textColor = 'text-[#FF6B00] group-hover:text-[#FF8133]';
+                                    iconBg = 'bg-[#FF6B00]/10 group-hover:bg-[#FF6B00]/20';
+                                    iconText = 'text-[#FF6B00]';
+                                    iconBorder = 'border-[#FF6B00]/20';
+                                } else if (pkg === 'Private') {
+                                    borderColor = 'border-[#40E0D0]/30 hover:border-[#40E0D0]/50';
+                                    activeBgClass = 'bg-black/80 border-[#40E0D0] shadow-[#40E0D0]/20';
+                                    textColor = 'text-[#40E0D0] group-hover:text-[#66EBE0]';
+                                    iconBg = 'bg-[#40E0D0]/10 group-hover:bg-[#40E0D0]/20';
+                                    iconText = 'text-[#40E0D0]';
+                                    iconBorder = 'border-[#40E0D0]/20';
+                                } else if (pkg === 'Max') {
+                                    borderColor = 'border-[#C084FC]/30 hover:border-[#C084FC]/50';
+                                    activeBgClass = 'bg-black/80 border-[#C084FC] shadow-[#C084FC]/20';
+                                    textColor = 'text-[#C084FC] group-hover:text-[#D1A3FF]';
+                                    iconBg = 'bg-[#C084FC]/10 group-hover:bg-[#C084FC]/20';
+                                    iconText = 'text-[#C084FC]';
+                                    iconBorder = 'border-[#C084FC]/20';
+                                } else if (pkg === 'Pro') {
+                                    borderColor = 'border-[#DEFD40]/30 hover:border-[#DEFD40]/50';
+                                    activeBgClass = 'bg-black/80 border-[#DEFD40] shadow-[#DEFD40]/20';
+                                    textColor = 'text-[#DEFD40] group-hover:text-[#E9FF70]';
+                                    iconBg = 'bg-[#DEFD40]/10 group-hover:bg-[#DEFD40]/20';
+                                    iconText = 'text-[#DEFD40]';
+                                    iconBorder = 'border-[#DEFD40]/20';
+                                } else { // Starter
+                                    borderColor = 'border-slate-400/30 hover:border-slate-300/50';
+                                    activeBgClass = 'bg-black/80 border-slate-300';
+                                    textColor = 'text-slate-300 group-hover:text-white';
+                                    iconBg = 'bg-slate-400/10 group-hover:bg-slate-400/20';
+                                    iconText = 'text-slate-300';
+                                    iconBorder = 'border-slate-400/20';
+                                }
+
+                                return (
+                                    <button
+                                        onClick={() => setShowAccountPopup(!showAccountPopup)}
+                                        className={`flex items-center gap-3 px-4 py-1.5 border rounded-2xl shadow-xl backdrop-blur-md transition-all group ${showAccountPopup ? activeBgClass : `${bgClass} ${borderColor}`}`}
+                                    >
+                                        <div className={`w-8 h-8 rounded-full ${iconBg} border ${iconBorder} flex items-center justify-center ${iconText} transition-colors`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                         </div>
-                                        <div className="text-lg font-black text-white tracking-widest">
-                                            {showAccessCode ? currentUser?.access_code : '••••••••'}
+                                        <div className="flex flex-col items-start pr-1 text-left">
+                                            <span className={`text-xs font-black ${textColor} uppercase tracking-widest transition-colors leading-none mt-0.5`}>Account</span>
+                                            <span className={`text-[8.5px] font-bold ${textColor} uppercase tracking-widest transition-colors leading-none mt-1`}>{pkg} PLAN</span>
                                         </div>
-                                    </div>
-                                    <div className="p-5 grid grid-cols-2 gap-4 border-b border-white/5">
-                                        <div className="bg-black/40 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center text-center">
-                                            <div className="w-6 h-6 rounded-md bg-accent/10 flex items-center justify-center mb-2">
-                                                <svg className="w-3 h-3 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    </button>
+                                );
+                            })()}
+
+                            {showAccountPopup && (() => {
+                                const pkg = currentUser?.package_name || 'Starter';
+                                let theme = {
+                                    primary: 'text-slate-300',
+                                    bgGlow: 'shadow-slate-500/20',
+                                    border: 'border-slate-400/30',
+                                    gradientCore: 'from-slate-400',
+                                    gradientLight: 'from-slate-400/20',
+                                    badgeBg: 'bg-slate-400/20',
+                                    badgeText: 'text-slate-300',
+                                    hex: '#94a3b8' // slate-400
+                                };
+
+                                if (pkg === 'Cookball') theme = { primary: 'text-[#FF6B00]', bgGlow: 'shadow-[#FF6B00]/20', border: 'border-[#FF6B00]/30', gradientCore: 'from-[#FF6B00]', gradientLight: 'from-[#FF6B00]/20', badgeBg: 'bg-[#FF6B00]/20', badgeText: 'text-[#FF6B00]', hex: '#FF6B00' };
+                                else if (pkg === 'Private') theme = { primary: 'text-[#40E0D0]', bgGlow: 'shadow-[#40E0D0]/20', border: 'border-[#40E0D0]/30', gradientCore: 'from-[#40E0D0]', gradientLight: 'from-[#40E0D0]/20', badgeBg: 'bg-[#40E0D0]/20', badgeText: 'text-[#40E0D0]', hex: '#40E0D0' };
+                                else if (pkg === 'Max') theme = { primary: 'text-[#C084FC]', bgGlow: 'shadow-[#C084FC]/20', border: 'border-[#C084FC]/30', gradientCore: 'from-[#C084FC]', gradientLight: 'from-[#C084FC]/20', badgeBg: 'bg-[#C084FC]/20', badgeText: 'text-[#C084FC]', hex: '#C084FC' };
+                                else if (pkg === 'Pro') theme = { primary: 'text-[#DEFD40]', bgGlow: 'shadow-[#DEFD40]/20', border: 'border-[#DEFD40]/30', gradientCore: 'from-[#DEFD40]', gradientLight: 'from-[#DEFD40]/20', badgeBg: 'bg-[#DEFD40]/20', badgeText: 'text-[#DEFD40]', hex: '#DEFD40' };
+
+                                // Calculate subscription progress relative to time remaining
+                                let subProgress = 100;
+                                let daysRemaining = '∞';
+                                if (!currentUser?.is_admin && currentUser?.subscription_start && currentUser?.subscription_days) {
+                                    const start = new Date(currentUser.subscription_start).getTime();
+                                    const totalDuration = currentUser.subscription_days * 24 * 60 * 60 * 1000;
+                                    const end = start + totalDuration;
+                                    const now = new Date().getTime();
+
+                                    if (now >= end) {
+                                        subProgress = 0;
+                                        daysRemaining = '0 days';
+                                    } else {
+                                        const elapsed = now - start;
+                                        subProgress = Math.max(0, Math.min(100, Math.round((elapsed / totalDuration) * 100)));
+                                        const leftMs = end - now;
+                                        const leftDays = Math.ceil(leftMs / (1000 * 60 * 60 * 24));
+                                        daysRemaining = `${leftDays} day${leftDays !== 1 ? 's' : ''}`;
+                                    }
+                                }
+
+                                return (
+                                    <div className={`absolute top-[120%] right-0 w-80 bg-[#070b14] border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200`} style={{ boxShadow: `0 0 40px -10px ${theme.hex}30` }}>
+                                        {/* Glowing top edge */}
+                                        <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${theme.gradientCore} via-white to-${theme.gradientCore} opacity-70`}></div>
+
+                                        <div className="p-6 pb-5 flex flex-col items-center border-b border-white/5 relative">
+                                            {/* Background ambient glow inside header */}
+                                            <div className="absolute top-0 inset-x-0 h-24 overflow-hidden pointer-events-none rounded-t-2xl">
+                                                <div className="absolute inset-x-0 -top-10 h-20 blur-2xl opacity-20" style={{ backgroundColor: theme.hex }}></div>
                                             </div>
-                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Art Credits</span>
-                                            <span className="text-xl font-black text-accent">{currentUser?.is_admin ? '∞' : (currentUser?.art_credits || 0)}</span>
-                                        </div>
-                                        <div className="bg-black/40 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center text-center">
-                                            <div className="w-6 h-6 rounded-md bg-emerald-500/10 flex items-center justify-center mb-2">
-                                                <svg className="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18 18.247 18.477 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+
+                                            <div className="relative mb-3">
+                                                <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border-2 z-10 relative" style={{ borderColor: theme.hex }}>
+                                                    <svg className={`w-6 h-6 ${theme.primary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                </div>
+                                                <div className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ backgroundColor: theme.hex }}></div>
                                             </div>
-                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Lore Credits</span>
-                                            <span className="text-xl font-black text-emerald-400">{currentUser?.is_admin ? '∞' : (currentUser?.lore_credits || 0)}</span>
-                                        </div>
-                                    </div>
-                                    <div className="p-5">
-                                        <div className="flex justify-between items-center mb-3">
-                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Membership</span>
-                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${currentUser?.package_name === 'Cookball' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : currentUser?.package_name === 'Premium' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : currentUser?.package_name === 'Gold' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : currentUser?.package_name === 'Silver' ? 'bg-slate-300/20 text-slate-300 border border-slate-300/30' : 'bg-white/10 text-white/70 border border-white/20'}`}>
-                                                {currentUser?.package_name || 'Free'}
+
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${theme.badgeBg} ${theme.badgeText} border ${theme.border} mb-4`}>
+                                                {pkg} PLAN
                                             </span>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between items-center text-xs">
-                                                <span className="text-slate-500">Started:</span>
-                                                <span className="text-slate-300 font-mono">{currentUser?.subscription_start ? new Date(currentUser.subscription_start).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}</span>
+
+                                            <div className="w-full bg-black/40 rounded-xl p-3 border border-white/5 flex justify-between items-center group/access">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Access Code</span>
+                                                    <span className="text-sm font-mono text-white tracking-widest">
+                                                        {showAccessCode ? currentUser?.access_code : '••••••••'}
+                                                    </span>
+                                                </div>
+                                                <button onClick={() => setShowAccessCode(!showAccessCode)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group-hover/access:text-white" style={{ color: showAccessCode ? theme.hex : '#64748b' }}>
+                                                    {showAccessCode ? (
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="m2 2 20 20" /><path d="M6.71 6.71q2.3-1.71 5.29-1.71 7 0 10 7a15.53 15.53 0 0 1-4.14 5.34m-3.92 1.48Q13 19 12 19q-7 0-10-7a15.08 15.08 0 0 1 2.3-3.61" /><circle cx="12" cy="12" r="3" /></svg>
+                                                    ) : (
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                                                    )}
+                                                </button>
                                             </div>
-                                            <div className="flex justify-between items-center text-xs">
-                                                <span className="text-slate-500">Expires:</span>
-                                                <span className="text-slate-300 font-mono">
-                                                    {currentUser?.is_admin || !currentUser?.subscription_days
-                                                        ? 'Never'
-                                                        : new Date(new Date(currentUser.subscription_start!).getTime() + currentUser.subscription_days * 24 * 60 * 60 * 1000).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                                                    }
+                                        </div>
+
+                                        <div className="p-5 grid grid-cols-2 gap-4 border-b border-white/5">
+                                            {/* Art Credits Card */}
+                                            <div className={`bg-gradient-to-br from-white/5 to-black/60 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:border-white/10 transition-colors`}>
+                                                <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-10" style={{ backgroundImage: `linear-gradient(to top, ${theme.hex} 0%, transparent 100%)` }}></div>
+                                                <div className="absolute bottom-0 inset-x-0 h-[1px] opacity-20" style={{ backgroundColor: theme.hex }}></div>
+
+                                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 shadow-inner bg-black/50 ${theme.border} border`}>
+                                                    <svg className={`w-3.5 h-3.5 ${theme.primary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                </div>
+                                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 z-10">Art Credits</span>
+                                                <span className={`text-2xl font-black ${theme.primary} z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]`} style={{ textShadow: `0 0 10px ${theme.hex}50` }}>
+                                                    {currentUser?.is_admin ? '∞' : (currentUser?.art_credits || 0)}
+                                                </span>
+                                            </div>
+
+                                            {/* Lore Credits Card */}
+                                            <div className={`bg-gradient-to-br from-white/5 to-black/60 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:border-white/10 transition-colors`}>
+                                                <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-10" style={{ backgroundImage: `linear-gradient(to top, ${theme.hex} 0%, transparent 100%)` }}></div>
+                                                <div className="absolute bottom-0 inset-x-0 h-[1px] opacity-20" style={{ backgroundColor: theme.hex }}></div>
+
+                                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 shadow-inner bg-black/50 ${theme.border} border`}>
+                                                    <svg className={`w-3.5 h-3.5 ${theme.primary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18 18.247 18.477 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                                </div>
+                                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 z-10">Lore Credits</span>
+                                                <span className={`text-2xl font-black ${theme.primary} z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]`} style={{ textShadow: `0 0 10px ${theme.hex}50` }}>
+                                                    {currentUser?.is_admin ? '∞' : (currentUser?.lore_credits || 0)}
                                                 </span>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="p-4 border-t border-white/5 bg-black/40 flex justify-center">
-                                        <div className="flex items-center gap-2 px-3 py-1.5 bg-navy-900 rounded-full border border-white/5">
-                                            <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></div>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">System Online</span>
+
+                                        <div className="p-5">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Membership Status</h4>
+                                                <div className="flex-1 h-[1px] bg-gradient-to-r from-white/10 to-transparent"></div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                {/* Progress Bar */}
+                                                <div>
+                                                    <div className="flex justify-between text-[9px] font-bold uppercase tracking-wide mb-1.5 text-white">
+                                                        <span>Time Left</span>
+                                                    </div>
+                                                    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                                        <div className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r to-white/20" style={{ width: `${subProgress}%`, backgroundColor: theme.hex }}></div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2 pt-2 text-[10px]">
+                                                    <div className="bg-black/30 rounded-lg p-2 border border-white/5">
+                                                        <div className="text-slate-500 font-black uppercase tracking-wider mb-0.5 text-[8px]">Started</div>
+                                                        <div className="font-mono text-slate-300">
+                                                            {currentUser?.subscription_start ? new Date(currentUser.subscription_start).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-black/30 rounded-lg p-2 border border-white/5">
+                                                        <div className="text-slate-500 font-black uppercase tracking-wider mb-0.5 text-[8px]">Expires</div>
+                                                        <div className="font-mono text-slate-300">
+                                                            {currentUser?.is_admin || !currentUser?.subscription_days
+                                                                ? 'Never'
+                                                                : new Date(new Date(currentUser.subscription_start!).getTime() + currentUser.subscription_days * 24 * 60 * 60 * 1000).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-center border-t border-white/5 relative">
+                                            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                                            <div className="flex items-center gap-2 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-white/5 shadow-inner">
+                                                <div className="w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_5px_currentColor]" style={{ backgroundColor: theme.hex, color: theme.hex }}></div>
+                                                <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: theme.hex }}>System Online</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                );
+                            })()}
                         </div>
 
                     </div>
@@ -1820,13 +1976,13 @@ const App: React.FC = () => {
 
                             {/* 4. VIRAL NEWS (GLOBAL NEWS) */}
                             <div className="h-48 relative bg-[#050A18] border-2 border-white/10 rounded-2xl text-left hover:border-blue-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-6">
-                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
+                                {!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin && (
                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                                         <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
                                     </div>
                                 )}
-                                {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
+                                {(currentUser?.can_use_scrape || currentUser?.can_use_news_scrape) && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
@@ -1855,7 +2011,7 @@ const App: React.FC = () => {
                                         ))}
                                     </div>
                                     <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
-                                        {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
+                                        {!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin && (
                                             <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
                                             </div>
                                         )}
@@ -1863,9 +2019,9 @@ const App: React.FC = () => {
                                             placeholder="TOPIC..."
                                             value={newsInput} onChange={e => setNewsInput(e.target.value)}
                                             className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700"
-                                            disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin}
+                                            disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin}
                                         />
-                                        <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('news')} className="px-3 bg-blue-600 hover:bg-blue-500 text-white font-black transition-colors text-[10px]">SCAN</button>
+                                        <button disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('news')} className="px-3 bg-blue-600 hover:bg-blue-500 text-white font-black transition-colors text-[10px]">SCAN</button>
                                     </div>
                                 </div>
                             </div>
@@ -2266,7 +2422,7 @@ const App: React.FC = () => {
                                 <div className="pt-4">
                                     <a href="https://t.me/fizzd3gen" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 px-8 py-5 w-full sm:w-auto bg-accent text-black rounded-xl font-black text-[15px] uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(222,253,65,0.2)] hover:shadow-[0_0_40px_rgba(222,253,65,0.5)] hover:-translate-y-1">
                                         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
-                                        Contact Admin on Telegram
+                                        Contact on Telegram
                                     </a>
                                 </div>
                             </div>

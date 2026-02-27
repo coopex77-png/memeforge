@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { DatabaseUser } from '../types';
+import { DatabaseUser, DiscountCode } from '../types';
 
 interface LandingPageProps {
     onLogin: (user: DatabaseUser) => void;
@@ -17,7 +17,67 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     const [activeSliderMode, setActiveSliderMode] = useState<'trait' | 'remix'>('trait');
     const [activeModal, setActiveModal] = useState<'about' | 'terms' | 'privacy' | 'support' | 'payment' | null>(null);
     const [billingCycle, setBillingCycle] = useState<'weekly' | 'monthly'>('weekly');
+    const [selectedPlan, setSelectedPlan] = useState<'Starter' | 'Pro' | 'Max' | null>(null);
     const [showQuotaFull, setShowQuotaFull] = useState(false);
+    const [selectedWallet, setSelectedWallet] = useState<string>('');
+    const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+    const [walletCopied, setWalletCopied] = useState(false);
+    const [isGeneratingWallet, setIsGeneratingWallet] = useState(false);
+    const [readyToConfirm, setReadyToConfirm] = useState(false);
+    const [discountCodeInput, setDiscountCodeInput] = useState('');
+    const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
+    const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
+    const [discountError, setDiscountError] = useState('');
+    const [discountSuccess, setDiscountSuccess] = useState('');
+    const [showDiscountInput, setShowDiscountInput] = useState(false);
+
+    const applyDiscountCode = async () => {
+        setDiscountError('');
+        setDiscountSuccess('');
+        if (!discountCodeInput.trim()) return;
+
+        setIsApplyingDiscount(true);
+        try {
+            const { data, error } = await supabase
+                .from('discount_codes')
+                .select('*')
+                .ilike('code', discountCodeInput.trim())
+                .eq('is_active', true)
+                .single();
+
+            if (error || !data) {
+                setDiscountError('Invalid or inactive code.');
+                setAppliedDiscount(null);
+            } else {
+                const discountData = data as DiscountCode;
+                if (discountData.expires_at && new Date(discountData.expires_at) < new Date()) {
+                    setDiscountError('This discount code has expired.');
+                    setAppliedDiscount(null);
+                } else {
+                    setAppliedDiscount(discountData);
+                    setDiscountSuccess(`Applied ${discountData.percentage}% off`);
+                }
+            }
+        } catch (err) {
+            setDiscountError('Error applying code.');
+        } finally {
+            setIsApplyingDiscount(false);
+        }
+    };
+
+    const resetDiscount = () => {
+        setDiscountCodeInput('');
+        setAppliedDiscount(null);
+        setDiscountError('');
+        setDiscountSuccess('');
+    };
+    useEffect(() => {
+        if (activeModal === 'payment') {
+            resetDiscount();
+            const timer = setTimeout(() => setIsGeneratingWallet(false), 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [activeModal]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -111,6 +171,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             setLoading(false);
         }
     };
+
+    const paymentBaseAmount = selectedPlan === 'Starter' ? 1 : selectedPlan === 'Pro' ? (billingCycle === 'monthly' ? 8 : 3) : (billingCycle === 'monthly' ? 30 : 10);
+    const paymentFinalAmount = appliedDiscount
+        ? Number((paymentBaseAmount - (paymentBaseAmount * (appliedDiscount.percentage / 100))).toFixed(2))
+        : paymentBaseAmount;
 
     return (
         <div className="min-h-screen bg-[#02040A] text-slate-200 font-sans selection:bg-accent/30 selection:text-white relative overflow-x-hidden">
@@ -597,7 +662,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 </ul>
                             </div>
 
-                            <button onClick={() => setActiveModal('payment')} disabled={billingCycle === 'monthly'} className={`w-full py-4 rounded-xl border text-sm font-black tracking-widest uppercase transition-all flex items-center justify-center gap-2 ${billingCycle === 'monthly' ? 'border-white/5 bg-white/5 text-slate-400 cursor-not-allowed opacity-80' : 'border-white/10 text-slate-300 hover:bg-white/5 hover:border-white/30'}`}>
+                            <button onClick={() => {
+                                setIsGeneratingWallet(true);
+                                setReadyToConfirm(false);
+                                setSelectedPlan('Starter');
+                                const wallets = ['8iy54it4XzpDWxGnRKkvegNBQK3PYcsNoVBGQpr4ZkXg', 'EkuEs7vuxmQ7kypyv6mU53TKL7sSAJsRmQCam1mhmYi8', 'GDACcTncHQQrkr3RjoQzewiQdMyEzBmWAuvoJUy5qyfj', 'Ee43Zwf271hAXzW9JZRk57bu2HzkSVhpmmZ2xZyHs9yd', 'EcccU3bxUZdVrj6RMobgzEzCUKBm5SJsLaVxKMXkyiKq'];
+                                setSelectedWallet(wallets[Math.floor(Math.random() * wallets.length)]);
+                                setPaymentConfirmed(false);
+                                setActiveModal('payment');
+                            }} disabled={billingCycle === 'monthly'} className={`w-full py-4 rounded-xl border text-sm font-black tracking-widest uppercase transition-all flex items-center justify-center gap-2 ${billingCycle === 'monthly' ? 'border-white/5 bg-white/5 text-slate-400 cursor-not-allowed opacity-80' : 'border-white/10 text-slate-300 hover:bg-white/5 hover:border-white/30'}`}>
                                 {billingCycle === 'monthly' ? (
                                     <>
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -688,7 +761,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 </ul>
                             </div>
 
-                            <button onClick={() => setActiveModal('payment')} className="w-full py-4 rounded-xl bg-accent text-black font-black tracking-widest uppercase text-sm hover:bg-white transition-all shadow-[0_0_25px_rgba(222,253,65,0.2)] hover:shadow-[0_0_35px_rgba(222,253,65,0.4)]">
+                            <button onClick={() => {
+                                setIsGeneratingWallet(true);
+                                setReadyToConfirm(false);
+                                setSelectedPlan('Pro');
+                                const wallets = ['8iy54it4XzpDWxGnRKkvegNBQK3PYcsNoVBGQpr4ZkXg', 'EkuEs7vuxmQ7kypyv6mU53TKL7sSAJsRmQCam1mhmYi8', 'GDACcTncHQQrkr3RjoQzewiQdMyEzBmWAuvoJUy5qyfj', 'Ee43Zwf271hAXzW9JZRk57bu2HzkSVhpmmZ2xZyHs9yd', 'EcccU3bxUZdVrj6RMobgzEzCUKBm5SJsLaVxKMXkyiKq'];
+                                setSelectedWallet(wallets[Math.floor(Math.random() * wallets.length)]);
+                                setPaymentConfirmed(false);
+                                setActiveModal('payment');
+                            }} className="w-full py-4 rounded-xl bg-accent text-black font-black tracking-widest uppercase text-sm hover:bg-white transition-all shadow-[0_0_25px_rgba(222,253,65,0.2)] hover:shadow-[0_0_35px_rgba(222,253,65,0.4)]">
                                 Go Pro
                             </button>
                         </div>
@@ -920,14 +1001,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
             {/* --- Info Modals --- */}
             {
-                activeModal && (
+                activeModal && activeModal !== 'payment' && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <div
                             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                            onClick={() => setActiveModal(null)}
+                            onClick={() => {
+                                if (activeModal !== 'payment') {
+                                    setActiveModal(null);
+                                }
+                            }}
                         ></div>
 
-                        <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0B1221] border border-white/10 rounded-2xl p-8 shadow-2xl glass animate-in fade-in zoom-in-95 duration-200 custom-scrollbar">
+                        <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto overflow-x-hidden bg-[#0B1221] border border-white/10 rounded-2xl p-8 shadow-2xl glass animate-in fade-in zoom-in-95 duration-200 custom-scrollbar">
                             {/* Internal Glow */}
                             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent"></div>
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -1000,22 +1085,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                         <div className="pt-4">
                                             <a href="https://t.me/fizzd3gen" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 px-8 py-5 w-full sm:w-auto bg-accent text-black rounded-xl font-black text-[15px] uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(222,253,65,0.2)] hover:shadow-[0_0_40px_rgba(222,253,65,0.5)] hover:-translate-y-1">
                                                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
-                                                Contact Admin on Telegram
-                                            </a>
-                                        </div>
-                                    </div>
-                                )}
-                                {activeModal === 'payment' && (
-                                    <div className="space-y-6 text-center py-8">
-                                        <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-accent/20">
-                                            <svg className="w-10 h-10 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-                                        </div>
-                                        <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Complete Purchase</h3>
-                                        <p className="leading-relaxed text-lg text-slate-400 mb-8 max-w-sm mx-auto">To continue with your transaction, please contact our team on Telegram. We will verify and process your purchase immediately.</p>
-
-                                        <div className="pt-4">
-                                            <a href="https://t.me/fizzd3gen" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 px-8 py-5 w-full sm:w-auto bg-accent text-black rounded-xl font-black text-[15px] uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(222,253,65,0.2)] hover:shadow-[0_0_40px_rgba(222,253,65,0.5)] hover:-translate-y-1">
-                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
                                                 Contact on Telegram
                                             </a>
                                         </div>
@@ -1026,6 +1095,182 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                     </div>
                 )
             }
+
+            {/* --- Standalone Payment Page --- */}
+            {activeModal === 'payment' && (
+                <div className="fixed inset-0 z-[100] bg-[#050810] overflow-y-auto w-full min-h-screen animate-in zoom-in-95 duration-300">
+
+                    {/* Return to Landing */}
+                    <button
+                        onClick={() => setActiveModal(null)}
+                        className="absolute top-6 left-6 flex items-center gap-2 text-slate-500 hover:text-white transition-all text-sm font-medium z-20"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                        Back
+                    </button>
+
+                    <div className="min-h-screen flex items-center justify-center px-6">
+                        <div className="w-full max-w-md py-16">
+
+                            {/* Logo */}
+                            <div className="flex items-center justify-center mb-12">
+                                <img src="/pepe_forge.png" className="h-10 w-auto opacity-70" alt="Logo" />
+                            </div>
+
+                            {/* Amount Display */}
+                            <div className="text-center mb-6">
+                                <div className="text-5xl md:text-6xl font-black text-accent tracking-tight flex items-center justify-center gap-3">
+                                    {appliedDiscount ? (
+                                        <>
+                                            <span className="text-3xl text-slate-500 line-through decoration-slate-600 decoration-2">{paymentBaseAmount}</span>
+                                            <span>{paymentFinalAmount} SOL</span>
+                                        </>
+                                    ) : (
+                                        <span>{paymentFinalAmount} SOL</span>
+                                    )}
+                                </div>
+                                <div className="text-slate-500 text-sm mt-3 font-medium">
+                                    {selectedPlan} · <span className="capitalize">{billingCycle}</span>
+                                </div>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="border-t border-white/5 my-10"></div>
+
+                            {/* Wallet Address Section */}
+                            <div className="mb-10 text-center">
+                                <p className="text-slate-500 text-[11px] uppercase tracking-widest font-bold mb-4">
+                                    Send to this address
+                                </p>
+
+                                <div className="relative w-full overflow-hidden">
+                                    {isGeneratingWallet ? (
+                                        <div className="bg-white/5 py-4 px-5 rounded-full border border-white/5 w-full flex items-center justify-center gap-3">
+                                            <svg className="animate-spin w-4 h-4 text-slate-400" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span className="text-xs text-slate-400 font-sans tracking-wide animate-pulse">Generating address...</span>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className={`py-3 px-5 rounded-full border cursor-pointer transition-all w-full flex items-center justify-center gap-3 overflow-hidden ${walletCopied ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'}`}
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(selectedWallet);
+                                                setWalletCopied(true);
+                                                setTimeout(() => {
+                                                    setWalletCopied(false);
+                                                    setReadyToConfirm(true);
+                                                }, 2000);
+                                            }}
+                                        >
+                                            <span className="truncate flex-1 text-center font-mono text-[11px] md:text-sm tracking-tight" title={selectedWallet}>{selectedWallet}</span>
+                                            {walletCopied ? (
+                                                <svg className="w-5 h-5 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                            ) : (
+                                                <svg className="w-4 h-4 ml-1 opacity-50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2"></path></svg>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                                {!isGeneratingWallet ? (
+                                    <p className={`text-[11px] mt-4 font-bold tracking-wider uppercase transition-colors ${walletCopied ? 'text-green-400' : 'text-slate-500'}`}>
+                                        {walletCopied ? 'Copied to clipboard' : 'Click address to copy'}
+                                    </p>
+                                ) : (
+                                    <div className="h-[26px]"></div>
+                                )}
+                            </div>
+
+                            {/* CTA Button */}
+                            {!paymentConfirmed ? (
+                                <div className="text-center">
+                                    <button
+                                        onClick={() => setPaymentConfirmed(true)}
+                                        disabled={!readyToConfirm}
+                                        className={`w-full py-4 rounded-full font-bold text-sm transition-all duration-300 ${readyToConfirm ? 'bg-accent text-black hover:bg-white cursor-pointer hover:scale-[1.02]' : 'bg-white/5 text-white/30 cursor-not-allowed'}`}
+                                    >
+                                        I Have Sent the Payment
+                                    </button>
+                                    {!readyToConfirm && <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-4 font-bold">Copy the address first</p>}
+                                </div>
+                            ) : (
+                                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
+                                    <div className="flex flex-col items-center justify-center gap-2 mb-6 text-center">
+                                        <div className="flex items-center gap-2 text-green-400">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                            <span className="font-bold text-sm uppercase tracking-wider">Payment Marked as Sent!</span>
+                                        </div>
+                                        <p className="text-slate-400 text-xs mt-1">Our team needs to manually verify the transaction to activate your plan.</p>
+                                    </div>
+
+                                    <a href={`https://t.me/fizzd3gen?text=${encodeURIComponent(`Hi, I have just made a payment for the ${selectedPlan || 'Pro'} plan (${billingCycle}).\n\n- Amount: ${paymentFinalAmount} SOL${appliedDiscount ? ` (with ${appliedDiscount.percentage}% discount via code ${appliedDiscount.code})` : ''}\n- Sent to wallet: ${selectedWallet}\n\nPlease verify and activate my account. Thanks!`)}`} target="_blank" rel="noopener noreferrer" className="w-full py-4 rounded-full bg-accent text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white transition-all hover:scale-[1.02]">
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
+                                        Verify on Telegram
+                                    </a>
+                                </div>
+                            )}
+
+                            <div className="mt-12 w-full flex flex-col items-center gap-2">
+                                {/* Discount Code Section */}
+                                {!paymentConfirmed && (
+                                    <div className="w-full">
+                                        {!showDiscountInput && !appliedDiscount ? (
+                                            <p className="text-center text-slate-600 text-xs font-medium">
+                                                Have a discount code? <span className="cursor-pointer text-slate-400 hover:text-white transition-colors underline underline-offset-2" onClick={() => setShowDiscountInput(true)}>Redeem</span>
+                                            </p>
+                                        ) : (
+                                            <div className="mb-4 animate-in fade-in zoom-in-95 duration-200">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Discount Code</p>
+                                                    {showDiscountInput && !appliedDiscount && (
+                                                        <button onClick={() => setShowDiscountInput(false)} className="text-slate-500 hover:text-white text-xs font-bold uppercase">Cancel</button>
+                                                    )}
+                                                </div>
+                                                <div className="flex bg-[#0a0f1a] border border-white/10 rounded-2xl overflow-hidden focus-within:border-accent/40 transition-colors shadow-inner">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter code"
+                                                        value={discountCodeInput}
+                                                        onChange={(e) => setDiscountCodeInput(e.target.value.toUpperCase())}
+                                                        className="flex-1 bg-transparent px-5 py-3.5 text-sm text-white focus:outline-none placeholder:text-slate-600 uppercase tracking-widest font-mono"
+                                                        disabled={isApplyingDiscount || appliedDiscount !== null}
+                                                    />
+                                                    {appliedDiscount ? (
+                                                        <button
+                                                            onClick={resetDiscount}
+                                                            className="px-5 py-3.5 text-red-500 font-bold hover:bg-red-500/10 transition-colors text-xs uppercase tracking-widest border-l border-white/5"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={applyDiscountCode}
+                                                            disabled={isApplyingDiscount || !discountCodeInput.trim()}
+                                                            className="px-6 py-3.5 bg-accent/10 hover:bg-accent/20 text-accent disabled:text-slate-600 disabled:bg-white/5 disabled:hover:bg-white/5 font-bold transition-colors text-xs uppercase tracking-widest border-l border-white/5"
+                                                        >
+                                                            {isApplyingDiscount ? '...' : 'Apply'}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                {discountError && <p className="text-red-400 text-[10px] mt-2 px-2 font-bold uppercase tracking-wider text-center">{discountError}</p>}
+                                                {discountSuccess && <p className="text-green-400 text-[10px] mt-2 px-2 font-bold uppercase tracking-wider text-center">{discountSuccess}</p>}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Footer Help */}
+                                <p className="text-center text-slate-600 text-xs font-medium">
+                                    Need help? <a href="https://t.me/fizzd3gen" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors underline underline-offset-2">Contact support</a>
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };
+

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { DatabaseUser } from '../types';
+import { DatabaseUser, DiscountCode } from '../types';
 
 interface AdminDashboardProps {
     onBack: () => void;
@@ -14,14 +14,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     const [newLoreCredits, setNewLoreCredits] = useState(5);
     const [newSubValue, setNewSubValue] = useState<number | ''>('');
     const [newSubUnit, setNewSubUnit] = useState<'m' | 'h' | 'd' | 'w'>('d');
-    const [newPackageName, setNewPackageName] = useState<string>('Free');
+    const [newPackageName, setNewPackageName] = useState<string>('Starter');
     const [editingCode, setEditingCode] = useState<{ old: string; new: string } | null>(null);
     const [editingSub, setEditingSub] = useState<{ access_code: string; value: number | ''; unit: 'm' | 'h' | 'd' | 'w' } | null>(null);
     const [editingCredits, setEditingCredits] = useState<{ access_code: string; type: 'art' | 'lore'; value: string } | null>(null);
     const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
+    // Discount Code states
+    const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>([]);
+    const [newDiscountCode, setNewDiscountCode] = useState('');
+    const [newDiscountPercentage, setNewDiscountPercentage] = useState<number>(10);
+    const [newDiscountDurationValue, setNewDiscountDurationValue] = useState<number | ''>('');
+    const [newDiscountDurationUnit, setNewDiscountDurationUnit] = useState<'m' | 'h' | 'd' | 'w'>('d');
+    const [loadingDiscount, setLoadingDiscount] = useState(true);
+    const [discountToDelete, setDiscountToDelete] = useState<string | null>(null);
+
     useEffect(() => {
         fetchUsers();
+        fetchDiscountCodes();
 
         const channel = supabase
             .channel('schema-db-changes')
@@ -49,6 +59,73 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         setLoading(false);
     };
 
+    const fetchDiscountCodes = async () => {
+        const { data, error } = await supabase.from('discount_codes').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+            setDiscountCodes(data as DiscountCode[]);
+        }
+        setLoadingDiscount(false);
+    };
+
+    const handleCreateDiscountCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newDiscountCode.trim() || newDiscountPercentage < 0 || newDiscountPercentage > 100) return;
+
+        let expiresAt = null;
+        if (typeof newDiscountDurationValue === 'number' && newDiscountDurationValue > 0) {
+            const date = new Date();
+            if (newDiscountDurationUnit === 'm') date.setMinutes(date.getMinutes() + newDiscountDurationValue);
+            else if (newDiscountDurationUnit === 'h') date.setHours(date.getHours() + newDiscountDurationValue);
+            else if (newDiscountDurationUnit === 'd') date.setDate(date.getDate() + newDiscountDurationValue);
+            else if (newDiscountDurationUnit === 'w') date.setDate(date.getDate() + newDiscountDurationValue * 7);
+            expiresAt = date.toISOString();
+        }
+
+        try {
+            const { error } = await supabase.from('discount_codes').insert([{
+                code: newDiscountCode.toUpperCase(),
+                percentage: newDiscountPercentage,
+                is_active: true,
+                expires_at: expiresAt
+            }]);
+            if (error) {
+                alert('Error creating discount code. Make sure it is unique. ' + error.message);
+            } else {
+                setNewDiscountCode('');
+                setNewDiscountPercentage(10);
+                setNewDiscountDurationValue('');
+                setNewDiscountDurationUnit('d');
+                fetchDiscountCodes();
+                alert('Discount Code created successfully.');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleDeleteDiscountCode = async () => {
+        if (!discountToDelete) return;
+        try {
+            const { error } = await supabase.from('discount_codes').delete().eq('id', discountToDelete);
+            if (error) {
+                alert('Error deleting discount code: ' + error.message);
+            } else {
+                setDiscountCodes(prev => prev.filter(dc => dc.id !== discountToDelete));
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setDiscountToDelete(null);
+        }
+    };
+
+    const handleToggleDiscount = async (id: string, currentValue: boolean) => {
+        const { error } = await supabase.from('discount_codes').update({ is_active: !currentValue }).eq('id', id);
+        if (!error) {
+            setDiscountCodes(prev => prev.map(dc => dc.id === id ? { ...dc, is_active: !currentValue } : dc));
+        }
+    };
+
     const generateAccessCode = () => {
         setNewAccessCode(Math.random().toString(36).substring(2, 8).toUpperCase());
     };
@@ -65,6 +142,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                 is_active: true,
                 can_use_art: true,
                 can_use_scrape: true,
+                can_use_news_scrape: false,
                 subscription_days: calculateDays(newSubValue, newSubUnit),
                 package_name: newPackageName,
             }]);
@@ -75,7 +153,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                 setNewArtCredits(10);
                 setNewLoreCredits(5);
                 setNewSubValue('');
-                setNewPackageName('Free');
+                setNewPackageName('Starter');
                 alert('User created successfully.');
             }
         } catch (err) {
@@ -84,7 +162,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     };
 
     const handleToggle = async (accessCode: string, field: keyof DatabaseUser, currentValue: boolean) => {
-        await supabase.from('users').update({ [field]: !currentValue }).eq('access_code', accessCode);
+        const updates: Partial<DatabaseUser> = { [field]: !currentValue };
+
+        // Ensure mutual exclusivity between full scrape and only news scrape
+        if (field === 'can_use_scrape' && !currentValue) {
+            updates.can_use_news_scrape = false;
+        } else if (field === 'can_use_news_scrape' && !currentValue) {
+            updates.can_use_scrape = false;
+        }
+
+        await supabase.from('users').update(updates).eq('access_code', accessCode);
     };
 
     const handleUpdateCredits = async (accessCode: string, field: 'art_credits' | 'lore_credits', action: 'add' | 'sub') => {
@@ -261,10 +348,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                         <div className="w-36 shrink-0">
                             <label className="block text-xs text-slate-400 mb-1">Package Name</label>
                             <select value={newPackageName} onChange={(e) => setNewPackageName(e.target.value)} className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 rounded focus:outline-none focus:border-accent">
-                                <option value="Free">Free</option>
-                                <option value="Silver">Silver</option>
-                                <option value="Gold">Gold</option>
-                                <option value="Premium">Premium</option>
+                                <option value="Starter">Starter</option>
+                                <option value="Pro">Pro</option>
+                                <option value="Max">Max</option>
+                                <option value="Private">Private</option>
                                 <option value="Cookball">Cookball</option>
                             </select>
                         </div>
@@ -286,6 +373,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                                     <th className="py-3 px-2 font-medium text-center">Active</th>
                                     <th className="py-3 px-2 font-medium text-center">Art Access</th>
                                     <th className="py-3 px-2 font-medium text-center">Scrape Access</th>
+                                    <th className="py-3 px-2 font-medium text-center leading-tight">Only News<br />Access</th>
                                     <th className="py-3 px-2 font-medium text-center">Art Credits</th>
                                     <th className="py-3 px-2 font-medium text-center">Lore Credits</th>
                                     <th className="py-3 px-2 font-medium text-center">Subscription</th>
@@ -323,14 +411,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                                         </td>
                                         <td className="py-3 px-2">
                                             <select
-                                                value={user.package_name || 'Free'}
+                                                value={user.package_name || 'Starter'}
                                                 onChange={(e) => handleUpdatePackage(user.access_code, e.target.value)}
-                                                className={`text-xs p-1 rounded bg-slate-950 border outline-none ${user.package_name === 'Cookball' ? 'text-cyan-400 border-cyan-500/30' : user.package_name === 'Premium' ? 'text-purple-400 border-purple-500/30' : user.package_name === 'Gold' ? 'text-yellow-400 border-yellow-500/30' : user.package_name === 'Silver' ? 'text-slate-300 border-slate-300/30' : 'text-slate-500 border-slate-700'} focus:border-accent`}
+                                                className={`text-xs p-1 rounded bg-slate-950 border outline-none ${user.package_name === 'Cookball' ? 'text-[#FF6B00] border-[#FF6B00]/30' : user.package_name === 'Private' ? 'text-[#40E0D0] border-[#40E0D0]/30' : user.package_name === 'Max' ? 'text-[#C084FC] border-[#C084FC]/30' : user.package_name === 'Pro' ? 'text-[#DEFD40] border-[#DEFD40]/30' : 'text-slate-400 border-slate-700'} focus:border-accent`}
                                             >
-                                                <option value="Free">Free</option>
-                                                <option value="Silver">Silver</option>
-                                                <option value="Gold">Gold</option>
-                                                <option value="Premium">Premium</option>
+                                                <option value="Starter">Starter</option>
+                                                <option value="Pro">Pro</option>
+                                                <option value="Max">Max</option>
+                                                <option value="Private">Private</option>
                                                 <option value="Cookball">Cookball</option>
                                             </select>
                                         </td>
@@ -350,6 +438,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                                         <td className="py-3 px-2 text-center">
                                             <label className="relative inline-flex items-center cursor-pointer">
                                                 <input type="checkbox" className="sr-only peer" checked={user.can_use_scrape} onChange={() => handleToggle(user.access_code, 'can_use_scrape', user.can_use_scrape)} disabled={user.is_admin} />
+                                                <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent disabled:opacity-50"></div>
+                                            </label>
+                                        </td>
+
+                                        <td className="py-3 px-2 text-center">
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" className="sr-only peer" checked={user.can_use_news_scrape || false} onChange={() => handleToggle(user.access_code, 'can_use_news_scrape', user.can_use_news_scrape || false)} disabled={user.is_admin} />
                                                 <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent disabled:opacity-50"></div>
                                             </label>
                                         </td>
@@ -529,6 +624,140 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                                 </button>
                                 <button
                                     onClick={handleDeleteUser}
+                                    className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold transition-colors shadow-lg shadow-red-500/20"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Discount Codes Section */}
+            <div className="max-w-7xl mx-auto space-y-8 mt-12 pb-12">
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-xl">
+                    <h2 className="text-xl font-bold text-white mb-4">Create Discount Code</h2>
+                    <form onSubmit={handleCreateDiscountCode} className="flex flex-wrap gap-4 items-end">
+                        <div className="flex-1 min-w-[200px]">
+                            <label className="block text-xs text-slate-400 mb-1">Code</label>
+                            <input type="text" value={newDiscountCode} onChange={(e) => setNewDiscountCode(e.target.value)} className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 rounded focus:outline-none focus:border-accent uppercase tracking-widest" placeholder="e.g. EARLYBIRD" required />
+                        </div>
+                        <div>
+                            <label className="block text-xs text-slate-400 mb-1">Discount %</label>
+                            <input type="number" min="0" max="100" value={newDiscountPercentage} onChange={(e) => setNewDiscountPercentage(Number(e.target.value))} className="w-24 bg-slate-950 border border-slate-700 text-white px-3 py-2 rounded focus:outline-none focus:border-accent" required />
+                        </div>
+                        <div>
+                            <label className="block text-xs text-slate-400 mb-1">Duration Limit</label>
+                            <div className="flex bg-slate-950 border border-slate-700 rounded overflow-hidden focus-within:border-accent">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    placeholder="Unlimited"
+                                    value={newDiscountDurationValue}
+                                    onChange={(e) => setNewDiscountDurationValue(e.target.value === '' ? '' : Number(e.target.value))}
+                                    className="w-24 bg-transparent text-white px-3 py-2 outline-none text-sm placeholder:text-slate-600"
+                                />
+                                <select
+                                    value={newDiscountDurationUnit}
+                                    onChange={(e) => setNewDiscountDurationUnit(e.target.value as any)}
+                                    className="bg-slate-900 text-slate-400 px-2 outline-none border-l border-slate-700 text-sm"
+                                >
+                                    <option value="m">Min</option>
+                                    <option value="h">Hour</option>
+                                    <option value="d">Day</option>
+                                    <option value="w">Week</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" className="px-6 py-2 bg-accent hover:bg-accent/80 text-black font-bold rounded shadow-lg">Create</button>
+                    </form>
+                </div>
+
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-xl overflow-x-auto">
+                    <h2 className="text-xl font-bold text-white mb-4">Discount Codes Management</h2>
+                    {loadingDiscount ? (
+                        <div className="text-slate-500 py-8 text-center animate-pulse">Loading codes...</div>
+                    ) : (
+                        <table className="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr className="border-b border-slate-800 text-slate-500">
+                                    <th className="py-3 px-2 font-medium">Code</th>
+                                    <th className="py-3 px-2 font-medium">Discount (%)</th>
+                                    <th className="py-3 px-2 font-medium text-center">Active</th>
+                                    <th className="py-3 px-2 font-medium">Expires At</th>
+                                    <th className="py-3 px-2 font-medium">Created At</th>
+                                    <th className="py-3 px-2 font-medium text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {discountCodes.map(dc => {
+                                    const isExpired = dc.expires_at ? new Date(dc.expires_at) < new Date() : false;
+                                    return (
+                                        <tr key={dc.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                                            <td className="py-3 px-2 font-mono text-accent">
+                                                {dc.code}
+                                                {isExpired && <span className="ml-2 text-[10px] bg-red-500/20 text-red-500 px-1 py-0.5 rounded font-bold uppercase tracking-wider">Expired</span>}
+                                            </td>
+                                            <td className="py-3 px-2 text-white font-bold">{dc.percentage}%</td>
+                                            <td className="py-3 px-2 text-center text-lg">
+                                                <button onClick={() => handleToggleDiscount(dc.id, dc.is_active)} className="hover:scale-110 transition-transform disabled:opacity-50">
+                                                    {dc.is_active ? '🟢' : '🔴'}
+                                                </button>
+                                            </td>
+                                            <td className="py-3 px-2 text-slate-500 text-xs">
+                                                {dc.expires_at ? new Date(dc.expires_at).toLocaleString() : <span className="text-slate-600 italic">Unlimited</span>}
+                                            </td>
+                                            <td className="py-3 px-2 text-slate-500 text-xs">
+                                                {new Date(dc.created_at || '').toLocaleDateString()}
+                                            </td>
+                                            <td className="py-3 px-2 text-center text-lg">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        e.preventDefault();
+                                                        setDiscountToDelete(dc.id);
+                                                    }}
+                                                    className="text-red-500 hover:text-red-400 hover:scale-125 transition-transform"
+                                                    title="Delete Code"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                {discountCodes.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="py-8 text-center text-slate-500">No discount codes created yet.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+
+            {discountToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                    <div className="bg-slate-900 border border-red-500/50 p-8 rounded-2xl shadow-2xl max-w-sm w-full mx-4 animate-in fade-in zoom-in duration-200">
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                                🗑️
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">Delete Code?</h3>
+                            <p className="text-slate-400 mb-6 text-sm">
+                                Are you sure you want to completely delete this discount code?
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setDiscountToDelete(null)}
+                                    className="flex-1 py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteDiscountCode}
                                     className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold transition-colors shadow-lg shadow-red-500/20"
                                 >
                                     Delete

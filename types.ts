@@ -51,6 +51,7 @@ export interface DatabaseUser {
   is_active: boolean;
   can_use_art: boolean;
   can_use_scrape: boolean;
+  can_use_news_scrape?: boolean;
   art_credits: number;
   lore_credits: number;
   created_at: string;
@@ -58,4 +59,13 @@ export interface DatabaseUser {
   subscription_days: number | null;
   subscription_start: string | null;
   package_name: string | null;
+}
+
+export interface DiscountCode {
+  id: string;
+  code: string;
+  percentage: number;
+  is_active: boolean;
+  created_at: string;
+  expires_at?: string | null;
 }
