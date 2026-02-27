@@ -762,7 +762,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                         <div className="text-[9px] font-bold text-accent/40 uppercase tracking-widest">Art Credits</div>
                                     </div>
                                     <div className="bg-accent/5 border border-accent/10 rounded-xl p-3 text-center transition-all duration-300">
-                                        <div className="text-2xl font-black text-accent">{billingCycle === 'monthly' ? '960' : '240'}</div>
+                                        <div className="text-2xl font-black text-accent">{billingCycle === 'monthly' ? '480' : '120'}</div>
                                         <div className="text-[9px] font-bold text-accent/40 uppercase tracking-widest">Lore Credits</div>
                                     </div>
                                 </div>
