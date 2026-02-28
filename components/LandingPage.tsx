@@ -8,6 +8,7 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [accessCode, setAccessCode] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -250,7 +251,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </A>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="hidden md:flex items-center gap-6">
                         <button
                             onClick={() => setActiveModal('support')}
                             className="text-slate-400 hover:text-white text-[11px] uppercase font-bold tracking-widest transition-colors flex items-center gap-2"
@@ -267,14 +268,45 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                             Login
                         </button>
                     </div>
+
+                    {/* Mobile Menu Toggle */}
+                    <div className="md:hidden flex items-center">
+                        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-white p-2 focus:outline-none">
+                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {mobileMenuOpen ? (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                ) : (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                )}
+                            </svg>
+                        </button>
+                    </div>
                 </div>
+
+                {/* Mobile Menu Panel */}
+                {mobileMenuOpen && (
+                    <div className="md:hidden absolute top-full left-0 w-full bg-navy-950/95 backdrop-blur-xl border-b border-white/10 shadow-2xl py-6 px-6 flex flex-col gap-6 animate-in slide-in-from-top-4 duration-300">
+                        <A href="#features" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold text-slate-200 uppercase tracking-widest w-full text-center">Features</A>
+                        <A href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold text-slate-200 uppercase tracking-widest w-full text-center">Pricing</A>
+                        <A href="#contact" onClick={() => setMobileMenuOpen(false)} className="text-lg font-bold text-slate-200 uppercase tracking-widest w-full text-center">Contact</A>
+                        <hr className="border-white/10 w-full" />
+                        <button onClick={() => { setActiveModal('support'); setMobileMenuOpen(false); }} className="text-slate-400 text-sm uppercase font-bold tracking-widest flex items-center justify-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            Support
+                        </button>
+                        <button onClick={() => { setShowLoginModal(true); setMobileMenuOpen(false); }} className="w-full flex justify-center items-center gap-2 px-6 py-3 bg-accent text-navy-950 rounded-full font-black uppercase tracking-widest">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                            Login
+                        </button>
+                    </div>
+                )}
             </nav>
 
             {/* --- Main Content --- */}
             <main className="relative z-10 pt-32 pb-20">
 
                 {/* Section 1: Hero */}
-                <section className="min-h-[65vh] flex flex-col items-center justify-start pt-12 md:pt-24 px-6 text-center animate-fade-in-up relative">
+                <section className="min-h-[65vh] flex flex-col items-center justify-start pt-6 md:pt-24 px-6 text-center animate-fade-in-up relative">
 
                     <div className="relative z-30">
                         <div className="absolute inset-0 bg-accent/20 blur-[100px] h-[300px] w-[300px] mx-auto rounded-full -z-10 animate-pulse"></div>
@@ -284,7 +316,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                     </div>
 
                     <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed relative z-30">
-                        Create mascots, art, banners, and more with dynamic scene creation for your token. Scrape the whole web for viral ideas with one click — all centralized in one powerful platform.
+                        Create mascots, arts, banners, and more with dynamic scene creation for your token. Scrape the whole web for viral ideas with one click — all centralized in one powerful platform.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-30">
@@ -306,15 +338,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                     </div>
 
                     {/* Features Badges */}
-                    <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mt-16 relative z-30">
+                    <div className="flex flex-wrap items-center justify-center gap-2 md:gap-8 mt-10 md:mt-16 relative z-30">
                         {[
                             { name: 'Art Contents' },
                             { name: 'Dex Banner' },
                             { name: '+10 Art Styles' },
                             { name: 'Viral Narrative Scraper', hasIcons: true }
                         ].map((feature, idx) => (
-                            <div key={idx} className="flex items-center gap-2 text-slate-300 font-medium text-sm md:text-base bg-white/5 border border-white/10 px-4 py-1.5 rounded-full backdrop-blur-md">
-                                <div className="w-4 h-4 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+                            <div key={idx} className="flex items-center gap-1.5 md:gap-2 text-slate-300 font-medium text-xs md:text-base bg-white/5 border border-white/10 px-3 md:px-4 py-1.5 rounded-full backdrop-blur-md">
+                                <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-accent/20 flex items-center justify-center text-accent">
                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                                 </div>
                                 <span className="flex items-center gap-2">
@@ -372,7 +404,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </div>
 
                         {/* New Video Mode Slider Row */}
-                        <div className="relative flex items-center justify-center w-full h-[512px] my-4">
+                        <div className="relative flex items-center justify-center w-full h-[320px] md:h-[512px] my-4 overflow-hidden md:overflow-visible">
                             {/* Background Slider Container */}
                             <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-64 z-0">
                                 <div
@@ -387,7 +419,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                             'photo_2026-02-25 21.15.13.jpeg', 'photo_2026-02-25 21.15.15.jpeg', 'photo_2026-02-25 21.15.22.jpeg',
                                             'photo_2026-02-25 21.15.25.jpeg', 'photo_2026-02-25 21.15.28.jpeg', 'photo_2026-02-25 21.15.40.jpeg'
                                         ]).map((item, idx) => (
-                                            <div key={idx} className="w-64 h-64 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-accent/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
+                                            <div key={idx} className="w-40 h-40 md:w-64 md:h-64 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-accent/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
                                                 <img src={`/yenii/${item}`} alt={`Video Scene ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                             </div>
                                         ))}
@@ -405,7 +437,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 {/* Subtle Ambient Glow */}
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-accent/5 blur-[80px] rounded-[100%] z-0 pointer-events-none"></div>
 
-                                <div className="flex-shrink-0 h-[512px] bg-[#02040A] rounded-2xl relative flex items-center justify-center overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8),_0_0_0_1px_rgba(255,255,255,0.05)_inset] border border-white/10 group transform transition duration-500 hover:scale-[1.02] z-10">
+                                <div className="flex-shrink-0 h-[300px] md:h-[512px] bg-[#02040A] rounded-2xl relative flex items-center justify-center overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8),_0_0_0_1px_rgba(255,255,255,0.05)_inset] border border-white/10 group transform transition duration-500 hover:scale-[1.02] z-10 w-[95%] sm:w-auto">
                                     <video
                                         src="/yenii/adsiz.mp4"
                                         className="h-full w-auto object-contain z-0 transition-transform duration-700 group-hover:scale-105"
@@ -441,9 +473,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </div>
 
                         {/* Combined Slider Row */}
-                        <div className="relative flex items-center justify-center w-full h-[280px] my-4">
+                        <div className="relative flex items-center justify-center w-full h-[220px] md:h-[280px] my-4 overflow-hidden md:overflow-visible">
                             {/* Background Slider Container */}
-                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-56 z-0">
+                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-44 md:h-56 z-0">
                                 <div
                                     className="slider-container w-full h-full"
                                     onMouseEnter={() => setIsSlidersHovered(true)}
@@ -453,7 +485,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                         <div className="slider-track gap-6 h-full absolute flex animate-in fade-in duration-500" style={{ animationDirection: 'reverse', animationPlayState: isSlidersHovered ? 'paused' : 'running' }}>
                                             {/* Duplicated for infinite scroll illusion */}
                                             {[...Array(2)].flatMap(() => ['11.jpeg', '12.jpeg', '13.jpeg', '14.jpeg', '15.jpeg', '16.jpeg', '17.jpeg', '18.jpeg', '19.jpeg', '20.jpeg', '21.jpeg', '22.jpeg', '23.jpeg', '24.jpeg', '26.jpeg', '27.jpeg', '28.jpeg', '29.jpeg']).map((item, idx) => (
-                                                <div key={idx} className="w-48 h-48 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-accent/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
+                                                <div key={idx} className="w-36 h-36 md:w-48 md:h-48 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-accent/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
                                                     <img src={`/slider_images/${item}`} alt={`Generated Scene ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                 </div>
                                             ))}
@@ -462,7 +494,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                         <div className="slider-track gap-6 h-full absolute flex animate-in fade-in duration-500" style={{ animationDirection: 'reverse', animationPlayState: isSlidersHovered ? 'paused' : 'running' }}>
                                             {/* Duplicated for infinite scroll illusion */}
                                             {[...Array(2)].flatMap(() => ['photo_2026-02-25 16.36.28.jpeg', 'photo_2026-02-25 16.36.29.jpeg', 'photo_2026-02-25 16.36.46.jpeg', 'photo_2026-02-25 16.36.51.jpeg', 'photo_2026-02-25 16.36.55.jpeg', 'photo_2026-02-25 16.36.56.jpeg', 'photo_2026-02-25 16.37.00.jpeg', 'photo_2026-02-25 16.37.01.jpeg', 'photo_2026-02-25 16.37.02.jpeg', 'photo_2026-02-25 16.37.03.jpeg', 'photo_2026-02-25 16.37.04.jpeg', 'photo_2026-02-25 16.37.05.jpeg', 'photo_2026-02-25 16.37.10.jpeg', 'photo_2026-02-25 16.37.15.jpeg', 'photo_2026-02-25 16.37.16.jpeg', 'photo_2026-02-25 16.37.18.jpeg', 'photo_2026-02-25 16.37.19.jpeg', 'photo_2026-02-25 16.37.24.jpeg']).map((item, idx) => (
-                                                <div key={idx} className="w-48 h-48 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-accent/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
+                                                <div key={idx} className="w-36 h-36 md:w-48 md:h-48 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-accent/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
                                                     <img src={`/remix_images/${item}`} alt={`Remix Scene ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                 </div>
                                             ))}
@@ -477,9 +509,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 onMouseLeave={() => setIsSlidersHovered(false)}
                             >
                                 {/* Blur Effect Behind Image for Smooth Transition */}
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[256px] bg-[#02040A] blur-[60px] rounded-[100%] z-0 pointer-events-none opacity-90 transition-all duration-500"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[200px] md:h-[256px] bg-[#02040A] blur-[60px] rounded-[100%] z-0 pointer-events-none opacity-90 transition-all duration-500"></div>
 
-                                <div className="flex-shrink-0 w-64 h-64 bg-navy-950/80 border-[3px] border-accent/70 p-2.5 shadow-[0_0_40px_rgba(222,253,65,0.25)] rounded-3xl relative flex items-center justify-center group transform transition duration-500 hover:scale-[1.02] z-10 animate-in zoom-in-95">
+                                <div className="flex-shrink-0 w-48 h-48 md:w-64 md:h-64 bg-navy-950/80 border-[3px] border-accent/70 p-2.5 shadow-[0_0_40px_rgba(222,253,65,0.25)] rounded-3xl relative flex items-center justify-center group transform transition duration-500 hover:scale-[1.02] z-10 animate-in zoom-in-95">
                                     <div className="absolute inset-x-0 top-4 z-10 flex justify-center pointer-events-none">
                                         <div className="bg-black/60 px-4 py-1.5 rounded-full border border-white/20 flex items-center backdrop-blur-md shadow-lg h-fit transition-all duration-300">
                                             <span className="text-xs font-bold text-accent uppercase tracking-widest drop-shadow-[0_0_8px_rgba(222,253,65,0.5)]">
@@ -568,8 +600,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </div>
 
                         {/* Right: iPhone-style Notification Image Feed */}
-                        <div className="w-full lg:w-[45%] flex flex-col justify-center items-center h-[700px] relative pointer-events-none">
-                            <div className="w-full max-w-[420px] relative h-full flex flex-col items-center">
+                        <div className="w-full lg:w-[45%] flex flex-col justify-center items-center h-[450px] lg:h-[700px] relative pointer-events-none py-8 lg:py-0">
+                            <div className="w-full max-w-[340px] md:max-w-[420px] relative h-full flex flex-col items-center">
                                 {/* The iPhone stack effect uses map below, we just prepare the container */}
                                 {scrapeFeed.map((item, index) => (
                                     <div
@@ -634,7 +666,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-[1200px] mx-auto relative z-10 items-stretch">
 
                         {/* --- STARTER PLAN --- */}
-                        <div className={`group relative bg-[#0B1221] border border-white/10 rounded-2xl p-8 flex flex-col justify-between transition-all duration-500 overflow-hidden ${billingCycle === 'monthly' ? 'border-white/5 opacity-80' : 'hover:border-slate-400/40'}`}>
+                        <div className={`group relative bg-[#0B1221] border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between transition-all duration-500 overflow-hidden ${billingCycle === 'monthly' ? 'border-white/5 opacity-80' : 'hover:border-slate-400/40'}`}>
 
                             {/* Subtle grid pattern */}
                             <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none"></div>
@@ -712,7 +744,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </div>
 
                         {/* --- PRO PLAN (RECOMMENDED) --- */}
-                        <div className="group relative bg-[#070b14] border-2 border-accent/50 rounded-2xl p-8 flex flex-col justify-between shadow-[0_0_60px_rgba(222,253,65,0.08)] hover:shadow-[0_0_80px_rgba(222,253,65,0.15)] transition-all duration-500">
+                        <div className="group relative bg-[#070b14] border-2 border-accent/50 rounded-2xl p-6 md:p-8 flex flex-col justify-between shadow-[0_0_60px_rgba(222,253,65,0.08)] hover:shadow-[0_0_80px_rgba(222,253,65,0.15)] transition-all duration-500">
                             <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
                                 {/* Top Glow Bar */}
                                 <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent"></div>
@@ -806,7 +838,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </div>
 
                         {/* --- MAX PLAN --- */}
-                        <div className="group relative bg-[#0a0717] border border-purple-500/30 rounded-2xl p-8 flex flex-col justify-between hover:border-purple-400/60 transition-all duration-500" style={{ background: 'linear-gradient(180deg, #0B0820 0%, rgba(139, 92, 246, 0.05) 100%)' }}>
+                        <div className="group relative bg-[#0a0717] border border-purple-500/30 rounded-2xl p-6 md:p-8 flex flex-col justify-between hover:border-purple-400/60 transition-all duration-500" style={{ background: 'linear-gradient(180deg, #0B0820 0%, rgba(139, 92, 246, 0.05) 100%)' }}>
                             <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
                                 {/* Top Glow Bar */}
                                 <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
@@ -924,7 +956,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-12 w-full md:w-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 w-full md:w-auto">
                         <div>
                             <h4 className="text-white font-bold uppercase tracking-widest mb-6 text-sm">Product</h4>
                             <ul className="space-y-4 text-slate-400 text-sm">
@@ -1008,7 +1040,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
 
-                            <div className="p-8 relative z-10">
+                            <div className="p-6 md:p-8 relative z-10">
                                 {/* Shield Icon */}
                                 <div className="flex justify-center mb-6 relative">
                                     <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center shadow-[0_0_30px_rgba(222,253,65,0.1)] relative z-10 backdrop-blur-sm">
@@ -1092,7 +1124,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
 
-                            <div className="relative z-10 text-slate-300">
+                            <div className="p-5 md:p-8 relative z-10 text-slate-300">
                                 {activeModal === 'about' && (
                                     <div className="space-y-6">
                                         <h3 className="text-3xl font-black text-white mb-2 tracking-tight">About MemeForge</h3>
@@ -1187,10 +1219,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
                             {/* Amount Display */}
                             <div className="text-center mb-6">
-                                <div className="text-5xl md:text-6xl font-black text-accent tracking-tight flex items-center justify-center gap-3">
+                                <div className="text-4xl md:text-5xl lg:text-6xl font-black text-accent tracking-tight flex items-center justify-center gap-2 md:gap-3">
                                     {appliedDiscount ? (
                                         <>
-                                            <span className="text-3xl text-slate-500 line-through decoration-slate-600 decoration-2">{paymentBaseAmount}</span>
+                                            <span className="text-2xl md:text-3xl text-slate-500 line-through decoration-slate-600 decoration-2">{paymentBaseAmount}</span>
                                             <span>{paymentFinalAmount} SOL</span>
                                         </>
                                     ) : (

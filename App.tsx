@@ -127,6 +127,7 @@ const App: React.FC = () => {
     const [showAccessCode, setShowAccessCode] = useState(false);
     const [showAccountPopup, setShowAccountPopup] = useState(false);
     const [showSupportModal, setShowSupportModal] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
     const accountPopupRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -1089,19 +1090,19 @@ const App: React.FC = () => {
                     <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-current to-transparent opacity-50 ${textColorClass}`}></div>
 
                     {/* HEADER */}
-                    <div className="border-b border-white/5 p-8 flex justify-between items-center bg-navy-900 z-10">
-                        <div className="flex items-center gap-6">
-                            <div className={`w-3 h-3 rounded-full animate-pulse shadow-[0_0_10px_currentColor] ${bgColorClass} ${textColorClass}`}></div>
-                            <div>
-                                <h1 className="text-3xl font-black uppercase tracking-tighter text-white">{title}</h1>
-                                <p className={`text-sm mt-1 tracking-widest ${textColorClass}`}>{isResearching ? statusText : 'Ready to use'}</p>
+                    <div className="border-b border-white/5 p-4 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center bg-navy-900 z-10 gap-4 md:gap-0">
+                        <div className="flex items-center gap-4 md:gap-6 w-full md:w-auto">
+                            <div className={`w-3 h-3 rounded-full animate-pulse shadow-[0_0_10px_currentColor] shrink-0 ${bgColorClass} ${textColorClass}`}></div>
+                            <div className="flex-1 min-w-0">
+                                <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter text-white truncate">{title}</h1>
+                                <p className={`text-xs md:text-sm mt-1 tracking-widest ${textColorClass}`}>{isResearching ? statusText : 'Ready to use'}</p>
                             </div>
                         </div>
-                        <Button onClick={() => setShowResearchFeed(false)} variant="outline" size="lg" className="border-white/20 text-white">CLOSE</Button>
+                        <Button onClick={() => setShowResearchFeed(false)} variant="outline" className="border-white/20 text-white w-full md:w-auto md:text-lg">CLOSE</Button>
                     </div>
 
                     {/* CONTENT */}
-                    <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-navy-950/50">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar bg-navy-950/50">
 
                         {isResearching && xTrends.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-48 opacity-70">
@@ -1169,38 +1170,41 @@ const App: React.FC = () => {
 
                                             return (
                                                 <div key={idx} className={`relative ${isLocked ? 'cursor-pointer group/locked' : ''}`} onClick={isLocked ? handleUnlockMore : undefined}>
-                                                    <div className={`bg-navy-900 border border-white/5 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all p-8 rounded-xl flex gap-8 group relative overflow-hidden ${hoverBorderClass} ${isLocked ? 'blur-md pointer-events-none opacity-40 grayscale select-none' : ''}`}>
+                                                    <div className={`bg-navy-900 border border-white/5 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all p-4 md:p-8 rounded-xl flex flex-col md:flex-row gap-4 md:gap-8 group relative overflow-hidden ${hoverBorderClass} ${isLocked ? 'blur-md pointer-events-none opacity-40 grayscale select-none' : ''}`}>
 
                                                         {/* Score Box */}
-                                                        <div className="w-32 shrink-0 flex flex-col justify-center items-center border-r border-white/5 pr-8">
-                                                            <div className={`text-6xl font-black font-sans tracking-tighter ${isHot ? numberHotColor : numberColor}`}>
+                                                        <div className="w-full md:w-32 shrink-0 flex flex-row md:flex-col justify-center items-center border-b md:border-b-0 md:border-r border-white/5 pb-4 md:pb-0 md:pr-8 gap-4 md:gap-0">
+                                                            <div className="text-[10px] font-mono uppercase text-slate-500 tracking-[0.2em] md:hidden">SCORE:</div>
+                                                            <div className={`text-4xl md:text-6xl font-black font-sans tracking-tighter leading-none ${isHot ? numberHotColor : numberColor}`}>
                                                                 {score}
                                                             </div>
-                                                            <div className="text-[10px] font-mono uppercase text-slate-500 mt-2 tracking-[0.2em]">SCORE</div>
+                                                            <div className="hidden md:block text-[10px] font-mono uppercase text-slate-500 mt-2 tracking-[0.2em]">SCORE</div>
                                                         </div>
 
                                                         <div className="flex-1 z-10 flex flex-col justify-center">
-                                                            <div className="flex items-center gap-3 mb-3">
+                                                            <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3 flex-wrap">
                                                                 {/* SOURCE BADGE FOR GOD MODE */}
                                                                 {trend.source && <SourceBadge source={trend.source} />}
-                                                                <span className="text-[10px] bg-white/5 text-slate-400 px-3 py-1 rounded-full uppercase font-bold tracking-wider border border-white/5">{trend.category}</span>
+                                                                <span className="text-[10px] bg-white/5 text-slate-400 px-3 py-1 rounded-full uppercase font-bold tracking-wider border border-white/5 whitespace-nowrap">{trend.category}</span>
                                                             </div>
-                                                            <h3 className={`text-2xl font-bold text-white mb-3 font-sans transition-colors leading-tight ${hoverTextClass}`}>{displayedTitle}</h3>
-                                                            <p className="text-sm text-slate-400 leading-relaxed font-mono">{trend.description}</p>
+                                                            <h3 className={`text-lg md:text-2xl font-bold text-white mb-2 md:mb-3 font-sans transition-colors leading-tight ${hoverTextClass}`}>{displayedTitle}</h3>
+                                                            <p className="text-xs md:text-sm text-slate-400 leading-relaxed font-mono">{trend.description}</p>
                                                         </div>
 
-                                                        <div className="flex flex-col gap-2 items-center justify-center pl-8 border-l border-white/5 z-10 w-48">
-                                                            <Button onClick={() => handleUseTrend(trend)} size="md" variant="secondary" className={`w-full group-hover:text-black font-black tracking-wider text-[10px] ${groupHoverBgClass} ${buttonTextColor}`}>
+                                                        <div className="flex flex-col md:flex-col gap-2 items-center justify-center pt-4 md:pt-0 md:pl-8 border-t md:border-t-0 md:border-l border-white/5 z-10 w-full md:w-48">
+                                                            <Button onClick={() => handleUseTrend(trend)} size="md" variant="secondary" className={`w-full group-hover:text-black font-black tracking-wider text-[10px] py-4 md:py-2 ${groupHoverBgClass} ${buttonTextColor}`}>
                                                                 CREATE MASCOT
                                                             </Button>
-                                                            <Button onClick={() => window.open(searchUrl, '_blank')} size="md" variant="outline" className="w-full text-[10px] uppercase font-bold border-white/10 hover:border-white">
-                                                                SOURCE ↗
-                                                            </Button>
-                                                            {trend.newsUrl && (
-                                                                <Button onClick={() => window.open(trend.newsUrl, '_blank')} size="md" variant="outline" className="w-full text-[10px] uppercase font-bold border-white/10 hover:border-white">
-                                                                    📰 NEWS ↗
+                                                            <div className="w-full grid grid-cols-2 lg:grid-cols-1 gap-2">
+                                                                <Button onClick={() => window.open(searchUrl, '_blank')} size="md" variant="outline" className="w-full text-[10px] uppercase font-bold border-white/10 hover:border-white">
+                                                                    SOURCE ↗
                                                                 </Button>
-                                                            )}
+                                                                {trend.newsUrl && (
+                                                                    <Button onClick={() => window.open(trend.newsUrl, '_blank')} size="md" variant="outline" className="w-full text-[10px] uppercase font-bold border-white/10 hover:border-white">
+                                                                        📰 NEWS ↗
+                                                                    </Button>
+                                                                )}
+                                                            </div>
                                                         </div>
 
                                                         {/* Scan Line Effect on Hover */}
@@ -1231,13 +1235,13 @@ const App: React.FC = () => {
                                     </div>
 
                                     {xTrends.length > 0 && (
-                                        <div className="mt-12 text-center pb-12" ref={trendBottomRef}>
+                                        <div className="mt-8 md:mt-12 text-center pb-8 md:pb-12" ref={trendBottomRef}>
                                             {(!currentUser?.is_admin && unlockedTrendsCount < xTrends.length) ? (
-                                                <Button onClick={handleUnlockMore} disabled={isResearching} variant="outline" size="lg" className={`w-96 py-6 text-lg border-white/20 hover:border-white hover:text-white bg-black/40 backdrop-blur-md ${hasEnoughCredits ? 'text-white' : 'text-red-500 hover:border-red-500/50 hover:bg-black/80 hover:text-red-400'}`}>
+                                                <Button onClick={handleUnlockMore} disabled={isResearching} variant="outline" className={`w-full md:w-96 py-4 md:py-6 text-sm md:text-lg border-white/20 hover:border-white hover:text-white bg-black/40 backdrop-blur-md ${hasEnoughCredits ? 'text-white' : 'text-red-500 hover:border-red-500/50 hover:bg-black/80 hover:text-red-400'}`}>
                                                     {hasEnoughCredits ? `UNLOCK ${actualUnlockAmount} MORE (${actualUnlockAmount} CREDITS)` : 'OUT OF CREDITS'}
                                                 </Button>
                                             ) : (
-                                                <Button onClick={handleLoadMoreTrends} disabled={isResearching} variant="outline" size="lg" className="w-96 py-6 text-lg border-white/20 text-white hover:border-white hover:text-white">
+                                                <Button onClick={handleLoadMoreTrends} disabled={isResearching} variant="outline" className="w-full md:w-96 py-4 md:py-6 text-sm md:text-lg border-white/20 text-white hover:border-white hover:text-white">
                                                     {isResearching ? 'LOADING...' : 'LOAD MORE (+)'}
                                                 </Button>
                                             )}
@@ -1270,7 +1274,7 @@ const App: React.FC = () => {
                             <img
                                 src="/pepe_forge.png"
                                 alt="Forge Logo"
-                                className="h-[65px] w-auto object-contain"
+                                className="h-[45px] md:h-[65px] w-auto object-contain"
                                 onError={(e) => {
                                     e.currentTarget.onerror = null;
                                     e.currentTarget.src = "https://placehold.co/250x65/transparent/DEFD41?text=FORGE";
@@ -1282,11 +1286,12 @@ const App: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="hidden md:flex items-center gap-4">
+                    {/* Navigation Container */}
+                    <div className="flex items-center gap-0 md:gap-4">
                         {currentUser?.is_admin && (
                             <button
                                 onClick={() => setShowAdmin(true)}
-                                className="relative group flex items-center gap-2.5 px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500 transition-all duration-300 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(239,68,68,0.1)] hover:shadow-[0_0_30px_rgba(239,68,68,0.2)]"
+                                className="hidden md:flex relative group items-center gap-2.5 px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500 transition-all duration-300 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(239,68,68,0.1)] hover:shadow-[0_0_30px_rgba(239,68,68,0.2)]"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/5 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
                                 <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
@@ -1298,7 +1303,7 @@ const App: React.FC = () => {
                         <Button
                             onClick={() => setShowSupportModal(true)}
                             variant="ghost"
-                            className="text-slate-500 hover:text-white text-[10px] px-2 uppercase font-bold flex items-center gap-1.5"
+                            className="hidden md:flex text-slate-500 hover:text-white text-[10px] px-2 uppercase font-bold items-center gap-1.5"
                         >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                             Support
@@ -1306,11 +1311,11 @@ const App: React.FC = () => {
                         <Button
                             onClick={() => setCurrentUser(null)}
                             variant="ghost"
-                            className="text-slate-500 hover:text-white text-[10px] px-2 uppercase font-bold"
+                            className="hidden md:flex text-slate-500 hover:text-white text-[10px] px-2 uppercase font-bold"
                         >
                             Logout
                         </Button>
-                        <div ref={accountPopupRef} className="hidden md:flex items-center gap-4 relative">
+                        <div ref={accountPopupRef} className="flex items-center md:gap-4 relative">
                             {(() => {
                                 const pkg = currentUser?.package_name || 'Starter';
                                 let borderColor = 'border-white/10 hover:border-slate-500/50';
@@ -1361,7 +1366,7 @@ const App: React.FC = () => {
                                 return (
                                     <button
                                         onClick={() => setShowAccountPopup(!showAccountPopup)}
-                                        className={`flex items-center gap-3 px-4 py-1.5 border rounded-2xl shadow-xl backdrop-blur-md transition-all group ${showAccountPopup ? activeBgClass : `${bgClass} ${borderColor}`}`}
+                                        className={`hidden md:flex items-center gap-3 px-4 py-1.5 border rounded-2xl shadow-xl backdrop-blur-md transition-all group ${showAccountPopup ? activeBgClass : `${bgClass} ${borderColor}`}`}
                                     >
                                         <div className={`w-8 h-8 rounded-full ${iconBg} border ${iconBorder} flex items-center justify-center ${iconText} transition-colors`}>
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -1384,7 +1389,7 @@ const App: React.FC = () => {
                                     gradientLight: 'from-slate-400/20',
                                     badgeBg: 'bg-slate-400/20',
                                     badgeText: 'text-slate-300',
-                                    hex: '#94a3b8' // slate-400
+                                    hex: '#94a3b8'
                                 };
 
                                 if (pkg === 'Cookball') theme = { primary: 'text-[#FF6B00]', bgGlow: 'shadow-[#FF6B00]/20', border: 'border-[#FF6B00]/30', gradientCore: 'from-[#FF6B00]', gradientLight: 'from-[#FF6B00]/20', badgeBg: 'bg-[#FF6B00]/20', badgeText: 'text-[#FF6B00]', hex: '#FF6B00' };
@@ -1392,7 +1397,6 @@ const App: React.FC = () => {
                                 else if (pkg === 'Max') theme = { primary: 'text-[#C084FC]', bgGlow: 'shadow-[#C084FC]/20', border: 'border-[#C084FC]/30', gradientCore: 'from-[#C084FC]', gradientLight: 'from-[#C084FC]/20', badgeBg: 'bg-[#C084FC]/20', badgeText: 'text-[#C084FC]', hex: '#C084FC' };
                                 else if (pkg === 'Pro') theme = { primary: 'text-[#DEFD40]', bgGlow: 'shadow-[#DEFD40]/20', border: 'border-[#DEFD40]/30', gradientCore: 'from-[#DEFD40]', gradientLight: 'from-[#DEFD40]/20', badgeBg: 'bg-[#DEFD40]/20', badgeText: 'text-[#DEFD40]', hex: '#DEFD40' };
 
-                                // Calculate subscription progress relative to time remaining
                                 let subProgress = 100;
                                 let daysRemaining = '∞';
                                 if (!currentUser?.is_admin && currentUser?.subscription_start && currentUser?.subscription_days) {
@@ -1400,7 +1404,6 @@ const App: React.FC = () => {
                                     const totalDuration = currentUser.subscription_days * 24 * 60 * 60 * 1000;
                                     const end = start + totalDuration;
                                     const now = new Date().getTime();
-
                                     if (now >= end) {
                                         subProgress = 0;
                                         daysRemaining = '0 days';
@@ -1414,9 +1417,9 @@ const App: React.FC = () => {
                                 }
 
                                 return (
-                                    <div className={`absolute top-[120%] right-0 w-80 bg-[#070b14] border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200`} style={{ boxShadow: `0 0 40px -10px ${theme.hex}30` }}>
+                                    <div className={`hidden md:block absolute top-[120%] right-0 w-80 bg-[#070b14] border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200`} style={{ boxShadow: `0 0 40px -10px ${theme.hex}30` }}>
                                         {/* Glowing top edge */}
-                                        <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${theme.gradientCore} via-white to-${theme.gradientCore} opacity-70`}></div>
+                                        <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${theme.gradientCore} via-white to-${theme.gradientCore} opacity-70 z-10`}></div>
 
                                         <div className="p-6 pb-5 flex flex-col items-center border-b border-white/5 relative">
                                             {/* Background ambient glow inside header */}
@@ -1453,11 +1456,9 @@ const App: React.FC = () => {
                                         </div>
 
                                         <div className="p-5 grid grid-cols-2 gap-4 border-b border-white/5">
-                                            {/* Art Credits Card */}
                                             <div className={`bg-gradient-to-br from-white/5 to-black/60 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:border-white/10 transition-colors`}>
                                                 <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-10" style={{ backgroundImage: `linear-gradient(to top, ${theme.hex} 0%, transparent 100%)` }}></div>
                                                 <div className="absolute bottom-0 inset-x-0 h-[1px] opacity-20" style={{ backgroundColor: theme.hex }}></div>
-
                                                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 shadow-inner bg-black/50 ${theme.border} border`}>
                                                     <svg className={`w-3.5 h-3.5 ${theme.primary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                 </div>
@@ -1466,12 +1467,9 @@ const App: React.FC = () => {
                                                     {currentUser?.is_admin ? '∞' : (currentUser?.art_credits || 0)}
                                                 </span>
                                             </div>
-
-                                            {/* Lore Credits Card */}
                                             <div className={`bg-gradient-to-br from-white/5 to-black/60 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center text-center relative overflow-hidden group/card hover:border-white/10 transition-colors`}>
                                                 <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-10" style={{ backgroundImage: `linear-gradient(to top, ${theme.hex} 0%, transparent 100%)` }}></div>
                                                 <div className="absolute bottom-0 inset-x-0 h-[1px] opacity-20" style={{ backgroundColor: theme.hex }}></div>
-
                                                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 shadow-inner bg-black/50 ${theme.border} border`}>
                                                     <svg className={`w-3.5 h-3.5 ${theme.primary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18 18.247 18.477 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                                                 </div>
@@ -1487,9 +1485,7 @@ const App: React.FC = () => {
                                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Membership Status</h4>
                                                 <div className="flex-1 h-[1px] bg-gradient-to-r from-white/10 to-transparent"></div>
                                             </div>
-
                                             <div className="space-y-3">
-                                                {/* Progress Bar */}
                                                 <div>
                                                     <div className="flex justify-between text-[9px] font-bold uppercase tracking-wide mb-1.5 text-white">
                                                         <span>Time Left</span>
@@ -1498,7 +1494,6 @@ const App: React.FC = () => {
                                                         <div className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r to-white/20" style={{ width: `${subProgress}%`, backgroundColor: theme.hex }}></div>
                                                     </div>
                                                 </div>
-
                                                 <div className="grid grid-cols-2 gap-2 pt-2 text-[10px]">
                                                     <div className="bg-black/30 rounded-lg p-2 border border-white/5">
                                                         <div className="text-slate-500 font-black uppercase tracking-wider mb-0.5 text-[8px]">Started</div>
@@ -1531,9 +1526,217 @@ const App: React.FC = () => {
                             })()}
                         </div>
 
+                        {/* Mobile Menu Toggle (Moved inside flex container to push to right) */}
+                        <div className="md:hidden flex items-center ml-2">
+                            <button
+                                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                                className="p-2 text-slate-400 hover:text-white transition-colors"
+                            >
+                                {showMobileMenu ? (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                ) : (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {/* Mobile Menu Dropdown */}
+                {showMobileMenu && (
+                    <div className="md:hidden absolute top-full left-0 right-0 bg-navy-950 border-b border-white/10 shadow-2xl flex flex-col animate-in slide-in-from-top-2 z-50">
+                        <div className="flex flex-col p-2">
+                            {currentUser?.is_admin && (
+                                <button
+                                    onClick={() => { setShowAdmin(true); setShowMobileMenu(false); }}
+                                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors rounded-xl text-left"
+                                >
+                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                                    <span className="text-xs font-bold text-red-500 uppercase tracking-widest flex-1">
+                                        Admin Area
+                                    </span>
+                                </button>
+                            )}
+                            <button
+                                onClick={() => { setShowSupportModal(true); setShowMobileMenu(false); }}
+                                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors rounded-xl text-left"
+                            >
+                                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                <span className="text-xs font-bold text-slate-300 uppercase tracking-widest flex-1">Support</span>
+                            </button>
+
+                            <div className="h-px bg-white/5 w-full my-1"></div>
+
+                            <button
+                                onClick={() => { setShowAccountPopup(true); setShowMobileMenu(false); }}
+                                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors rounded-xl text-left outline-none"
+                            >
+                                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                <div className="flex flex-col flex-1">
+                                    <span className="text-xs font-bold text-white uppercase tracking-widest">Account</span>
+                                </div>
+                                <span className="text-[9px] font-black bg-accent/10 border border-accent/20 text-accent px-1.5 py-0.5 rounded leading-none flex items-center justify-center uppercase">{currentUser?.package_name || 'STARTER'}</span>
+                            </button>
+
+                            <div className="h-px bg-white/5 w-full my-1"></div>
+
+                            <button
+                                onClick={() => { setCurrentUser(null); setShowMobileMenu(false); }}
+                                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors rounded-xl text-left outline-none"
+                            >
+                                <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                <span className="text-xs font-bold text-red-500 uppercase tracking-widest flex-1">Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
             </nav>
+
+            {/* Mobile Account Popup - Rendered OUTSIDE nav to avoid backdrop-blur containing block issue */}
+            {showAccountPopup && (() => {
+                const pkg = currentUser?.package_name || 'Starter';
+                let theme = {
+                    primary: 'text-slate-300',
+                    bgGlow: 'shadow-slate-500/20',
+                    border: 'border-slate-400/30',
+                    gradientCore: 'from-slate-400',
+                    gradientLight: 'from-slate-400/20',
+                    badgeBg: 'bg-slate-400/20',
+                    badgeText: 'text-slate-300',
+                    hex: '#94a3b8'
+                };
+
+                if (pkg === 'Cookball') theme = { primary: 'text-[#FF6B00]', bgGlow: 'shadow-[#FF6B00]/20', border: 'border-[#FF6B00]/30', gradientCore: 'from-[#FF6B00]', gradientLight: 'from-[#FF6B00]/20', badgeBg: 'bg-[#FF6B00]/20', badgeText: 'text-[#FF6B00]', hex: '#FF6B00' };
+                else if (pkg === 'Private') theme = { primary: 'text-[#40E0D0]', bgGlow: 'shadow-[#40E0D0]/20', border: 'border-[#40E0D0]/30', gradientCore: 'from-[#40E0D0]', gradientLight: 'from-[#40E0D0]/20', badgeBg: 'bg-[#40E0D0]/20', badgeText: 'text-[#40E0D0]', hex: '#40E0D0' };
+                else if (pkg === 'Max') theme = { primary: 'text-[#C084FC]', bgGlow: 'shadow-[#C084FC]/20', border: 'border-[#C084FC]/30', gradientCore: 'from-[#C084FC]', gradientLight: 'from-[#C084FC]/20', badgeBg: 'bg-[#C084FC]/20', badgeText: 'text-[#C084FC]', hex: '#C084FC' };
+                else if (pkg === 'Pro') theme = { primary: 'text-[#DEFD40]', bgGlow: 'shadow-[#DEFD40]/20', border: 'border-[#DEFD40]/30', gradientCore: 'from-[#DEFD40]', gradientLight: 'from-[#DEFD40]/20', badgeBg: 'bg-[#DEFD40]/20', badgeText: 'text-[#DEFD40]', hex: '#DEFD40' };
+
+                let subProgress = 100;
+                let daysRemaining = '∞';
+                if (!currentUser?.is_admin && currentUser?.subscription_start && currentUser?.subscription_days) {
+                    const start = new Date(currentUser.subscription_start).getTime();
+                    const totalDuration = currentUser.subscription_days * 24 * 60 * 60 * 1000;
+                    const end = start + totalDuration;
+                    const now = new Date().getTime();
+                    if (now >= end) {
+                        subProgress = 0;
+                        daysRemaining = '0 days';
+                    } else {
+                        const elapsed = now - start;
+                        subProgress = Math.max(0, Math.min(100, Math.round((elapsed / totalDuration) * 100)));
+                        const leftMs = end - now;
+                        const leftDays = Math.ceil(leftMs / (1000 * 60 * 60 * 24));
+                        daysRemaining = `${leftDays} day${leftDays !== 1 ? 's' : ''}`;
+                    }
+                }
+
+                return (
+                    <div className="md:hidden">
+                        <div className="fixed inset-0 z-[55] bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setShowAccountPopup(false)}></div>
+                        <div className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-[320px] max-h-[85vh] overflow-y-auto custom-scrollbar bg-[#070b14] border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl z-[60] animate-in fade-in duration-200`} style={{ boxShadow: `0 0 40px -10px ${theme.hex}30` }}>
+                            {/* Glowing top edge */}
+                            <div className={`sticky top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${theme.gradientCore} via-white to-${theme.gradientCore} opacity-70 z-10`}></div>
+
+                            <div className="p-6 pb-5 flex flex-col items-center border-b border-white/5 relative">
+                                <div className="absolute top-0 inset-x-0 h-24 overflow-hidden pointer-events-none rounded-t-2xl">
+                                    <div className="absolute inset-x-0 -top-10 h-20 blur-2xl opacity-20" style={{ backgroundColor: theme.hex }}></div>
+                                </div>
+                                <div className="relative mb-3">
+                                    <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border-2 z-10 relative" style={{ borderColor: theme.hex }}>
+                                        <svg className={`w-6 h-6 ${theme.primary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    </div>
+                                    <div className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ backgroundColor: theme.hex }}></div>
+                                </div>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${theme.badgeBg} ${theme.badgeText} border ${theme.border} mb-4`}>
+                                    {pkg} PLAN
+                                </span>
+                                <div className="w-full bg-black/40 rounded-xl p-3 border border-white/5 flex justify-between items-center group/access">
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Access Code</span>
+                                        <span className="text-sm font-mono text-white tracking-widest">
+                                            {showAccessCode ? currentUser?.access_code : '••••••••'}
+                                        </span>
+                                    </div>
+                                    <button onClick={() => setShowAccessCode(!showAccessCode)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors" style={{ color: showAccessCode ? theme.hex : '#64748b' }}>
+                                        {showAccessCode ? (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="m2 2 20 20" /><path d="M6.71 6.71q2.3-1.71 5.29-1.71 7 0 10 7a15.53 15.53 0 0 1-4.14 5.34m-3.92 1.48Q13 19 12 19q-7 0-10-7a15.08 15.08 0 0 1 2.3-3.61" /><circle cx="12" cy="12" r="3" /></svg>
+                                        ) : (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="p-5 grid grid-cols-2 gap-4 border-b border-white/5">
+                                <div className="bg-gradient-to-br from-white/5 to-black/60 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-10" style={{ backgroundImage: `linear-gradient(to top, ${theme.hex} 0%, transparent 100%)` }}></div>
+                                    <div className="absolute bottom-0 inset-x-0 h-[1px] opacity-20" style={{ backgroundColor: theme.hex }}></div>
+                                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 shadow-inner bg-black/50 ${theme.border} border`}>
+                                        <svg className={`w-3.5 h-3.5 ${theme.primary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    </div>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 z-10">Art Credits</span>
+                                    <span className={`text-2xl font-black ${theme.primary} z-10`} style={{ textShadow: `0 0 10px ${theme.hex}50` }}>
+                                        {currentUser?.is_admin ? '∞' : (currentUser?.art_credits || 0)}
+                                    </span>
+                                </div>
+                                <div className="bg-gradient-to-br from-white/5 to-black/60 border border-white/5 rounded-xl p-3 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-10" style={{ backgroundImage: `linear-gradient(to top, ${theme.hex} 0%, transparent 100%)` }}></div>
+                                    <div className="absolute bottom-0 inset-x-0 h-[1px] opacity-20" style={{ backgroundColor: theme.hex }}></div>
+                                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 shadow-inner bg-black/50 ${theme.border} border`}>
+                                        <svg className={`w-3.5 h-3.5 ${theme.primary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18 18.247 18.477 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                    </div>
+                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 z-10">Lore Credits</span>
+                                    <span className={`text-2xl font-black ${theme.primary} z-10`} style={{ textShadow: `0 0 10px ${theme.hex}50` }}>
+                                        {currentUser?.is_admin ? '∞' : (currentUser?.lore_credits || 0)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="p-5">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Membership Status</h4>
+                                    <div className="flex-1 h-[1px] bg-gradient-to-r from-white/10 to-transparent"></div>
+                                </div>
+                                <div className="space-y-3">
+                                    <div>
+                                        <div className="flex justify-between text-[9px] font-bold uppercase tracking-wide mb-1.5 text-white">
+                                            <span>Time Left</span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                            <div className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r to-white/20" style={{ width: `${subProgress}%`, backgroundColor: theme.hex }}></div>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 pt-2 text-[10px]">
+                                        <div className="bg-black/30 rounded-lg p-2 border border-white/5">
+                                            <div className="text-slate-500 font-black uppercase tracking-wider mb-0.5 text-[8px]">Started</div>
+                                            <div className="font-mono text-slate-300">
+                                                {currentUser?.subscription_start ? new Date(currentUser.subscription_start).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                                            </div>
+                                        </div>
+                                        <div className="bg-black/30 rounded-lg p-2 border border-white/5">
+                                            <div className="text-slate-500 font-black uppercase tracking-wider mb-0.5 text-[8px]">Expires</div>
+                                            <div className="font-mono text-slate-300">
+                                                {currentUser?.is_admin || !currentUser?.subscription_days
+                                                    ? 'Never'
+                                                    : new Date(new Date(currentUser.subscription_start!).getTime() + currentUser.subscription_days * 24 * 60 * 60 * 1000).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-center border-t border-white/5 relative">
+                                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-white/5 shadow-inner">
+                                    <div className="w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_5px_currentColor]" style={{ backgroundColor: theme.hex, color: theme.hex }}></div>
+                                    <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: theme.hex }}>System Online</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
 
             {isExpired && (
                 <div className="bg-red-500 text-white text-center py-3 font-bold uppercase tracking-widest shadow-lg border-y border-red-600 z-50 relative">
@@ -1541,16 +1744,16 @@ const App: React.FC = () => {
                 </div>
             )}
 
-            <main className="w-full max-w-[1800px] mx-auto px-6 py-8 relative">
+            <main className="w-full max-w-[1800px] mx-auto px-3 md:px-6 py-4 md:py-8 relative">
                 {!hasMascots && !isGenerating && (
-                    <div className="space-y-8 relative z-10">
+                    <div className="space-y-4 md:space-y-8 relative z-10">
                         {/* 1. TOP CONTROL BAR (Styles + Quantity) */}
-                        <div className="bg-navy-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col xl:flex-row gap-8 items-stretch xl:items-center animate-in slide-in-from-top-4 duration-500">
+                        <div className="bg-navy-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-8 shadow-2xl flex flex-col xl:flex-row gap-4 md:gap-8 items-stretch xl:items-center animate-in slide-in-from-top-4 duration-500">
                             <div className="flex-1 w-full">
                                 <div className="flex justify-between items-end mb-4">
                                     <div>
                                         <div className="flex items-center gap-3">
-                                            <h2 className="text-2xl font-black text-white tracking-tighter">SELECT ART STYLE</h2>
+                                            <h2 className="text-lg md:text-2xl font-black text-white tracking-tighter">SELECT ART STYLE</h2>
                                             {selectedStyles.length > 0 && (
                                                 <span className="bg-accent/10 border border-accent/20 text-accent text-[10px] font-black px-2 py-0.5 rounded-full animate-in fade-in zoom-in duration-300">
                                                     {selectedStyles.length} ACTIVE
@@ -1600,12 +1803,12 @@ const App: React.FC = () => {
                                     })}
                                 </div>
                             </div>
-                            <div className="w-full xl:w-auto xl:border-l border-white/10 xl:pl-8 min-w-[220px]">
-                                <div className="flex justify-between items-center mb-3">
+                            <div className="w-full xl:w-auto xl:border-l border-white/10 xl:pl-8 min-w-full md:min-w-[220px]">
+                                <div className="flex justify-between items-center mb-3 pt-4 xl:pt-0">
                                     <h3 className="text-[10px] font-black uppercase text-accent tracking-[0.2em]">Batch Count</h3>
                                     <span className="text-[10px] font-mono text-slate-500">MAX 5</span>
                                 </div>
-                                <div className="flex items-center gap-4 bg-black/40 border border-white/10 rounded-2xl p-2 h-[100px]">
+                                <div className="flex items-center gap-4 bg-black/40 border border-white/10 rounded-2xl p-2 h-[70px] md:h-[100px]">
                                     <button
                                         onClick={() => setTargetCount(Math.max(1, targetCount - 1))}
                                         className="w-12 h-full flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-xl text-white transition-colors border border-white/5"
@@ -1616,7 +1819,7 @@ const App: React.FC = () => {
                                         <input
                                             type="number" min="1" max="5" value={targetCount}
                                             readOnly
-                                            className="w-full bg-transparent text-center text-4xl font-black text-white focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            className="w-full bg-transparent text-center text-2xl md:text-4xl font-black text-white focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         />
                                         <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Concepts</p>
                                     </div>
@@ -1633,7 +1836,7 @@ const App: React.FC = () => {
                         {/* 2. GENERATORS ROW */}
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                             {/* ... (Remix, Random, Text components - same as previous) ... */}
-                            <div className="relative bg-[#0B1221] border border-white/10 rounded-2xl p-6 hover:border-blue-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
+                            <div className="relative bg-[#0B1221] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-blue-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
                                 <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
                                 <div className="relative z-10 flex flex-col h-full">
                                     <div className="flex justify-between items-start mb-4">
@@ -1642,7 +1845,7 @@ const App: React.FC = () => {
                                                 <span className={`w-1.5 h-1.5 rounded-full ${uploadedImage ? 'bg-blue-400' : 'bg-slate-600'} animate-pulse`}></span>
                                                 {uploadedImage ? 'Image Ready' : 'Upload Source'}
                                             </div>
-                                            <h3 className="text-3xl font-black text-white tracking-tight leading-none">REMIX IMAGE</h3>
+                                            <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">REMIX IMAGE</h3>
                                             <p className="text-sm text-slate-400 mt-1 font-medium">Transform existing images.</p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
@@ -1658,7 +1861,7 @@ const App: React.FC = () => {
                                         onDragLeave={handleDragLeave}
                                         onDrop={handleRemixDrop}
                                         onPaste={handleRemixPaste}
-                                        className={`relative w-full flex-1 min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
+                                        className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
                                     ${uploadedImage ? 'bg-black border border-white/10' : ''}
                                     ${!uploadedImage && !isDragging ? 'bg-black/20 border-2 border-dashed border-white/10 hover:border-blue-400 hover:bg-blue-500/5' : ''}
                                     ${isDragging ? 'bg-blue-500/20 border-2 border-blue-500 scale-[1.02] shadow-[0_0_20px_rgba(59,130,246,0.2)]' : ''}
@@ -1710,13 +1913,13 @@ const App: React.FC = () => {
                                                 </div>
                                             </div>
                                         )}
-                                        <Button onClick={handleGenerateFromUpload} disabled={!uploadedImage || selectedStyles.length === 0 || (!currentUser?.can_use_art && !currentUser?.is_admin)} className={`w-full py-4 text-lg font-black tracking-widest shadow-lg ${uploadedImage ? 'bg-blue-500 text-white hover:bg-blue-400 border-transparent shadow-blue-900/20' : 'bg-white/5 text-slate-600 border-white/5'}`}>REMIX</Button>
+                                        <Button onClick={handleGenerateFromUpload} disabled={!uploadedImage || selectedStyles.length === 0 || (!currentUser?.can_use_art && !currentUser?.is_admin)} className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${uploadedImage ? 'bg-blue-500 text-white hover:bg-blue-400 border-transparent shadow-blue-900/20' : 'bg-white/5 text-slate-600 border-white/5'}`}>REMIX</Button>
                                     </div>
                                 </div>
                             </div>
 
                             {/* TRAIT MIXER */}
-                            <div className="relative bg-[#100B05] border border-white/10 rounded-2xl p-6 hover:border-orange-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
+                            <div className="relative bg-[#100B05] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-orange-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
                                 <div className="absolute inset-0 bg-[radial-gradient(#f9731605_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
                                 <div className="relative z-10 flex flex-col h-full">
                                     <div className="flex justify-between items-start mb-4">
@@ -1725,8 +1928,8 @@ const App: React.FC = () => {
                                                 <span className={`w-1.5 h-1.5 rounded-full ${traitBaseImage ? 'bg-orange-400' : 'bg-slate-600'} animate-pulse`}></span>
                                                 {traitBaseImage ? 'Identity Lock' : 'Upload Base'}
                                             </div>
-                                            <h3 className="text-3xl font-black text-white tracking-tight leading-none">TRAIT MIXER</h3>
-                                            <p className="text-sm text-slate-400 mt-1 font-medium">Modify with precision edits.</p>
+                                            <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">TRAIT MIXER</h3>
+                                            <p className="text-xs md:text-sm text-slate-400 mt-1 font-medium">Modify with precision edits.</p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
                                             <InfoTooltip text="Upload a focused character image, then list traits or scenarios to generate variations." />
@@ -1741,7 +1944,7 @@ const App: React.FC = () => {
                                         onDragOver={(e) => { e.preventDefault(); setIsDraggingTrait(true); }}
                                         onDragLeave={(e) => { e.preventDefault(); setIsDraggingTrait(false); }}
                                         onDrop={handleTraitDrop}
-                                        className={`relative w-full flex-1 min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
+                                        className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
                                     ${traitBaseImage ? 'bg-black border border-white/10' : ''}
                                     ${!traitBaseImage && !isDraggingTrait ? 'bg-black/20 border-2 border-dashed border-white/10 hover:border-orange-400 hover:bg-orange-500/5' : ''}
                                     ${isDraggingTrait ? 'bg-orange-500/20 border-2 border-orange-500 scale-[1.02] shadow-[0_0_20px_rgba(249,115,22,0.2)]' : ''}
@@ -1809,7 +2012,7 @@ const App: React.FC = () => {
                                         <Button
                                             onClick={handleGenerateTraits}
                                             disabled={isGenerating || !traitBaseImage || (!currentUser?.can_use_art && !currentUser?.is_admin)}
-                                            className={`w-full py-4 text-lg font-black tracking-widest shadow-lg ${isGenerating || !traitBaseImage ? 'bg-white/5 text-slate-700' : 'bg-orange-600 text-white hover:bg-orange-500 shadow-orange-950/20'}`}
+                                            className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${isGenerating || !traitBaseImage ? 'bg-white/5 text-slate-700' : 'bg-orange-600 text-white hover:bg-orange-500 shadow-orange-950/20'}`}
                                             icon={isGenerating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : undefined}
                                         >
                                             {isGenerating ? 'GENESIS...' : 'LAUNCH'}
@@ -1818,13 +2021,13 @@ const App: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-black border border-white/10 rounded-2xl p-6 hover:border-white/30 transition-all hover:z-50 flex flex-col justify-between h-full shadow-2xl relative">
-                                <div className="absolute top-6 right-6 z-20"><InfoTooltip text="Describe your specific idea in text and let the AI visualize it." /></div>
+                            <div className="bg-black border border-white/10 rounded-2xl p-4 md:p-6 hover:border-white/30 transition-all hover:z-50 flex flex-col justify-between h-full shadow-2xl relative">
+                                <div className="absolute top-4 md:top-6 right-4 md:right-6 z-20"><InfoTooltip text="Describe your specific idea in text and let the AI visualize it." /></div>
                                 <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_2px,3px_100%]"></div>
                                 <div className="relative z-10 mt-4">
                                     <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-6">Custom Input</div>
-                                    <h3 className="text-3xl font-black text-white mb-2 tracking-tight">CREATE FROM TEXT</h3>
-                                    <p className="text-sm text-slate-500 mb-4 font-medium">Turn your text concepts into visual assets.</p>
+                                    <h3 className="text-xl md:text-3xl font-black text-white mb-2 tracking-tight">CREATE FROM TEXT</h3>
+                                    <p className="text-xs md:text-sm text-slate-500 mb-4 font-medium">Turn your text concepts into visual assets.</p>
                                     <div className="relative group/input"><textarea value={customInput} onChange={(e) => setCustomInput(e.target.value)} placeholder="Describe your character idea..." className="relative w-full bg-[#0A0A0A] border-2 border-white/10 rounded-xl p-4 text-sm text-accent placeholder:text-slate-700 focus:border-accent outline-none h-32 resize-none leading-relaxed font-mono tracking-wide" /></div>
                                 </div>
                                 <div className="mt-auto pt-4 relative z-10">
@@ -1847,7 +2050,7 @@ const App: React.FC = () => {
                                     <Button
                                         onClick={handleGenerateFromCustomInput}
                                         disabled={!customInput.trim() || selectedStyles.length === 0 || isGenerating || (!currentUser?.can_use_art && !currentUser?.is_admin)}
-                                        className="w-full py-4 text-lg font-black tracking-widest bg-white/5 hover:bg-white/10 text-white border-accent/20 hover:border-accent shadow-xl"
+                                        className="w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest bg-white/5 hover:bg-white/10 text-white border-accent/20 hover:border-accent shadow-xl"
                                     >
                                         GENERATE
                                     </Button>
@@ -1859,7 +2062,7 @@ const App: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 pt-4">
 
                             {/* 1. GOD MODE CARD (Compact) */}
-                            <div className="h-48 relative bg-[#181100] border-2 border-yellow-500/50 rounded-2xl text-left hover:border-yellow-400 transition-all hover:z-50 group shadow-[0_0_50px_rgba(234,179,8,0.1)] flex flex-col justify-between p-6">
+                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#181100] border-2 border-yellow-500/50 rounded-2xl text-left hover:border-yellow-400 transition-all hover:z-50 group shadow-[0_0_50px_rgba(234,179,8,0.1)] flex flex-col justify-between p-4 md:p-6">
                                 <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
                                     <InfoTooltip text="GOD MODE: Scans ALL platforms (X, TikTok, Reddit, 4chan, News, KYM) to find the ultimate viral intersection." />
                                 </div>
@@ -1922,7 +2125,7 @@ const App: React.FC = () => {
                             </div>
 
                             {/* 2. X SCANNER */}
-                            <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('x')} className="h-48 relative bg-black border-2 border-white/10 rounded-2xl text-left hover:border-[#1DA1F2] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-6">
+                            <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('x')} className="h-auto md:h-48 min-h-[12rem] relative bg-black border-2 border-white/10 rounded-2xl text-left hover:border-[#1DA1F2] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6 w-full">
                                 {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -1955,7 +2158,7 @@ const App: React.FC = () => {
                             </button>
 
                             {/* 3. TIKTOK TRENDS RESEARCH */}
-                            <div className="h-48 relative bg-[#0d0205] border-2 border-white/10 rounded-2xl text-left hover:border-[#ff0050] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-6">
+                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#0d0205] border-2 border-white/10 rounded-2xl text-left hover:border-[#ff0050] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
                                 {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -1983,7 +2186,7 @@ const App: React.FC = () => {
                             </div>
 
                             {/* 4. VIRAL NEWS (GLOBAL NEWS) */}
-                            <div className="h-48 relative bg-[#050A18] border-2 border-white/10 rounded-2xl text-left hover:border-blue-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-6">
+                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#050A18] border-2 border-white/10 rounded-2xl text-left hover:border-blue-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
                                 {!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin && (
                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -2035,7 +2238,7 @@ const App: React.FC = () => {
                             </div>
 
                             {/* 5. 4CHAN SCANNER */}
-                            <div className="h-48 relative bg-[#051105] border-2 border-white/10 rounded-2xl text-left hover:border-[#00FF00] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-6">
+                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#051105] border-2 border-white/10 rounded-2xl text-left hover:border-[#00FF00] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
                                 {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -2074,7 +2277,7 @@ const App: React.FC = () => {
                             </div>
 
                             {/* 6. KNOW YOUR MEME (KYM) */}
-                            <div className="h-48 relative bg-[#080d1a] border-2 border-white/10 rounded-2xl text-left hover:border-cyan-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-6">
+                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#080d1a] border-2 border-white/10 rounded-2xl text-left hover:border-cyan-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
                                 {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -2110,7 +2313,7 @@ const App: React.FC = () => {
                             </div>
 
                             {/* 7. REDDIT LORE RESEARCH */}
-                            <div className="h-48 relative bg-[#1a0b05] border-2 border-white/10 rounded-2xl text-left hover:border-orange-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-6">
+                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#1a0b05] border-2 border-white/10 rounded-2xl text-left hover:border-orange-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
                                 {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -2146,7 +2349,7 @@ const App: React.FC = () => {
                             </div>
 
                             {/* 8. META HUNTER */}
-                            <div className="h-48 relative bg-[#0a1812] border-2 border-white/10 rounded-2xl p-6 hover:border-emerald-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between">
+                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#0a1812] border-2 border-white/10 rounded-2xl p-4 md:p-6 hover:border-emerald-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between">
                                 {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -2202,12 +2405,12 @@ const App: React.FC = () => {
                 {hasMascots && (
                     <div className="animate-in fade-in duration-500">
                         {/* ... (Output Header and Grid same as previous) ... */}
-                        <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5 sticky top-20 bg-navy-950/95 backdrop-blur z-30 pt-4">
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 mb-8 pb-6 border-b border-white/5 sticky top-16 md:top-20 bg-navy-950/95 backdrop-blur z-30 pt-4">
                             <div>
-                                <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Session Output</h2>
-                                <div className="flex items-center gap-2 mt-2">
+                                <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter">Session Output</h2>
+                                <div className="flex items-center gap-2 mt-1 md:mt-2">
                                     <span className="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
-                                    <p className="text-sm text-slate-400 font-mono uppercase tracking-widest">{mascots.length} Assets Generated</p>
+                                    <p className="text-xs md:text-sm text-slate-400 font-mono uppercase tracking-widest">{mascots.length} Assets Generated</p>
                                 </div>
                             </div>
 
@@ -2223,7 +2426,7 @@ const App: React.FC = () => {
                                         <Button onClick={() => { setMascots([]); setUploadedImage(null); }} variant="secondary" size="lg" icon={<span className="text-xs">✕</span>} className="font-bold">
                                             CLEAR
                                         </Button>
-                                        <div className="relative">
+                                        <div className="relative w-full md:w-auto">
                                             {!currentUser?.can_use_art && !currentUser?.is_admin && (
                                                 <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
                                                     <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -2234,7 +2437,7 @@ const App: React.FC = () => {
                                                     <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                                 </div>
                                             )}
-                                            <Button onClick={handleGenerate} disabled={!currentUser?.can_use_art && !currentUser?.is_admin} size="lg" icon={<span className="text-xs">+</span>} className="font-bold">
+                                            <Button onClick={handleGenerate} disabled={!currentUser?.can_use_art && !currentUser?.is_admin} size="lg" icon={<span className="text-xs">+</span>} className="font-bold w-full md:w-auto">
                                                 GENERATE MORE
                                             </Button>
                                         </div>
@@ -2260,13 +2463,13 @@ const App: React.FC = () => {
                         {/* LIVE SCENE FEED */}
                         {hasMascots && (
                             <div className="mt-12 pt-12 border-t border-white/5 animate-in slide-in-from-bottom-4" ref={sceneFeedRef}>
-                                <div className="flex items-center justify-between mb-8">
-                                    <div className="flex items-center gap-4">
+                                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 mb-8">
+                                    <div className="flex items-center gap-2 md:gap-4 flex-wrap">
                                         <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
-                                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Live Scene Feed</h2>
-                                        <span className="text-sm font-mono text-slate-500 uppercase tracking-widest">({allScenes.length} Rendered)</span>
+                                        <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter">Live Scene Feed</h2>
+                                        <span className="text-xs md:text-sm font-mono text-slate-500 uppercase tracking-widest">({allScenes.length} Rendered)</span>
                                     </div>
-                                    <Button onClick={handleDownloadAllScenes} disabled={isZippingAll} variant="secondary" size="md" icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}>
+                                    <Button onClick={handleDownloadAllScenes} disabled={isZippingAll} variant="secondary" className="w-full md:w-auto" icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}>
                                         {isZippingAll ? 'Zipping All Images...' : 'Download All Images'}
                                     </Button>
                                 </div>
@@ -2351,9 +2554,9 @@ const App: React.FC = () => {
             {/* Lightbox for Mascot */}
             {
                 viewingMascot && (
-                    <div className="fixed inset-0 bg-black/95 z-[60] flex items-center justify-center p-8 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setViewingMascot(null)}>
-                        <img src={viewingMascot.imageUrl} className="max-h-[90vh] max-w-full rounded-xl border-2 border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.1)]" onClick={e => e.stopPropagation()} />
-                        <Button variant="ghost" className="absolute top-6 right-6 text-white hover:text-red-500 scale-150" onClick={() => setViewingMascot(null)}>✕</Button>
+                    <div className="fixed inset-0 bg-black/95 z-[60] flex items-center justify-center p-4 md:p-8 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setViewingMascot(null)}>
+                        <img src={viewingMascot.imageUrl} className="max-h-[90vh] max-w-full rounded-xl border-2 border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.1)] object-contain" onClick={e => e.stopPropagation()} />
+                        <Button variant="ghost" className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:text-red-500 scale-125 md:scale-150" onClick={() => setViewingMascot(null)}>✕</Button>
                     </div>
                 )
             }
@@ -2361,10 +2564,10 @@ const App: React.FC = () => {
             {/* Lightbox for Scene */}
             {
                 viewingScene && (
-                    <div className="fixed inset-0 bg-black/95 z-[60] flex items-center justify-center p-8 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setViewingScene(null)}>
-                        <img src={viewingScene.scene.imageUrl} className="max-h-[85vh] max-w-full rounded-xl border-2 border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.1)]" onClick={e => e.stopPropagation()} />
-                        <div className="absolute bottom-8 left-0 w-full text-center pointer-events-none"><span className="bg-black/80 text-white px-4 py-2 rounded text-sm font-mono inline-block border border-white/10 backdrop-blur-md">{viewingScene.mascotName} // {viewingScene.scene.description.substring(0, 60)}...</span></div>
-                        <Button variant="ghost" className="absolute top-6 right-6 text-white hover:text-red-500 scale-150" onClick={() => setViewingScene(null)}>✕</Button>
+                    <div className="fixed inset-0 bg-black/95 z-[60] flex items-center justify-center p-4 md:p-8 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setViewingScene(null)}>
+                        <img src={viewingScene.scene.imageUrl} className="max-h-[85vh] max-w-full rounded-xl border-2 border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.1)] object-contain" onClick={e => e.stopPropagation()} />
+                        <div className="absolute bottom-4 md:bottom-8 left-0 w-full text-center pointer-events-none p-4"><span className="bg-black/80 text-white px-4 py-2 rounded text-[10px] md:text-sm font-mono inline-block border border-white/10 backdrop-blur-md max-w-full truncate">{viewingScene.mascotName} // {viewingScene.scene.description.substring(0, 60)}...</span></div>
+                        <Button variant="ghost" className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:text-red-500 scale-125 md:scale-150" onClick={() => setViewingScene(null)}>✕</Button>
                     </div>
                 )
             }

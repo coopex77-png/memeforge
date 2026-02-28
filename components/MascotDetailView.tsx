@@ -290,7 +290,7 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
         <div className="fixed inset-0 bg-navy-950 text-slate-200 flex flex-col z-50 overflow-hidden font-sans">
 
             {/* Top Studio Bar */}
-            <header className="h-16 border-b border-white/10 bg-navy-900/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
+            <header className="h-auto min-h-[4rem] py-4 md:py-0 border-b border-white/10 bg-navy-900/80 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 gap-4 md:gap-0 shrink-0 z-20">
                 <div className="flex items-center gap-6">
                     <Button onClick={onBack} variant="ghost" size="sm" className="gap-2 text-slate-400 hover:text-white">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -313,11 +313,11 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
             </header>
 
             {/* Main Studio Layout */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden">
 
                 {/* Left Sidebar (Configuration) */}
-                <aside className="w-96 border-r border-white/10 bg-navy-900 flex flex-col overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-6 custom-scrollbar space-y-8">
+                <aside className="w-full md:w-96 border-b md:border-b-0 md:border-r border-white/10 bg-navy-900 flex flex-col shrink-0 md:overflow-hidden h-auto md:h-full">
+                    <div className="flex-1 md:overflow-y-auto p-4 md:p-6 custom-scrollbar space-y-8">
 
                         {/* Identity Module */}
                         <div className="bg-navy-950/50 border border-white/5 rounded-lg p-4">
@@ -520,7 +520,7 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
                 </aside>
 
                 {/* Right Area (Gallery) */}
-                <main className="flex-1 bg-navy-950 p-6 overflow-y-auto custom-scrollbar relative">
+                <main className="flex-1 bg-navy-950 p-4 md:p-6 md:overflow-y-auto custom-scrollbar relative min-h-[50vh] md:min-h-0">
 
                     {/* Background Grid */}
                     <div className="absolute inset-0 pointer-events-none opacity-20"
@@ -528,7 +528,7 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
                     </div>
 
                     {scenes.length === 0 && !isGenerating ? (
-                        <div className="h-full flex flex-col items-center justify-center text-slate-600 relative z-10">
+                        <div className="h-full flex flex-col items-center justify-center text-slate-600 relative z-10 py-12 md:py-0">
                             <div className="w-24 h-24 border border-white/5 bg-navy-900 rounded-2xl flex items-center justify-center mb-6 shadow-2xl">
                                 <svg className="w-10 h-10 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                             </div>
@@ -536,16 +536,16 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
                             <p className="text-sm text-slate-500 max-w-xs text-center">Configure the generation parameters on the sidebar to start populating this workspace.</p>
                         </div>
                     ) : (
-                        <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
+                        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
                             {scenes.map((scene, idx) => {
                                 const isDex = scene.description.includes('PANORAMIC') || scene.description.includes('PADDED');
                                 const isXComm = scene.description.includes('X COMM');
 
                                 let gridClass = 'aspect-square';
                                 if (isDex) {
-                                    gridClass = 'col-span-2 aspect-[3/1]';
+                                    gridClass = 'col-span-1 sm:col-span-2 aspect-[3/1]';
                                 } else if (isXComm) {
-                                    gridClass = 'col-span-2 aspect-[2.5/1]';
+                                    gridClass = 'col-span-1 sm:col-span-2 aspect-[2.5/1]';
                                 }
 
                                 return (
@@ -595,7 +595,7 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
             {/* Lightbox */}
             {selectedScene && (
                 <div
-                    className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center p-8 animate-in fade-in duration-200"
+                    className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center p-4 md:p-8 animate-in fade-in duration-200"
                     onClick={() => setSelectedScene(null)}
                 >
                     <div className="relative max-w-7xl max-h-[90vh]">
@@ -610,7 +610,7 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
                             {cleanDescription(selectedScene.description)}
                         </p>
                     </div>
-                    <Button onClick={() => setSelectedScene(null)} variant="ghost" className="absolute top-6 right-6 text-white hover:text-red-400">
+                    <Button onClick={() => setSelectedScene(null)} variant="ghost" className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:text-red-400">
                         Close
                     </Button>
                 </div>

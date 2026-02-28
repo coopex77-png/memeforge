@@ -1010,6 +1010,10 @@ export const performXDeepResearch = async (excludedTopics: string[] = []): Promi
     const oneDayAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
     const isoYesterday = oneDayAgo.toISOString().split('T')[0];
     const exclusionList = excludedTopics.length > 0 ? `DO NOT include these topics that were already found: ${JSON.stringify(excludedTopics)}` : "";
+
+    // Always enforce strict recency for X Trends
+    const dateFilter = `after:${isoYesterday} before:${isoToday}`;
+
     const prompt = `
         CURRENT DATE: ${todayStr} (YYYY-MM-DD: ${isoToday})
         STRICT TIME WINDOW: ${isoYesterday} to ${isoToday} (LAST 24 HOURS ONLY).
@@ -1017,20 +1021,20 @@ export const performXDeepResearch = async (excludedTopics: string[] = []): Promi
         TASK: Retrieve "OFFICIAL X.COM CURATED EVENTS" & "TRENDING NEWS".
         
         CRITICAL FILTER: 
-        - The user ONLY wants topics that X (Twitter) has curated into a "News" or "Event" page (often found at x.com/i/events/...).
+        - The user ONLY wants topics that X (Twitter) has curated into a "News" or "Event" page.
         - **DO NOT** return generic hashtags (e.g. #Crypto, #MondayVibes, #BTC).
         - **DO NOT** return organic trends that are just a word without a story.
         - The topic MUST be a specific NEWS STORY, EVENT, or VIRAL MOMENT with a clear narrative.
 
-        SEARCH STRATEGY:
-        1. "site:x.com/i/events ${isoToday}"
-        2. "twitter trending news list today"
-        3. "x.com trending topics news story today"
-        4. "what is trending on x right now news"
+        SEARCH STRATEGY (via Google Search):
+        - "site:x.com/i/events ${dateFilter}"
+        - "twitter trending news list today ${dateFilter}"
+        - "x.com trending topics news story today ${dateFilter}"
+        - "what is trending on x right now news ${dateFilter}"
 
         SELECTION CRITERIA (MEME/NARRATIVE POTENTIAL):
         - It must be a specific incident (e.g. "CEO Fired", "Celebrity Arrested", "Glitch in Game").
-        - It must have "Main Character" energy.
+        - It must have "Main Character" energy, absurdity, or deep lore.
         
         ${exclusionList}
 
@@ -1038,43 +1042,99 @@ export const performXDeepResearch = async (excludedTopics: string[] = []): Promi
         - Score 1-4: Generic politics, sports scores, "National Day of X". (DISCARD).
         - Score 8-10: Absurd news, major tech fails, massive viral drama, specific person doing something wild.
 
-        RETURN exactly 15 trends in this JSON format:
+        OUTPUT FORMAT (Return an array of EXACTLY 15 objects):
         [ 
             { 
                 "topic": "The News Headline / Event Name", 
-                "category": "X Curated Event", 
-                "description": "Context: What is the story? Why is there a page for it?", 
+                "publishedDate": "YYYY-MM-DD",
+                "category": "X Curated Event / Viral Moment", 
+                "description": "Context: What is the story? Why is there a page for it? Meme potential.", 
                 "memeScore": 9, 
                 "volume": "Trending Rank", 
-                "url": "https://x.com/search?q=The+Exact+Event+Name&src=trend_click&vertical=trends", 
+                "url": "https://x.com/search?q=The+Exact+Event+Name&src=typed_query", 
                 "source": "x" 
             } 
         ]
         
         Return ONLY raw JSON.
     `;
+
     try {
-        return await withRetry(async (ai) => {
+        const { trends, groundingUrls } = await withRetry(async (ai) => {
             const response = await ai.models.generateContent({
                 model: "gemini-2.5-flash",
                 contents: prompt,
                 config: {
                     tools: [{ googleSearch: {} }],
-                    systemInstruction: "You are a precise Data Analyst AND a Memecoin Expert. You verify trends using search, but you judge them like a 'Degen' trader. You only care about the last 24 hours.",
+                    systemInstruction: `You are a precise Data Analyst AND a Memecoin Expert. You verify trends using search, but you judge them like a 'Degen' trader. ABSOLUTE TIME RULE: Only results from ${isoYesterday} to ${isoToday}.`,
                     temperature: 0.7
                 }
             });
+
+            let trends: XTrend[] = [];
             if (response.text) {
                 const cleanedText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
                 const firstBracket = cleanedText.indexOf('[');
                 const lastBracket = cleanedText.lastIndexOf(']');
                 if (firstBracket !== -1 && lastBracket !== -1) {
                     const jsonString = cleanedText.substring(firstBracket, lastBracket + 1);
-                    return JSON.parse(jsonString) as XTrend[];
+                    trends = JSON.parse(jsonString) as XTrend[];
+                } else {
+                    throw new Error("Failed to parse X trends JSON");
+                }
+            } else {
+                throw new Error("No text response from X trends API");
+            }
+
+            // Extract real URLs from grounding metadata
+            const groundingUrls: { uri: string; title: string }[] = [];
+            const candidates = (response as any).candidates;
+            if (candidates?.[0]?.groundingMetadata?.groundingChunks) {
+                for (const chunk of candidates[0].groundingMetadata.groundingChunks) {
+                    if (chunk.web?.uri) {
+                        groundingUrls.push({ uri: chunk.web.uri, title: chunk.web.title || '' });
+                    }
                 }
             }
-            throw new Error("Failed to parse X trends");
+
+            return { trends, groundingUrls };
         });
+
+        // Validation Post-Processing and URL Matching
+        const validTrends = trends.filter(trend => {
+            if (!trend.publishedDate) return false;
+            return trend.publishedDate >= isoYesterday && trend.publishedDate <= isoToday;
+        });
+
+        return validTrends.map(trend => {
+            const topicWords = trend.topic.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+
+            let bestMatch = '';
+            let bestScore = 0;
+
+            for (const { uri, title } of groundingUrls) {
+                const titleLower = title.toLowerCase();
+                const score = topicWords.filter(w => titleLower.includes(w)).length;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = uri;
+                }
+            }
+
+            const q = encodeURIComponent(trend.topic);
+            const xSearchUrl = `https://x.com/search?q=${q}&src=typed_query`;
+
+            const newsUrl = (bestScore > 0 && bestMatch)
+                ? bestMatch
+                : xSearchUrl;
+
+            return {
+                ...trend,
+                newsUrl,
+                url: xSearchUrl
+            };
+        });
+
     } catch (e) {
         console.error("X Research failed", e);
         return [];
@@ -1086,7 +1146,7 @@ export const performXDeepResearch = async (excludedTopics: string[] = []): Promi
 // Since I am replacing the whole file content block, I need to include them.
 
 export const perform4chanResearch = async (excludedTopics: string[] = [], timeRange: '24h' | '48h' | '1w' | 'all' | string = '24h', targetKeyword?: string): Promise<XTrend[]> => {
-    const exclusionList = excludedTopics.length > 0 ? `DO NOT include these topics that were already found: ${JSON.stringify(excludedTopics)}` : "";
+    const exclusionList = excludedTopics.length > 0 ? `DO NOT include these topics that were already found: ${JSON.stringify(excludedTopics)} ` : "";
     const now = new Date();
     const todayStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     let past = new Date();
@@ -1096,7 +1156,7 @@ export const perform4chanResearch = async (excludedTopics: string[] = [], timeRa
     const yearMatch = timeRange.match(/^20\d{2}$/);
     if (yearMatch) {
         manualYear = timeRange;
-        timeLabel = `YEAR ${manualYear}`;
+        timeLabel = `YEAR ${manualYear} `;
         isArchiveMode = true;
     } else if (timeRange === '24h') {
         past.setDate(now.getDate() - 1);
@@ -1112,91 +1172,91 @@ export const perform4chanResearch = async (excludedTopics: string[] = [], timeRa
         timeLabel = "ALL TIME (2010-2024)";
         isArchiveMode = true;
     }
-    const pastDateStr = manualYear ? `January 1, ${manualYear}` : past.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const endDateStr = manualYear ? `December 31, ${manualYear}` : todayStr;
+    const pastDateStr = manualYear ? `January 1, ${manualYear} ` : past.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const endDateStr = manualYear ? `December 31, ${manualYear} ` : todayStr;
     const keywordClause = targetKeyword ? ` AND related to "${targetKeyword}"` : "";
-    const searchInjection = targetKeyword ? ` ${targetKeyword}` : "";
+    const searchInjection = targetKeyword ? ` ${targetKeyword} ` : "";
     let prompt = "";
     if (isArchiveMode) {
         prompt = `
             YOU ARE A 4CHAN HISTORIAN & LOREKEEPER.
-            TASK: Find LEGENDARY, "Meme-Worthy" 4chan threads/stories from **${manualYear || '2010 to TODAY'}**${keywordClause}.
+                TASK: Find LEGENDARY, "Meme-Worthy" 4chan threads / stories from ** ${manualYear || '2010 to TODAY'}** ${keywordClause}.
             
             SEARCH WINDOW: ${pastDateStr} to ${endDateStr}.
             
-            SEARCH STRATEGY (TARGET ARCHIVES):
+            SEARCH STRATEGY(TARGET ARCHIVES):
             - "site:warosu.org/biz/${searchInjection} ${manualYear || 'classic narrative'}"
-            - "site:archive.4plebs.org/pol/${searchInjection} ${manualYear || 'legendary greentext'}"
-            - "site:archived.moe/b/${searchInjection} ${manualYear || 'viral meme'}"
-            - "classic 4chan lore ${manualYear || ''} ${targetKeyword || ''}"
+                - "site:archive.4plebs.org/pol/${searchInjection} ${manualYear || 'legendary greentext'}"
+                - "site:archived.moe/b/${searchInjection} ${manualYear || 'viral meme'}"
+                - "classic 4chan lore ${manualYear || ''} ${targetKeyword || ''}"
 
-            SELECTION CRITERIA (MEMECOIN POTENTIAL):
-            1. **LORE DEPTH**: Does this have a deep backstory or character arc?
-            2. **ABSURDITY**: Is it funny, weird, or unhinged?
-            3. **CULT STATUS**: Did this define an era of the internet?
+            SELECTION CRITERIA(MEMECOIN POTENTIAL):
+            1. ** LORE DEPTH **: Does this have a deep backstory or character arc ?
+                2. ** ABSURDITY **: Is it funny, weird, or unhinged ?
+                    3. ** CULT STATUS **: Did this define an era of the internet ?
 
-            ${exclusionList}
+                        ${exclusionList}
             
             RETURN exactly 15 historical trends in this JSON format:
-            [ 
-                { 
-                    "topic": "The Headline / Meme Name", 
-                    "category": "History ${manualYear || 'Lore'}", 
-                    "description": "Explain the history. Why represents memecoin values (fun, absurdity)?", 
-                    "memeScore": 10, 
-                    "volume": "Cult Status", 
-                    "url": "https://www.google.com/search?q=site:warosu.org+OR+site:archive.4plebs.org+${targetKeyword || ''}+THE+TOPIC", 
-                    "source": "4chan" 
-                } 
+            [
+                {
+                    "topic": "The Headline / Meme Name",
+                    "category": "History ${manualYear || 'Lore'}",
+                    "description": "Explain the history. Why represents memecoin values (fun, absurdity)?",
+                    "memeScore": 10,
+                    "volume": "Cult Status",
+                    "url": "https://www.google.com/search?q=site:warosu.org+OR+site:archive.4plebs.org+${targetKeyword || ''}+THE+TOPIC",
+                    "source": "4chan"
+                }
             ]
             CRITICAL: The 'url' field MUST be a Google Search link to find the archive.
         `;
     } else {
         const specificFocus = targetKeyword
-            ? `FOCUS: Find funny, absurd, or meme-potential threads specifically about "${targetKeyword}".`
-            : `FOCUS: Find the weirdest, funniest, and most promising "memecoin narratives" on /biz/ and /pol/ right now.`;
+            ? `FOCUS: Find funny, absurd, or meme - potential threads specifically about "${targetKeyword}".`
+            : `FOCUS: Find the weirdest, funniest, and most promising "memecoin narratives" on / biz / and / pol / right now.`;
 
         prompt = `
             YOU ARE A 4CHAN LORE SCANNNER & MEMECOIN SCOUT.
-            ${specificFocus}
+                ${specificFocus}
 
             SEARCH WINDOW: ${pastDateStr} to ${endDateStr} (${timeLabel}).
             STRICT TIME CONTROL: Only return threads active in this window.
 
             SEARCH STRATEGY:
-            - "site:4channel.org/biz/${searchInjection} memecoin narrative ${timeLabel}"
+        - "site:4channel.org/biz/${searchInjection} memecoin narrative ${timeLabel}"
             - "site:4channel.org/pol/${searchInjection} funny greentext ${timeLabel}"
             - "site:4channel.org/x/${searchInjection} paranormal funny ${timeLabel}"
             - "4chan viral thread ${searchInjection} ${timeLabel}"
 
-            LOOK FOR (MEMECOIN INGREDIENTS):
-            1. **LORE**: Threads creating a new character, story, or "schizo theory".
-            2. **HUMOR**: Genuine funny moments, not just hate speech or boring politics.
-            3. **MASCOTS**: New Wojak variants, Pepe edits, or funny animals.
-            4. **ABSURDITY**: "Glitch in the matrix", "Skinwalkers", bizarre financial theories.
+            LOOK FOR(MEMECOIN INGREDIENTS):
+        1. ** LORE **: Threads creating a new character, story, or "schizo theory".
+            2. ** HUMOR **: Genuine funny moments, not just hate speech or boring politics.
+            3. ** MASCOTS **: New Wojak variants, Pepe edits, or funny animals.
+            4. ** ABSURDITY **: "Glitch in the matrix", "Skinwalkers", bizarre financial theories.
 
             AVOID: Generic crypto price talk, boring shills, standard politics without a meme angle.
 
-            ${exclusionList}
+                ${exclusionList}
 
             RETURN exactly 15 trends in this JSON format:
-            [ 
-                { 
-                    "topic": "The Narrative / Thread Topic", 
-                    "category": "/biz/ or /pol/ Narrative", 
-                    "description": "Short summary of the LORE. Why is it funny/memeable?", 
-                    "memeScore": 10, 
-                    "volume": "Thread Intensity", 
-                    "url": "https://www.google.com/search?q=site:4channel.org+${targetKeyword || ''}+THE+TOPIC", 
-                    "source": "4chan" 
-                } 
-            ]
-            CRITICAL: The 'url' field MUST be a Google Search link targeting site:4channel.org.
+        [
+            {
+                "topic": "The Narrative / Thread Topic",
+                "category": "/biz/ or /pol/ Narrative",
+                "description": "Short summary of the LORE. Why is it funny/memeable?",
+                "memeScore": 10,
+                "volume": "Thread Intensity",
+                "url": "https://www.google.com/search?q=site:4channel.org+${targetKeyword || ''}+THE+TOPIC",
+                "source": "4chan"
+            }
+        ]
+        CRITICAL: The 'url' field MUST be a Google Search link targeting site: 4channel.org.
         `;
     }
     const systemInstruction = isArchiveMode
-        ? `You are an Internet Historian. You find deep lore and classic memes of 4chan history${targetKeyword ? ` regarding ${targetKeyword}` : ''}.`
-        : `You are a 4chan Researcher. You find fresh alpha and narratives${targetKeyword ? ` regarding ${targetKeyword}` : ''} from the last ${timeLabel}.`;
+        ? `You are an Internet Historian.You find deep lore and classic memes of 4chan history${targetKeyword ? ` regarding ${targetKeyword}` : ''}.`
+        : `You are a 4chan Researcher.You find fresh alpha and narratives${targetKeyword ? ` regarding ${targetKeyword}` : ''} from the last ${timeLabel}.`;
     try {
         return await withRetry(async (ai) => {
             const response = await ai.models.generateContent({

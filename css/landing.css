@@ -211,3 +211,26 @@
 .pricing-card:hover {
   transform: translateY(-10px);
 }
+
+/* Mobile Overrides */
+@media (max-width: 768px) {
+  .slider-container::before,
+  .slider-container::after {
+    width: 60px;
+  }
+  
+  .floating-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* Opt-out of some animations for mobile performance if needed */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
