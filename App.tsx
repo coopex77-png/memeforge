@@ -36,6 +36,7 @@ import { DatabaseUser } from './types';
 import { supabase, deductCredits } from './supabase';
 import { LandingPage } from './components/LandingPage';
 import { AdminDashboard } from './components/AdminDashboard';
+import { LiteModeWizard } from './components/LiteModeWizard';
 
 const LOADING_IMAGE_PLACEHOLDER = "https://placehold.co/1024x1024/1e293b/475569?text=Rendering...";
 
@@ -128,6 +129,7 @@ const App: React.FC = () => {
     const [showAccountPopup, setShowAccountPopup] = useState(false);
     const [showSupportModal, setShowSupportModal] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
+    const [artInterfaceMode, setArtInterfaceMode] = useState<'lite' | 'pro'>('lite');
     const accountPopupRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -780,7 +782,7 @@ const App: React.FC = () => {
                 id: baseMascotId,
                 name: "Trait Mascot",
                 ticker: "$TRAIT",
-                narrative: "Character variations generated via Trait Mixer.",
+                narrative: customRemixNarrative.trim() || "Character variations generated via Trait Mixer.",
                 artStyle: "Original",
                 styleId: "trait_mixer",
                 imageUrl: traitBaseImage,
@@ -1747,316 +1749,346 @@ const App: React.FC = () => {
             <main className="w-full max-w-[1800px] mx-auto px-3 md:px-6 py-4 md:py-8 relative">
                 {!hasMascots && !isGenerating && (
                     <div className="space-y-4 md:space-y-8 relative z-10">
-                        {/* 1. TOP CONTROL BAR (Styles + Quantity) */}
-                        <div className="bg-navy-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-8 shadow-2xl flex flex-col xl:flex-row gap-4 md:gap-8 items-stretch xl:items-center animate-in slide-in-from-top-4 duration-500">
-                            <div className="flex-1 w-full">
-                                <div className="flex justify-between items-end mb-4">
-                                    <div>
-                                        <div className="flex items-center gap-3">
-                                            <h2 className="text-lg md:text-2xl font-black text-white tracking-tighter">SELECT ART STYLE</h2>
-                                            {selectedStyles.length > 0 && (
-                                                <span className="bg-accent/10 border border-accent/20 text-accent text-[10px] font-black px-2 py-0.5 rounded-full animate-in fade-in zoom-in duration-300">
-                                                    {selectedStyles.length} ACTIVE
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <button onClick={selectAllStyles} className="text-[10px] font-bold text-slate-500 hover:text-accent uppercase transition-colors flex items-center gap-1.5">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
-                                            {selectedStyles.length === AVAILABLE_ART_STYLES.length ? "Deselect All" : "Select All"}
-                                        </button>
-                                    </div>
+                        {/* Lite/Pro Toggle */}
+                        <div className="flex justify-center mb-6">
+                            <div className="relative bg-[#02040A]/60 backdrop-blur-xl p-1 rounded-full border border-white/10 flex items-center shadow-xl">
+                                <div className="flex absolute inset-1 transition-all duration-300 pointer-events-none" style={{ padding: '4px', left: artInterfaceMode === 'lite' ? '0' : '50%', right: artInterfaceMode === 'lite' ? '50%' : '0' }}>
+                                    <div className="w-full h-full rounded-full shadow-[0_0_15px_rgba(255,255,255,0.15)] bg-white/10 backdrop-blur-md"></div>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-5 gap-3">
-                                    {AVAILABLE_ART_STYLES.map((style, idx) => {
-                                        const isSelected = selectedStyles.includes(style.id);
-
-                                        return (
-                                            <button
-                                                key={style.id}
-                                                onClick={() => toggleStyle(style.id)}
-                                                className={`
-                                                    group relative h-16 p-3 rounded-xl border transition-all duration-300 text-left overflow-hidden flex flex-col justify-between
-                                                    ${isSelected
-                                                        ? 'bg-accent border-accent shadow-[0_0_25px_rgba(222,253,65,0.2)] scale-[1.02] z-10'
-                                                        : 'bg-black border-white/5 text-slate-500 hover:border-white/20 hover:bg-navy-900'
-                                                    }
-                                                `}
-                                            >
-                                                <div className="flex justify-between items-start z-10">
-                                                    <span className={`text-[8px] font-mono leading-none ${isSelected ? 'text-black/60' : 'text-slate-500'}`}>0{idx + 1}</span>
-                                                    {isSelected && (
-                                                        <div className="w-3 h-3 rounded-full bg-black flex items-center justify-center animate-in zoom-in duration-200">
-                                                            <svg className="w-2 h-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <div className="z-10">
-                                                    <span className={`text-[10px] font-black uppercase tracking-tight leading-none block ${isSelected ? 'text-black' : 'text-white'}`}>
-                                                        {style.name}
-                                                    </span>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            <div className="w-full xl:w-auto xl:border-l border-white/10 xl:pl-8 min-w-full md:min-w-[220px]">
-                                <div className="flex justify-between items-center mb-3 pt-4 xl:pt-0">
-                                    <h3 className="text-[10px] font-black uppercase text-accent tracking-[0.2em]">Batch Count</h3>
-                                    <span className="text-[10px] font-mono text-slate-500">MAX 5</span>
-                                </div>
-                                <div className="flex items-center gap-4 bg-black/40 border border-white/10 rounded-2xl p-2 h-[70px] md:h-[100px]">
-                                    <button
-                                        onClick={() => setTargetCount(Math.max(1, targetCount - 1))}
-                                        className="w-12 h-full flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-xl text-white transition-colors border border-white/5"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M20 12H4" /></svg>
-                                    </button>
-                                    <div className="flex-1 text-center">
-                                        <input
-                                            type="number" min="1" max="5" value={targetCount}
-                                            readOnly
-                                            className="w-full bg-transparent text-center text-2xl md:text-4xl font-black text-white focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                        />
-                                        <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Concepts</p>
-                                    </div>
-                                    <button
-                                        onClick={() => setTargetCount(Math.min(5, targetCount + 1))}
-                                        className="w-12 h-full flex items-center justify-center bg-accent text-black hover:bg-accent/80 rounded-xl transition-colors border border-accent shadow-[0_0_15px_rgba(222,253,65,0.2)]"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
-                                    </button>
-                                </div>
+                                <button onClick={() => setArtInterfaceMode('lite')} className={`relative z-10 w-24 md:w-32 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 rounded-full ${artInterfaceMode === 'lite' ? 'text-accent' : 'text-slate-400 hover:text-white'}`}>
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    LITE
+                                </button>
+                                <button onClick={() => setArtInterfaceMode('pro')} className={`relative z-10 w-24 md:w-32 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 rounded-full ${artInterfaceMode === 'pro' ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}>
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                                    PRO
+                                </button>
                             </div>
                         </div>
 
-                        {/* 2. GENERATORS ROW */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {/* ... (Remix, Random, Text components - same as previous) ... */}
-                            <div className="relative bg-[#0B1221] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-blue-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
-                                <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
-                                <div className="relative z-10 flex flex-col h-full">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-[9px] font-bold uppercase tracking-widest mb-3">
-                                                <span className={`w-1.5 h-1.5 rounded-full ${uploadedImage ? 'bg-blue-400' : 'bg-slate-600'} animate-pulse`}></span>
-                                                {uploadedImage ? 'Image Ready' : 'Upload Source'}
+                        {artInterfaceMode === 'lite' ? (
+                            <LiteModeWizard
+                                currentUser={currentUser}
+                                isGenerating={isGenerating}
+                                uploadedImage={uploadedImage}
+                                setUploadedImage={setUploadedImage}
+                                fileInputRef={fileInputRef}
+                                handleFileUpload={handleFileUpload}
+                                handleDragOver={handleDragOver}
+                                handleDragLeave={handleDragLeave}
+                                handleRemixDrop={handleRemixDrop}
+                                isDragging={isDragging}
+                                selectedStyles={selectedStyles}
+                                toggleStyle={toggleStyle}
+                                selectAllStyles={selectAllStyles}
+                                customRemixNarrative={customRemixNarrative}
+                                setCustomRemixNarrative={setCustomRemixNarrative}
+                                traitBaseImage={traitBaseImage}
+                                setTraitBaseImage={setTraitBaseImage}
+                                traitMode={traitMode}
+                                setTraitMode={setTraitMode}
+                                traitsInput={traitsInput}
+                                setTraitsInput={setTraitsInput}
+                                handleGenerateFromUpload={handleGenerateFromUpload}
+                                handleGenerateTraits={handleGenerateTraits}
+                                handleRemixPaste={handleRemixPaste}
+                                customInput={customInput}
+                                setCustomInput={setCustomInput}
+                                handleGenerateFromCustomInput={handleGenerateFromCustomInput}
+                            />
+                        ) : (
+                            <div className="space-y-4 md:space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                                {/* 1. TOP CONTROL BAR (Styles + Quantity) */}
+                                <div className="bg-navy-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-8 shadow-2xl flex flex-col xl:flex-row gap-4 md:gap-8 items-stretch xl:items-center animate-in slide-in-from-top-4 duration-500">
+                                    <div className="flex-1 w-full">
+                                        <div className="flex justify-between items-end mb-4">
+                                            <div>
+                                                <div className="flex items-center gap-3">
+                                                    <h2 className="text-lg md:text-2xl font-black text-white tracking-tighter">SELECT ART STYLE</h2>
+                                                    {selectedStyles.length > 0 && (
+                                                        <span className="bg-accent/10 border border-accent/20 text-accent text-[10px] font-black px-2 py-0.5 rounded-full animate-in fade-in zoom-in duration-300">
+                                                            {selectedStyles.length} ACTIVE
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">REMIX IMAGE</h3>
-                                            <p className="text-sm text-slate-400 mt-1 font-medium">Transform existing images.</p>
+                                            <div className="flex gap-4">
+                                                <button onClick={selectAllStyles} className="text-[10px] font-bold text-slate-500 hover:text-accent uppercase transition-colors flex items-center gap-1.5">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
+                                                    {selectedStyles.length === AVAILABLE_ART_STYLES.length ? "Deselect All" : "Select All"}
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col items-end gap-2">
-                                            <InfoTooltip text="Upload an existing image to create new variations." />
-                                            <div className="text-blue-500/20 group-hover:text-blue-500/40 transition-colors">
-                                                <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                            </div>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-5 gap-3">
+                                            {AVAILABLE_ART_STYLES.map((style, idx) => {
+                                                const isSelected = selectedStyles.includes(style.id);
+
+                                                return (
+                                                    <button
+                                                        key={style.id}
+                                                        onClick={() => toggleStyle(style.id)}
+                                                        className={`
+                                                    group relative h-16 p-3 rounded-xl border transition-all duration-300 text-left overflow-hidden flex flex-col justify-between
+                                                    ${isSelected
+                                                                ? 'bg-accent border-accent shadow-[0_0_25px_rgba(222,253,65,0.2)] scale-[1.02] z-10'
+                                                                : 'bg-black border-white/5 text-slate-500 hover:border-white/20 hover:bg-navy-900'
+                                                            }
+                                                `}
+                                                    >
+                                                        <div className="flex justify-between items-start z-10 w-full mb-1">
+                                                            <span className={`text-[8px] font-mono leading-none ${isSelected ? 'text-black/60' : 'text-slate-500'}`}>0{idx + 1}</span>
+                                                            <div className="flex items-center gap-1.5">
+                                                                {style.id === 'original' && (
+                                                                    <div className="w-3.5 h-3.5 rounded-full bg-[#DEFD41] flex items-center justify-center shadow-[0_0_10px_rgba(222,253,65,0.4)]" title="Highly Recommended">
+                                                                        <svg className="w-2 h-2 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z" /></svg>
+                                                                    </div>
+                                                                )}
+                                                                {isSelected && (
+                                                                    <div className="w-3 h-3 rounded-full bg-black flex items-center justify-center animate-in zoom-in duration-200">
+                                                                        <svg className="w-2 h-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="z-10">
+                                                            <span className={`text-[10px] font-black uppercase tracking-tight leading-none block ${isSelected ? 'text-black' : 'text-white'}`}>
+                                                                {style.name}
+                                                            </span>
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
-                                    <div
-                                        onClick={() => fileInputRef.current?.click()}
-                                        onDragOver={handleDragOver}
-                                        onDragLeave={handleDragLeave}
-                                        onDrop={handleRemixDrop}
-                                        onPaste={handleRemixPaste}
-                                        className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
+                                </div>
+
+                                {/* 2. GENERATORS ROW */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {/* ... (Remix, Random, Text components - same as previous) ... */}
+                                    <div className="relative bg-[#0B1221] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-blue-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
+                                        <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+                                        <div className="relative z-10 flex flex-col h-full">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-[9px] font-bold uppercase tracking-widest mb-3">
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${uploadedImage ? 'bg-blue-400' : 'bg-slate-600'} animate-pulse`}></span>
+                                                        {uploadedImage ? 'Image Ready' : 'Upload Source'}
+                                                    </div>
+                                                    <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">STORY MODE</h3>
+                                                    <p className="text-sm text-slate-400 mt-1 font-medium">Place character in new scenes.</p>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <InfoTooltip text="Upload an existing image to create new variations." />
+                                                    <div className="text-blue-500/20 group-hover:text-blue-500/40 transition-colors">
+                                                        <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div
+                                                onClick={() => fileInputRef.current?.click()}
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={handleRemixDrop}
+                                                onPaste={handleRemixPaste}
+                                                className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
                                     ${uploadedImage ? 'bg-black border border-white/10' : ''}
                                     ${!uploadedImage && !isDragging ? 'bg-black/20 border-2 border-dashed border-white/10 hover:border-blue-400 hover:bg-blue-500/5' : ''}
                                     ${isDragging ? 'bg-blue-500/20 border-2 border-blue-500 scale-[1.02] shadow-[0_0_20px_rgba(59,130,246,0.2)]' : ''}
                                 `}
-                                    >
-                                        {uploadedImage ? (
-                                            <>
-                                                <img src={uploadedImage} className="w-full h-full object-contain" />
-                                                <button onClick={(e) => { e.stopPropagation(); setUploadedImage(null) }} className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white p-1.5 rounded-lg backdrop-blur-sm transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-                                            </>
-                                        ) : (
-                                            <div className="text-center p-4 pointer-events-none">
-                                                <div className="mb-2">
-                                                    <svg className={`w-8 h-8 mx-auto mb-2 transition-colors ${isDragging ? 'text-blue-400' : 'text-slate-600 group-hover/drop:text-blue-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                                    </svg>
-                                                </div>
-                                                <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors block mb-1 ${isDragging ? 'text-blue-300' : 'text-slate-500 group-hover/drop:text-blue-400'}`}>
-                                                    {isDragging ? 'DROP TO UPLOAD' : 'Click, Drop or Paste'}
-                                                </span>
-                                                <span className="text-[8px] text-slate-700 font-mono uppercase tracking-tighter block mt-1">Supports Clipboard (Ctrl+V)</span>
+                                            >
+                                                {uploadedImage ? (
+                                                    <>
+                                                        <img src={uploadedImage} className="w-full h-full object-contain" />
+                                                        <button onClick={(e) => { e.stopPropagation(); setUploadedImage(null) }} className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white p-1.5 rounded-lg backdrop-blur-sm transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                                                    </>
+                                                ) : (
+                                                    <div className="text-center p-4 pointer-events-none">
+                                                        <div className="mb-2">
+                                                            <svg className={`w-8 h-8 mx-auto mb-2 transition-colors ${isDragging ? 'text-blue-400' : 'text-slate-600 group-hover/drop:text-blue-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                                            </svg>
+                                                        </div>
+                                                        <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors block mb-1 ${isDragging ? 'text-blue-300' : 'text-slate-500 group-hover/drop:text-blue-400'}`}>
+                                                            {isDragging ? 'DROP TO UPLOAD' : 'Click, Drop or Paste'}
+                                                        </span>
+                                                        <span className="text-[8px] text-slate-700 font-mono uppercase tracking-tighter block mt-1">Supports Clipboard (Ctrl+V)</span>
+                                                    </div>
+                                                )}
+                                                <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
                                             </div>
-                                        )}
-                                        <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2 mb-4">
-                                        <div onClick={() => setPreserveOriginal(!preserveOriginal)} className={`cursor-pointer border rounded-lg p-2 flex flex-col justify-center transition-all ${preserveOriginal ? 'bg-blue-500/10 border-blue-500/50' : 'bg-black/20 border-white/5 hover:border-white/20'}`}>
-                                            <div className="flex items-center justify-between mb-1"><span className={`text-[9px] font-bold uppercase ${preserveOriginal ? 'text-blue-300' : 'text-slate-500'}`}>Lock Pose</span><div className={`w-1.5 h-1.5 rounded-full ${preserveOriginal ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]' : 'bg-slate-700'}`}></div></div>
-                                        </div>
-                                        <div onClick={() => setShowCustomRemixLore(!showCustomRemixLore)} className={`cursor-pointer border rounded-lg p-2 flex flex-col justify-center transition-all ${showCustomRemixLore ? 'bg-white/10 border-white/20' : 'bg-black/20 border-white/5 hover:border-white/20'}`}>
-                                            <div className="flex items-center justify-between"><span className={`text-[9px] font-bold uppercase ${showCustomRemixLore ? 'text-white' : 'text-slate-500'}`}>Add Lore</span><svg className={`w-3 h-3 transition-transform ${showCustomRemixLore ? 'rotate-180 text-white' : 'text-slate-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></div>
-                                        </div>
-                                    </div>
-                                    {showCustomRemixLore && <textarea placeholder="Add specific backstory..." value={customRemixNarrative} onChange={e => setCustomRemixNarrative(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-xs text-slate-200 placeholder:text-slate-700 focus:border-blue-500 outline-none resize-none mb-4" rows={2} />}
-                                    <div className="mt-auto relative">
-                                        {!currentUser?.can_use_art && !currentUser?.is_admin && (
-                                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
-                                                <div className="flex items-center gap-2 text-red-500">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                    <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                            <div className="grid grid-cols-2 gap-2 mb-4">
+                                                <div onClick={() => setPreserveOriginal(!preserveOriginal)} className={`cursor-pointer border rounded-lg p-2 flex flex-col justify-center transition-all ${preserveOriginal ? 'bg-blue-500/10 border-blue-500/50' : 'bg-black/20 border-white/5 hover:border-white/20'}`}>
+                                                    <div className="flex items-center justify-between mb-1"><span className={`text-[9px] font-bold uppercase ${preserveOriginal ? 'text-blue-300' : 'text-slate-500'}`}>Lock Pose</span><div className={`w-1.5 h-1.5 rounded-full ${preserveOriginal ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]' : 'bg-slate-700'}`}></div></div>
+                                                </div>
+                                                <div onClick={() => setShowCustomRemixLore(!showCustomRemixLore)} className={`cursor-pointer border rounded-lg p-2 flex flex-col justify-center transition-all ${showCustomRemixLore ? 'bg-white/10 border-white/20' : 'bg-black/20 border-white/5 hover:border-white/20'}`}>
+                                                    <div className="flex items-center justify-between"><span className={`text-[9px] font-bold uppercase ${showCustomRemixLore ? 'text-white' : 'text-slate-500'}`}>Add Lore</span><svg className={`w-3 h-3 transition-transform ${showCustomRemixLore ? 'rotate-180 text-white' : 'text-slate-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></div>
                                                 </div>
                                             </div>
-                                        )}
-                                        {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
-                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
-                                                <div className="flex items-center gap-2 text-orange-500">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                    <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                        <Button onClick={handleGenerateFromUpload} disabled={!uploadedImage || selectedStyles.length === 0 || (!currentUser?.can_use_art && !currentUser?.is_admin)} className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${uploadedImage ? 'bg-blue-500 text-white hover:bg-blue-400 border-transparent shadow-blue-900/20' : 'bg-white/5 text-slate-600 border-white/5'}`}>REMIX</Button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* TRAIT MIXER */}
-                            <div className="relative bg-[#100B05] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-orange-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
-                                <div className="absolute inset-0 bg-[radial-gradient(#f9731605_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
-                                <div className="relative z-10 flex flex-col h-full">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-300 text-[9px] font-bold uppercase tracking-widest mb-3">
-                                                <span className={`w-1.5 h-1.5 rounded-full ${traitBaseImage ? 'bg-orange-400' : 'bg-slate-600'} animate-pulse`}></span>
-                                                {traitBaseImage ? 'Identity Lock' : 'Upload Base'}
-                                            </div>
-                                            <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">TRAIT MIXER</h3>
-                                            <p className="text-xs md:text-sm text-slate-400 mt-1 font-medium">Modify with precision edits.</p>
-                                        </div>
-                                        <div className="flex flex-col items-end gap-2">
-                                            <InfoTooltip text="Upload a focused character image, then list traits or scenarios to generate variations." />
-                                            <div className="text-orange-500/20 group-hover:text-orange-500/40 transition-colors">
-                                                <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                                            {showCustomRemixLore && <textarea placeholder="Add specific backstory..." value={customRemixNarrative} onChange={e => setCustomRemixNarrative(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-xs text-slate-200 placeholder:text-slate-700 focus:border-blue-500 outline-none resize-none mb-4" rows={2} />}
+                                            <div className="mt-auto relative">
+                                                {!currentUser?.can_use_art && !currentUser?.is_admin && (
+                                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
+                                                        <div className="flex items-center gap-2 text-red-500">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                            <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
+                                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
+                                                        <div className="flex items-center gap-2 text-orange-500">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                            <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <Button onClick={handleGenerateFromUpload} disabled={!uploadedImage || selectedStyles.length === 0 || (!currentUser?.can_use_art && !currentUser?.is_admin)} className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${uploadedImage ? 'bg-blue-500 text-white hover:bg-blue-400 border-transparent shadow-blue-900/20' : 'bg-white/5 text-slate-600 border-white/5'}`}>REMIX</Button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div
-                                        onClick={() => traitFileInputRef.current?.click()}
-                                        onDragOver={(e) => { e.preventDefault(); setIsDraggingTrait(true); }}
-                                        onDragLeave={(e) => { e.preventDefault(); setIsDraggingTrait(false); }}
-                                        onDrop={handleTraitDrop}
-                                        className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
+                                    {/* TRAIT MIXER */}
+                                    <div className="relative bg-[#100B05] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-orange-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
+                                        <div className="absolute inset-0 bg-[radial-gradient(#f9731605_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+                                        <div className="relative z-10 flex flex-col h-full">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-300 text-[9px] font-bold uppercase tracking-widest mb-3">
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${traitBaseImage ? 'bg-orange-400' : 'bg-slate-600'} animate-pulse`}></span>
+                                                        {traitBaseImage ? 'Identity Lock' : 'Upload Base'}
+                                                    </div>
+                                                    <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">CUSTOM MODE</h3>
+                                                    <p className="text-xs md:text-sm text-slate-400 mt-1 font-medium">Equip items, change backgrounds, characters and modify traits.</p>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <InfoTooltip text="Upload a focused character image, then list traits or scenarios to generate variations." />
+                                                    <div className="text-orange-500/20 group-hover:text-orange-500/40 transition-colors">
+                                                        <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                onClick={() => traitFileInputRef.current?.click()}
+                                                onDragOver={(e) => { e.preventDefault(); setIsDraggingTrait(true); }}
+                                                onDragLeave={(e) => { e.preventDefault(); setIsDraggingTrait(false); }}
+                                                onDrop={handleTraitDrop}
+                                                className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
                                     ${traitBaseImage ? 'bg-black border border-white/10' : ''}
                                     ${!traitBaseImage && !isDraggingTrait ? 'bg-black/20 border-2 border-dashed border-white/10 hover:border-orange-400 hover:bg-orange-500/5' : ''}
                                     ${isDraggingTrait ? 'bg-orange-500/20 border-2 border-orange-500 scale-[1.02] shadow-[0_0_20px_rgba(249,115,22,0.2)]' : ''}
                                 `}
-                                    >
-                                        {traitBaseImage ? (
-                                            <>
-                                                <img src={traitBaseImage} className="w-full h-full object-contain" />
-                                                <button onClick={(e) => { e.stopPropagation(); setTraitBaseImage(null) }} className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white p-1.5 rounded-lg backdrop-blur-sm transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-                                            </>
-                                        ) : (
-                                            <div className="text-center p-4 pointer-events-none">
-                                                <div className="mb-2 text-orange-500/40 group-hover/drop:text-orange-500 transition-colors">
-                                                    <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                </div>
-                                                <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors block mb-1 ${isDraggingTrait ? 'text-orange-300' : 'text-slate-500 group-hover/drop:text-orange-400'}`}>
-                                                    {isDraggingTrait ? 'DROP TO UPLOAD' : 'Click or Drop Base Image'}
-                                                </span>
+                                            >
+                                                {traitBaseImage ? (
+                                                    <>
+                                                        <img src={traitBaseImage} className="w-full h-full object-contain" />
+                                                        <button onClick={(e) => { e.stopPropagation(); setTraitBaseImage(null) }} className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white p-1.5 rounded-lg backdrop-blur-sm transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                                                    </>
+                                                ) : (
+                                                    <div className="text-center p-4 pointer-events-none">
+                                                        <div className="mb-2 text-orange-500/40 group-hover/drop:text-orange-500 transition-colors">
+                                                            <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                        </div>
+                                                        <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors block mb-1 ${isDraggingTrait ? 'text-orange-300' : 'text-slate-500 group-hover/drop:text-orange-400'}`}>
+                                                            {isDraggingTrait ? 'DROP TO UPLOAD' : 'Click or Drop Base Image'}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <input type="file" ref={traitFileInputRef} onChange={handleTraitFileUpload} accept="image/*" className="hidden" />
                                             </div>
-                                        )}
-                                        <input type="file" ref={traitFileInputRef} onChange={handleTraitFileUpload} accept="image/*" className="hidden" />
-                                    </div>
 
-                                    {/* MODE TERMINAL UI */}
-                                    <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 mb-3">
-                                        <button onClick={() => setTraitMode('mix')} className={`flex-1 py-2 text-[9px] font-black rounded-lg transition-all uppercase tracking-widest ${traitMode === 'mix' ? 'bg-orange-500 text-black shadow-lg shadow-orange-950/20' : 'text-slate-500 hover:text-white'}`}>Mix Mode</button>
-                                        <button onClick={() => setTraitMode('scenes')} className={`flex-1 py-2 text-[9px] font-black rounded-lg transition-all uppercase tracking-widest ${traitMode === 'scenes' ? 'bg-orange-500 text-black shadow-lg shadow-orange-950/20' : 'text-slate-500 hover:text-white'}`}>Scenes Mode</button>
-                                    </div>
+                                            {/* MODE TERMINAL UI */}
+                                            <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 mb-3">
+                                                <button onClick={() => setTraitMode('mix')} className={`flex-1 py-2 text-[9px] font-black rounded-lg transition-all uppercase tracking-widest ${traitMode === 'mix' ? 'bg-orange-500 text-black shadow-lg shadow-orange-950/20' : 'text-slate-500 hover:text-white'}`}>Mix Mode</button>
+                                                <button onClick={() => setTraitMode('scenes')} className={`flex-1 py-2 text-[9px] font-black rounded-lg transition-all uppercase tracking-widest ${traitMode === 'scenes' ? 'bg-orange-500 text-black shadow-lg shadow-orange-950/20' : 'text-slate-500 hover:text-white'}`}>Scenes Mode</button>
+                                            </div>
 
-                                    <div className="flex flex-col group/terminal bg-black/40 border border-white/10 rounded-xl overflow-hidden mb-4">
-                                        <div className="flex items-center justify-between px-3 py-1.5 bg-white/5 border-b border-white/10">
-                                            <span className="text-[8px] font-black text-orange-500/60 uppercase tracking-widest">{traitMode === 'mix' ? 'Combinator' : 'Sequencer'} ACTIVE</span>
-                                            <div className="flex gap-1.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500/20 italic animate-pulse"></div>
+                                            <div className="flex flex-col group/terminal bg-black/40 border border-white/10 rounded-xl overflow-hidden mb-4">
+                                                <div className="flex items-center justify-between px-3 py-1.5 bg-white/5 border-b border-white/10">
+                                                    <span className="text-[8px] font-black text-orange-500/60 uppercase tracking-widest">{traitMode === 'mix' ? 'Combinator' : 'Sequencer'} ACTIVE</span>
+                                                    <div className="flex gap-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500/20 italic animate-pulse"></div>
+                                                    </div>
+                                                </div>
+                                                <textarea
+                                                    value={traitsInput}
+                                                    onChange={(e) => setTraitsInput(e.target.value)}
+                                                    placeholder={traitMode === 'mix'
+                                                        ? "hat: blue hat, solana hat\nskin: red, yellow"
+                                                        : "Scene 1: black suit, sunglasses, wagmi hat\nScene 2: red suit, solana hat, solana necklace"}
+                                                    className="w-full bg-transparent p-3 text-xs text-orange-100 placeholder:text-slate-800 outline-none resize-none min-h-[90px] font-mono leading-relaxed"
+                                                    onPaste={handleTraitPaste}
+                                                />
+                                            </div>
+
+                                            <div className="mt-auto relative">
+                                                {!currentUser?.can_use_art && !currentUser?.is_admin && (
+                                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
+                                                        <div className="flex items-center gap-2 text-red-500">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                            <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
+                                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
+                                                        <div className="flex items-center gap-2 text-orange-500">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                            <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <Button
+                                                    onClick={handleGenerateTraits}
+                                                    disabled={isGenerating || !traitBaseImage || (!currentUser?.can_use_art && !currentUser?.is_admin)}
+                                                    className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${isGenerating || !traitBaseImage ? 'bg-white/5 text-slate-700' : 'bg-orange-600 text-white hover:bg-orange-500 shadow-orange-950/20'}`}
+                                                    icon={isGenerating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : undefined}
+                                                >
+                                                    {isGenerating ? 'GENESIS...' : 'LAUNCH'}
+                                                </Button>
                                             </div>
                                         </div>
-                                        <textarea
-                                            value={traitsInput}
-                                            onChange={(e) => setTraitsInput(e.target.value)}
-                                            placeholder={traitMode === 'mix'
-                                                ? "hat: blue hat, solana hat\nskin: red, yellow"
-                                                : "Scene 1: black suit, sunglasses, wagmi hat\nScene 2: red suit, solana hat, solana necklace"}
-                                            className="w-full bg-transparent p-3 text-xs text-orange-100 placeholder:text-slate-800 outline-none resize-none min-h-[90px] font-mono leading-relaxed"
-                                            onPaste={handleTraitPaste}
-                                        />
                                     </div>
 
-                                    <div className="mt-auto relative">
-                                        {!currentUser?.can_use_art && !currentUser?.is_admin && (
-                                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
-                                                <div className="flex items-center gap-2 text-red-500">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                    <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                    <div id="create-from-text-card" className="bg-black border border-white/10 rounded-2xl p-4 md:p-6 hover:border-white/30 transition-all hover:z-50 flex flex-col justify-between h-full shadow-2xl relative">
+                                        <div className="absolute top-4 md:top-6 right-4 md:right-6 z-20"><InfoTooltip text="Describe your specific idea in text and let the AI visualize it." /></div>
+                                        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_2px,3px_100%]"></div>
+                                        <div className="relative z-10 mt-4">
+                                            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-6">Custom Input</div>
+                                            <h3 className="text-xl md:text-3xl font-black text-white mb-2 tracking-tight">CREATE FROM TEXT</h3>
+                                            <p className="text-xs md:text-sm text-slate-500 mb-4 font-medium">Turn your text concepts into visual assets.</p>
+                                            <div className="relative group/input"><textarea value={customInput} onChange={(e) => setCustomInput(e.target.value)} placeholder="Describe your character idea..." className="relative w-full bg-[#0A0A0A] border-2 border-white/10 rounded-xl p-4 text-sm text-accent placeholder:text-slate-700 focus:border-accent outline-none h-32 resize-none leading-relaxed font-mono tracking-wide" /></div>
+                                        </div>
+                                        <div className="mt-auto pt-4 relative z-10">
+                                            {!currentUser?.can_use_art && !currentUser?.is_admin && (
+                                                <div className="absolute inset-0 top-4 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
+                                                    <div className="flex items-center gap-2 text-red-500">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                        <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
-                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
-                                                <div className="flex items-center gap-2 text-orange-500">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                    <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
+                                            )}
+                                            {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
+                                                <div className="absolute inset-0 top-4 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
+                                                    <div className="flex items-center gap-2 text-orange-500">
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                        <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        <Button
-                                            onClick={handleGenerateTraits}
-                                            disabled={isGenerating || !traitBaseImage || (!currentUser?.can_use_art && !currentUser?.is_admin)}
-                                            className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${isGenerating || !traitBaseImage ? 'bg-white/5 text-slate-700' : 'bg-orange-600 text-white hover:bg-orange-500 shadow-orange-950/20'}`}
-                                            icon={isGenerating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : undefined}
-                                        >
-                                            {isGenerating ? 'GENESIS...' : 'LAUNCH'}
-                                        </Button>
+                                            )}
+                                            <Button
+                                                onClick={handleGenerateFromCustomInput}
+                                                disabled={!customInput.trim() || selectedStyles.length === 0 || isGenerating || (!currentUser?.can_use_art && !currentUser?.is_admin)}
+                                                className="w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest bg-white/5 hover:bg-white/10 text-white border-accent/20 hover:border-accent shadow-xl"
+                                            >
+                                                GENERATE
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="bg-black border border-white/10 rounded-2xl p-4 md:p-6 hover:border-white/30 transition-all hover:z-50 flex flex-col justify-between h-full shadow-2xl relative">
-                                <div className="absolute top-4 md:top-6 right-4 md:right-6 z-20"><InfoTooltip text="Describe your specific idea in text and let the AI visualize it." /></div>
-                                <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_2px,3px_100%]"></div>
-                                <div className="relative z-10 mt-4">
-                                    <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-6">Custom Input</div>
-                                    <h3 className="text-xl md:text-3xl font-black text-white mb-2 tracking-tight">CREATE FROM TEXT</h3>
-                                    <p className="text-xs md:text-sm text-slate-500 mb-4 font-medium">Turn your text concepts into visual assets.</p>
-                                    <div className="relative group/input"><textarea value={customInput} onChange={(e) => setCustomInput(e.target.value)} placeholder="Describe your character idea..." className="relative w-full bg-[#0A0A0A] border-2 border-white/10 rounded-xl p-4 text-sm text-accent placeholder:text-slate-700 focus:border-accent outline-none h-32 resize-none leading-relaxed font-mono tracking-wide" /></div>
-                                </div>
-                                <div className="mt-auto pt-4 relative z-10">
-                                    {!currentUser?.can_use_art && !currentUser?.is_admin && (
-                                        <div className="absolute inset-0 top-4 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
-                                            <div className="flex items-center gap-2 text-red-500">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
-                                        <div className="absolute inset-0 top-4 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
-                                            <div className="flex items-center gap-2 text-orange-500">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <Button
-                                        onClick={handleGenerateFromCustomInput}
-                                        disabled={!customInput.trim() || selectedStyles.length === 0 || isGenerating || (!currentUser?.can_use_art && !currentUser?.is_admin)}
-                                        className="w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest bg-white/5 hover:bg-white/10 text-white border-accent/20 hover:border-accent shadow-xl"
-                                    >
-                                        GENERATE
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
+                        )}
 
                         {/* 3. TREND FINDER ROW (4x2 GRID) */}
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 pt-4">
@@ -2253,7 +2285,7 @@ const App: React.FC = () => {
                                 )}
                                 <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans 4chan /biz/ and other boards." /></div>
                                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
-                                    <svg className="w-24 h-24 text-[#00FF00]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7c0 .26.04.5.09.74-.08-.02-.17-.03-.25-.03-2.76 0-5 2.24-5 5s2.24 5 5 5c.26 0 .5-.04.74-.09-.02.08-.03.17-.03.25 0 2.76 2.24 5 5 5s5-2.24 5-5c0-.26-.04-.5-.09-.74.08.02.17.03.25.03 2.76 0 5-2.24 5-5s-2.24-5-5-5c-.26 0-.5.04-.74.09.02-.08.03-.17.03-.25 0-2.76-2.24-5-5-5S12 2 12 2zm0 2c1.66 0 3 1.34 3 3 0 .42-.1.82-.26 1.18-.7.16-1.26.54-1.68 1.04-.42.5-.66 1.12-.66 1.78s.24 1.28.66 1.78c.42.5.98.88 1.68 1.04.16.36.26.76.26 1.18 0 1.66-1.34 3-3 3s-3-1.34-3-3c0-.42.1-.82.26-1.18.7-.16 1.26-.54 1.68-1.04.42-.5.66-1.12.66-1.78s-.24-1.28-.66-1.78c-.42-.5-.98-.88-1.68-1.04-.16-.36-.26-.76-.26-1.18 0-1.66 1.34-3 3-3z" /></svg>
+                                    <img src="/4chan-logo.png" alt="4chan Logo" className="w-24 h-24 object-contain opacity-80" />
                                 </div>
                                 <div className="relative z-10 pointer-events-none">
                                     <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-[#00FF00] transition-colors">4CHAN /BIZ/</h3>
@@ -2327,7 +2359,9 @@ const App: React.FC = () => {
                                     </div>
                                 )}
                                 <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans Reddit for memeable threads." /></div>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none"><svg className="w-24 h-24 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11c-.83 0-1.5-.67-1.5-1.5S16.17 10 17 10s1.5.67 1.5 1.5S17.83 13 17 13zm-5 2c-2.33 0-4.31-1.46-5.11-3.5h10.22c-.8 2.04-2.78 3.5-5.11 3.5zM7 13c-.83 0-1.5-.67-1.5-1.5S6.17 10 7 10s1.5.67 1.5 1.5S7.83 13 7 13z" /></svg></div>
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
+                                    <img src="/reddit-logo.webp" alt="Reddit Logo" className="w-24 h-24 object-contain opacity-80" />
+                                </div>
                                 <div className="relative z-10 pointer-events-none">
                                     <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-orange-500 transition-colors">REDDIT LORE</h3>
                                     <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Community threads & stories.</p>
