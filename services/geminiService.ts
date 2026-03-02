@@ -1007,15 +1007,23 @@ export const performXDeepResearch = async (excludedTopics: string[] = []): Promi
     const now = new Date();
     const todayStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const isoToday = now.toISOString().split('T')[0];
+
+    // Create tomorrow's date for 'before' filter so we don't exclude today in Google search
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    const tomorrowIso = tomorrow.toISOString().split('T')[0];
+    const exactTime = now.toISOString();
+
     const oneDayAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
     const isoYesterday = oneDayAgo.toISOString().split('T')[0];
     const exclusionList = excludedTopics.length > 0 ? `DO NOT include these topics that were already found: ${JSON.stringify(excludedTopics)}` : "";
 
     // Always enforce strict recency for X Trends
-    const dateFilter = `after:${isoYesterday} before:${isoToday}`;
+    const dateFilter = `after:${isoYesterday} before:${tomorrowIso}`;
 
     const prompt = `
         CURRENT DATE: ${todayStr} (YYYY-MM-DD: ${isoToday})
+        EXACT TIME: ${exactTime}
         STRICT TIME WINDOW: ${isoYesterday} to ${isoToday} (LAST 24 HOURS ONLY).
         
         TASK: Retrieve "OFFICIAL X.COM CURATED EVENTS" & "TRENDING NEWS".
@@ -1562,6 +1570,13 @@ export const performGlobalNewsResearch = async (excludedTopics: string[] = [], t
 
     const todayIso = now.toISOString().split('T')[0];
     const pastIso = past.toISOString().split('T')[0];
+
+    // Create tomorrow's date for 'before' filter so we don't exclude today in Google search
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    const tomorrowIso = tomorrow.toISOString().split('T')[0];
+    const exactTime = now.toISOString();
+
     const timeLabel = timeRange === '24h' ? 'Last 24 Hours' : timeRange === '48h' ? 'Last 48 Hours' : 'Last 7 Days';
 
     const searchFocus = targetKeyword
@@ -1573,6 +1588,7 @@ export const performGlobalNewsResearch = async (excludedTopics: string[] = [], t
         
         DATE CONTEXT:
         Current Date: ${now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} (${todayIso})
+        Exact Execution Time: ${exactTime}
         Lookback Start Date: ${past.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} (${pastIso})
         
         TIME RULE: 
@@ -1583,10 +1599,10 @@ export const performGlobalNewsResearch = async (excludedTopics: string[] = [], t
         
         SEARCH QUERIES TO USE (via Google Search):
         ${targetKeyword ?
-            `- "${targetKeyword} funny absurd lore after:${pastIso} before:${todayIso}"
-        - "${targetKeyword} weird news after:${pastIso} before:${todayIso}"` :
-            `- "bizarre unusual funny news after:${pastIso} before:${todayIso}"
-        - "viral animal story OR florida man OR internet culture after:${pastIso} before:${todayIso}"`}
+            `- "${targetKeyword} funny absurd lore after:${pastIso} before:${tomorrowIso}"
+        - "${targetKeyword} weird news after:${pastIso} before:${tomorrowIso}"` :
+            `- "bizarre unusual funny news after:${pastIso} before:${tomorrowIso}"
+        - "viral animal story OR florida man OR internet culture after:${pastIso} before:${tomorrowIso}"`}
 
         MEMECOIN EVALUATION (Discard if boring):
         - Main Character Energy: Person/animal/object that IS the story.

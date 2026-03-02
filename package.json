@@ -11,6 +11,7 @@
   "dependencies": {
     "@google/genai": "^1.30.0",
     "@supabase/supabase-js": "^2.97.0",
+    "date-fns": "^4.1.0",
     "file-saver": "latest",
     "jszip": "latest",
     "react": "^19.2.0",

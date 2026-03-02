@@ -18,7 +18,7 @@ export const deductCredits = async (
   try {
     const { data: user, error: fetchError } = await supabase
       .from('users')
-      .select('art_credits, lore_credits, is_active, can_use_art, can_use_scrape, is_admin')
+      .select('art_credits, lore_credits, is_active, can_use_art, can_use_scrape, can_use_news_scrape, is_admin')
       .eq('access_code', accessCode)
       .single();
 
@@ -34,7 +34,8 @@ export const deductCredits = async (
         .eq('access_code', accessCode);
       return !updateError;
     } else {
-      if (!user.can_use_scrape || user.lore_credits < amount) return false;
+      if (!user.can_use_scrape && !user.can_use_news_scrape) return false;
+      if (user.lore_credits < amount) return false;
       const { error: updateError } = await supabase
         .from('users')
         .update({ lore_credits: user.lore_credits - amount })

@@ -111,7 +111,6 @@
   flex: 1;
   margin-left: 260px;
   padding: 2.5rem;
-  max-width: 1400px;
 }
 
 /* Stat Cards */
@@ -524,4 +523,190 @@
   border-color: rgba(222, 253, 65, 0.5);
   background: rgba(0, 0, 0, 0.5);
   box-shadow: 0 0 0 2px rgba(222, 253, 65, 0.1);
+}
+
+/* Dashboard Redesign: Animations & Stats */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-cascade>* {
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-up-cascade>*:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.animate-slide-up-cascade>*:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.animate-slide-up-cascade>*:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.animate-slide-up-cascade>*:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+/* Enhanced Stat Cards */
+.admin-stat-card-enhanced {
+  background: rgba(11, 18, 33, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.admin-stat-card-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--glow-color, transparent);
+  box-shadow: 0 0 15px var(--glow-color, transparent);
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.admin-stat-card-enhanced:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), 0 0 30px var(--glow-shadow, transparent);
+}
+
+.admin-stat-card-enhanced:hover::before {
+  opacity: 1;
+  box-shadow: 0 0 25px var(--glow-color, transparent);
+}
+
+.admin-stat-card-enhanced .icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--icon-bg);
+  color: var(--icon-color);
+  border: 1px solid var(--icon-border);
+  margin-bottom: 1rem;
+}
+
+.stat-theme-lime {
+  --glow-color: #DEFD41;
+  --glow-shadow: rgba(222, 253, 65, 0.1);
+  --icon-bg: rgba(222, 253, 65, 0.1);
+  --icon-color: #DEFD41;
+  --icon-border: rgba(222, 253, 65, 0.2);
+}
+
+.stat-theme-green {
+  --glow-color: #4ade80;
+  --glow-shadow: rgba(74, 222, 128, 0.1);
+  --icon-bg: rgba(74, 222, 128, 0.1);
+  --icon-color: #4ade80;
+  --icon-border: rgba(74, 222, 128, 0.2);
+}
+
+.stat-theme-blue {
+  --glow-color: #38bdf8;
+  --glow-shadow: rgba(56, 189, 248, 0.1);
+  --icon-bg: rgba(56, 189, 248, 0.1);
+  --icon-color: #38bdf8;
+  --icon-border: rgba(56, 189, 248, 0.2);
+}
+
+.stat-theme-purple {
+  --glow-color: #a78bfa;
+  --glow-shadow: rgba(167, 139, 250, 0.1);
+  --icon-bg: rgba(167, 139, 250, 0.1);
+  --icon-color: #a78bfa;
+  --icon-border: rgba(167, 139, 250, 0.2);
+}
+
+/* Donut Chart */
+@keyframes donutSpin {
+  from {
+    transform: rotate(-90deg);
+    opacity: 0;
+  }
+
+  to {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.donut-chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.donut-chart {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: donutSpin 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+.donut-hole {
+  width: 140px;
+  height: 140px;
+  background: #0B1221;
+  border-radius: 50%;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+/* Hero Decor */
+@keyframes orbPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    filter: brightness(1.2);
+  }
+}
+
+.hero-orb {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff 0%, #DEFD41 20%, #1a2e05 70%, #000 100%);
+  box-shadow: 0 0 60px rgba(222, 253, 65, 0.4), inset -10px -10px 20px rgba(0, 0, 0, 0.8);
+  animation: orbPulse 4s ease-in-out infinite;
 }
