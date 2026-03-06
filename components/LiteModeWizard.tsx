@@ -88,7 +88,7 @@ export const LiteModeWizard: React.FC<LiteModeWizardProps> = ({
 }) => {
     const [selectedLiteMode, setSelectedLiteMode] = useState<'story' | 'custom' | 'text'>('story');
     const [showExamples, setShowExamples] = useState(false);
-    const [exampleCategory, setExampleCategory] = useState<'story' | 'custom'>('story');
+
     const [showLore, setShowLore] = useState(false);
 
     const handleModeSelect = (mode: 'story' | 'custom' | 'text') => {
@@ -474,56 +474,106 @@ export const LiteModeWizard: React.FC<LiteModeWizardProps> = ({
             </div>
 
             {/* EXAMPLES GALLERY TOGGLE & PANEL */}
-            <div className="flex flex-col items-center mt-12 w-full">
-                <button
-                    onClick={() => setShowExamples(!showExamples)}
-                    className="group flex items-center gap-2 px-6 py-2.5 rounded-full border border-white/10 bg-black/40 hover:bg-white/5 hover:border-white/30 text-xs font-bold uppercase tracking-widest text-slate-300 transition-all shadow-lg hover:-translate-y-1 relative overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-white/5 to-orange-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <span className="relative z-10">Examples Gallery</span>
-                    <svg className={`w-4 h-4 text-slate-400 group-hover:text-white transition-all transform relative z-10 ${showExamples ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
+            <div className="mt-12 w-full">
+                <div className="flex justify-center w-full">
+                    <button
+                        onClick={() => setShowExamples(!showExamples)}
+                        className="group flex items-center gap-2 px-6 py-2.5 rounded-full border border-white/10 bg-black/40 hover:bg-white/5 hover:border-white/30 text-xs font-bold uppercase tracking-widest text-slate-300 transition-all shadow-lg hover:-translate-y-1 relative overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-white/5 to-orange-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <span className="relative z-10">Examples Gallery</span>
+                        <svg className={`w-4 h-4 text-slate-400 group-hover:text-white transition-all transform relative z-10 ${showExamples ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                </div>
 
                 {showExamples && (
-                    <div className="w-full mt-6 bg-[#0B1221] border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
-                        <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
-                            {/* Left Panel: Main Mascot Preview */}
-                            <div className="w-full md:w-1/3 flex flex-col gap-4">
-                                <div className="bg-[#070A10] border border-white/10 rounded-2xl p-4 md:p-6 shadow-inner flex flex-col items-center flex-1">
-                                    <div className="w-full aspect-square md:aspect-auto md:h-64 rounded-xl overflow-hidden bg-black/50 border border-white/20 shadow-2xl relative mb-6">
-                                        <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
-                                        <img src={`/${exampleCategory === 'story' ? 'remix_images' : 'slider_images'}/main.jpeg`} alt="Main Mascot Source" className="w-full h-full object-cover relative z-0" loading="lazy" />
-                                        <div className="absolute bottom-4 left-4 z-20">
-                                            <div className="text-[10px] font-bold text-accent uppercase tracking-widest mb-1 drop-shadow-md">Source Character</div>
-                                            <h4 className="text-lg font-black text-white leading-tight drop-shadow-md">Main Mascot</h4>
-                                        </div>
+                    <div className="w-[100vw] ml-[calc(50%-50vw)] mt-10 animate-in fade-in slide-in-from-top-4 duration-500 overflow-hidden relative pb-10">
+
+                        {/* 1. Video Slider Row */}
+                        <div className="relative flex items-center justify-center w-full h-[320px] md:h-[512px] my-4 overflow-hidden md:overflow-visible">
+                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-64 z-0">
+                                <div className="slider-container w-full h-full">
+                                    <div className="slider-track gap-6 h-full absolute flex" style={{ animationPlayState: 'running' }}>
+                                        {[...Array(2)].flatMap(() => [
+                                            'photo_2026-02-25 21.14.59.jpeg', 'photo_2026-02-25 21.15.00.jpeg', 'photo_2026-02-25 21.15.01.jpeg',
+                                            'photo_2026-02-25 21.15.02.jpeg', 'photo_2026-02-25 21.15.03.jpeg', 'photo_2026-02-25 21.15.05.jpeg',
+                                            'photo_2026-02-25 21.15.09.jpeg', 'photo_2026-02-25 21.15.10.jpeg', 'photo_2026-02-25 21.15.12.jpeg',
+                                            'photo_2026-02-25 21.15.13.jpeg', 'photo_2026-02-25 21.15.15.jpeg', 'photo_2026-02-25 21.15.22.jpeg',
+                                            'photo_2026-02-25 21.15.25.jpeg', 'photo_2026-02-25 21.15.28.jpeg', 'photo_2026-02-25 21.15.40.jpeg'
+                                        ]).map((item, idx) => (
+                                            <div key={idx} className="w-40 h-40 md:w-64 md:h-64 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-accent/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
+                                                <img src={`/yenii/${item}`} alt={`Video Scene ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+                                            </div>
+                                        ))}
                                     </div>
-                                    <p className="text-xs text-slate-400 leading-relaxed text-center mb-6">
-                                        This mascot was used to generate all the <strong className="text-white">{exampleCategory === 'story' ? 'Story Mode' : 'Custom Mode'}</strong> examples shown. Note how the core identity gets preserved.
-                                    </p>
                                 </div>
                             </div>
-
-                            {/* Right Panel: Scrollable Grid */}
-                            <div className="w-full md:w-2/3 flex flex-col h-[400px] md:h-auto overflow-hidden pr-2 pb-2">
-                                {/* Mode Toggle at top center */}
-                                <div className="flex justify-center mb-6 shrink-0">
-                                    <div className="bg-black/60 p-1.5 rounded-full border border-white/10 flex items-center relative w-full max-w-xs md:max-w-sm">
-                                        <button onClick={() => setExampleCategory('story')} className={`relative flex-1 z-10 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${exampleCategory === 'story' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>Story Mode</button>
-                                        <button onClick={() => setExampleCategory('custom')} className={`relative flex-1 z-10 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${exampleCategory === 'custom' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>Custom Mode</button>
-                                        <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full transition-all duration-300 ease-out ${exampleCategory === 'story' ? 'bg-blue-500/40 left-1.5' : 'bg-orange-500/40 left-1/2 ml-1.5'}`}></div>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 overflow-y-auto custom-scrollbar flex-1 pb-4 pr-2">
-                                    {(exampleCategory === 'story' ? STORY_EXAMPLES : CUSTOM_EXAMPLES).map((img, idx) => (
-                                        <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-black/50 border border-white/5 group relative shadow-md">
-                                            <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none mix-blend-overlay ${exampleCategory === 'story' ? 'bg-blue-500/30' : 'bg-orange-500/30'}`}></div>
-                                            <img src={`/${exampleCategory === 'story' ? 'remix_images' : 'slider_images'}/${img}`} alt={`Example ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
+                            <div className="relative z-10 flex flex-col items-center justify-center">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[400px] bg-[#02040A] blur-[60px] rounded-[100%] z-0 pointer-events-none opacity-90"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-accent/5 blur-[80px] rounded-[100%] z-0 pointer-events-none"></div>
+                                <div className="flex-shrink-0 h-[300px] md:h-[512px] bg-[#02040A] rounded-2xl relative flex items-center justify-center overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8),_0_0_0_1px_rgba(255,255,255,0.05)_inset] border border-white/10 group transform transition duration-500 hover:scale-[1.02] z-10 w-[95%] sm:w-auto">
+                                    <div className="absolute inset-x-0 top-4 z-10 flex justify-center pointer-events-none">
+                                        <div className="bg-black/60 px-4 py-1.5 rounded-full border border-white/20 flex items-center backdrop-blur-md shadow-lg h-fit transition-all duration-300">
+                                            <span className="text-xs font-bold text-accent uppercase tracking-widest drop-shadow-[0_0_8px_rgba(222,253,65,0.5)]">Story Mode</span>
                                         </div>
-                                    ))}
+                                    </div>
+                                    <video src="/yenii/adsiz.mp4" className="h-full w-auto object-contain z-0 transition-transform duration-700 group-hover:scale-105" autoPlay loop muted playsInline />
                                 </div>
                             </div>
                         </div>
+
+                        {/* 2. Story Mode Slider Row */}
+                        <div className="relative flex items-center justify-center w-full h-[220px] md:h-[280px] my-12 overflow-hidden md:overflow-visible">
+                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-44 md:h-56 z-0">
+                                <div className="slider-container w-full h-full">
+                                    <div className="slider-track gap-6 h-full absolute flex" style={{ animationPlayState: 'running' }}>
+                                        {[...Array(2)].flatMap(() => [...STORY_EXAMPLES, ...STORY_EXAMPLES.slice(0, 6)]).map((item, idx) => (
+                                            <div key={idx} className="w-36 h-36 md:w-48 md:h-48 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
+                                                <img src={`/remix_images/${item}`} alt={`Story Scene ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="relative z-10 flex flex-col items-center justify-center">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[200px] md:h-[256px] bg-[#02040A] blur-[60px] rounded-[100%] z-0 pointer-events-none opacity-90 transition-all duration-500"></div>
+                                <div className="flex-shrink-0 w-48 h-48 md:w-64 md:h-64 bg-navy-950/80 border-[3px] border-blue-500/70 p-2.5 shadow-[0_0_40px_rgba(59,130,246,0.25)] rounded-3xl relative flex items-center justify-center group transform transition duration-500 hover:scale-[1.02] z-10 animate-in zoom-in-95">
+                                    <div className="absolute inset-x-0 top-4 z-10 flex justify-center pointer-events-none">
+                                        <div className="bg-black/60 px-4 py-1.5 rounded-full border border-white/20 flex items-center backdrop-blur-md shadow-lg h-fit transition-all duration-300">
+                                            <span className="text-xs font-bold text-blue-400 uppercase tracking-widest drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">Story Mode</span>
+                                        </div>
+                                    </div>
+                                    <img src="/remix_images/main.jpeg" alt="Story Main Mascot" className="w-full h-full object-cover rounded-2xl z-0 transition-transform duration-700 group-hover:scale-105 animate-in fade-in" loading="lazy" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 3. Custom Mode Slider Row */}
+                        <div className="relative flex items-center justify-center w-full h-[220px] md:h-[280px] my-12 overflow-hidden md:overflow-visible">
+                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-44 md:h-56 z-0">
+                                <div className="slider-container w-full h-full">
+                                    <div className="slider-track gap-6 h-full absolute flex" style={{ animationPlayState: 'running' }}>
+                                        {[...Array(2)].flatMap(() => [...CUSTOM_EXAMPLES, ...CUSTOM_EXAMPLES.slice(0, 6)]).map((item, idx) => (
+                                            <div key={idx} className="w-36 h-36 md:w-48 md:h-48 bg-navy-950 border border-white/5 rounded-2xl flex-shrink-0 flex items-center justify-center hover:scale-105 hover:border-orange-500/50 transition-all cursor-pointer shadow-lg overflow-hidden group">
+                                                <img src={`/slider_images/${item}`} alt={`Custom Scene ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="relative z-10 flex flex-col items-center justify-center">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[200px] md:h-[256px] bg-[#02040A] blur-[60px] rounded-[100%] z-0 pointer-events-none opacity-90 transition-all duration-500"></div>
+                                <div className="flex-shrink-0 w-48 h-48 md:w-64 md:h-64 bg-navy-950/80 border-[3px] border-orange-500/70 p-2.5 shadow-[0_0_40px_rgba(249,115,22,0.25)] rounded-3xl relative flex items-center justify-center group transform transition duration-500 hover:scale-[1.02] z-10 animate-in zoom-in-95">
+                                    <div className="absolute inset-x-0 top-4 z-10 flex justify-center pointer-events-none">
+                                        <div className="bg-black/60 px-4 py-1.5 rounded-full border border-white/20 flex items-center backdrop-blur-md shadow-lg h-fit transition-all duration-300">
+                                            <span className="text-xs font-bold text-orange-400 uppercase tracking-widest drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]">Custom Mode</span>
+                                        </div>
+                                    </div>
+                                    <img src="/slider_images/main.jpeg" alt="Custom Main Mascot" className="w-full h-full object-cover rounded-2xl z-0 transition-transform duration-700 group-hover:scale-105 animate-in fade-in" loading="lazy" />
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 )}
             </div>
