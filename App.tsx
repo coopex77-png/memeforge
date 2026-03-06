@@ -152,7 +152,8 @@ const App: React.FC = () => {
 
     const [loadingStep, setLoadingStep] = useState<string>("");
     const [selectedMascotId, setSelectedMascotId] = useState<string | null>(null);
-    const [startInEditMode, setStartInEditMode] = useState<boolean>(false); // New state to control edit mode on open 
+    const [appMode, setAppMode] = useState<'art' | 'scraper'>('art'); // Mode toggle for Art and Scraper tabs
+    const [startInEditMode, setStartInEditMode] = useState<boolean>(false); // New state to control edit mode on open
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false); // NEW: State for drag over visual feedback
     const [viewingMascot, setViewingMascot] = useState<Mascot | null>(null);
@@ -1288,7 +1289,23 @@ const App: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Navigation Container */}
+                    {/* Navigation Container — Absolutely centered to align with Lite/Pro toggle below */}
+                    <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center z-10">
+                        <div className="relative bg-[#02040A]/80 backdrop-blur-xl p-1.5 rounded-full border border-white/15 flex items-center shadow-[0_0_30px_rgba(0,0,0,0.5)]" style={{ boxShadow: appMode === 'art' ? '0 0 25px rgba(222,253,65,0.08), inset 0 1px 0 rgba(255,255,255,0.05)' : '0 0 25px rgba(192,132,252,0.08), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+                            <div className="flex absolute inset-1.5 transition-all duration-500 ease-out pointer-events-none" style={{ padding: '0px', left: appMode === 'art' ? '6px' : '50%', right: appMode === 'art' ? '50%' : '6px', top: '6px', bottom: '6px' }}>
+                                <div className={`w-full h-full rounded-full transition-all duration-500 ${appMode === 'art' ? 'bg-accent/15 shadow-[0_0_20px_rgba(222,253,65,0.15)]' : 'bg-purple-500/15 shadow-[0_0_20px_rgba(192,132,252,0.15)]'}`} style={{ border: appMode === 'art' ? '1px solid rgba(222,253,65,0.25)' : '1px solid rgba(192,132,252,0.25)' }}></div>
+                            </div>
+                            <button onClick={() => setAppMode('art')} className={`relative z-10 w-40 md:w-48 py-2.5 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center justify-center gap-2 rounded-full ${appMode === 'art' ? 'text-accent drop-shadow-[0_0_8px_rgba(222,253,65,0.4)]' : 'text-slate-500 hover:text-slate-300'}`}>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                Art Generator
+                            </button>
+                            <button onClick={() => setAppMode('scraper')} className={`relative z-10 w-40 md:w-48 py-2.5 text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center justify-center gap-2 rounded-full ${appMode === 'scraper' ? 'text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.4)]' : 'text-slate-500 hover:text-slate-300'}`}>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                Narrative Scraper
+                            </button>
+                        </div>
+                    </div>
+
                     <div className="flex items-center gap-0 md:gap-4">
                         {currentUser?.is_admin && (
                             <button
@@ -1547,6 +1564,19 @@ const App: React.FC = () => {
                 {/* Mobile Menu Dropdown */}
                 {showMobileMenu && (
                     <div className="md:hidden absolute top-full left-0 right-0 bg-navy-950 border-b border-white/10 shadow-2xl flex flex-col animate-in slide-in-from-top-2 z-50">
+                        <div className="flex flex-col p-4 border-b border-white/5">
+                            <div className="relative bg-[#02040A]/60 backdrop-blur-xl p-1 rounded-full border border-white/10 flex items-center shadow-xl w-full">
+                                <div className="flex absolute inset-1 transition-all duration-300 pointer-events-none" style={{ padding: '4px', left: appMode === 'art' ? '0' : '50%', right: appMode === 'art' ? '50%' : '0' }}>
+                                    <div className="w-full h-full rounded-full shadow-[0_0_15px_rgba(255,255,255,0.15)] bg-white/10 backdrop-blur-md"></div>
+                                </div>
+                                <button onClick={() => { setAppMode('art'); setShowMobileMenu(false); }} className={`relative z-10 flex-1 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 rounded-full ${appMode === 'art' ? 'text-accent' : 'text-slate-400 hover:text-white'}`}>
+                                    Art Generator
+                                </button>
+                                <button onClick={() => { setAppMode('scraper'); setShowMobileMenu(false); }} className={`relative z-10 flex-1 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 rounded-full ${appMode === 'scraper' ? 'text-purple-400' : 'text-slate-400 hover:text-white'}`}>
+                                    Scraper
+                                </button>
+                            </div>
+                        </div>
                         <div className="flex flex-col p-2">
                             {currentUser?.is_admin && (
                                 <button
@@ -1749,685 +1779,693 @@ const App: React.FC = () => {
             <main className="w-full max-w-[1800px] mx-auto px-3 md:px-6 py-4 md:py-8 relative">
                 {!hasMascots && !isGenerating && (
                     <div className="space-y-4 md:space-y-8 relative z-10">
-                        {/* Lite/Pro Toggle */}
-                        <div className="flex justify-center mb-6">
-                            <div className="relative bg-[#02040A]/60 backdrop-blur-xl p-1 rounded-full border border-white/10 flex items-center shadow-xl">
-                                <div className="flex absolute inset-1 transition-all duration-300 pointer-events-none" style={{ padding: '4px', left: artInterfaceMode === 'lite' ? '0' : '50%', right: artInterfaceMode === 'lite' ? '50%' : '0' }}>
-                                    <div className="w-full h-full rounded-full shadow-[0_0_15px_rgba(255,255,255,0.15)] bg-white/10 backdrop-blur-md"></div>
-                                </div>
-                                <button onClick={() => setArtInterfaceMode('lite')} className={`relative z-10 w-24 md:w-32 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 rounded-full ${artInterfaceMode === 'lite' ? 'text-accent' : 'text-slate-400 hover:text-white'}`}>
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                    LITE
-                                </button>
-                                <button onClick={() => setArtInterfaceMode('pro')} className={`relative z-10 w-24 md:w-32 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 rounded-full ${artInterfaceMode === 'pro' ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}>
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
-                                    PRO
-                                </button>
-                            </div>
-                        </div>
-
-                        {artInterfaceMode === 'lite' ? (
-                            <LiteModeWizard
-                                currentUser={currentUser}
-                                isGenerating={isGenerating}
-                                uploadedImage={uploadedImage}
-                                setUploadedImage={setUploadedImage}
-                                fileInputRef={fileInputRef}
-                                handleFileUpload={handleFileUpload}
-                                handleDragOver={handleDragOver}
-                                handleDragLeave={handleDragLeave}
-                                handleRemixDrop={handleRemixDrop}
-                                isDragging={isDragging}
-                                selectedStyles={selectedStyles}
-                                toggleStyle={toggleStyle}
-                                selectAllStyles={selectAllStyles}
-                                customRemixNarrative={customRemixNarrative}
-                                setCustomRemixNarrative={setCustomRemixNarrative}
-                                traitBaseImage={traitBaseImage}
-                                setTraitBaseImage={setTraitBaseImage}
-                                traitMode={traitMode}
-                                setTraitMode={setTraitMode}
-                                traitsInput={traitsInput}
-                                setTraitsInput={setTraitsInput}
-                                handleGenerateFromUpload={handleGenerateFromUpload}
-                                handleGenerateTraits={handleGenerateTraits}
-                                handleRemixPaste={handleRemixPaste}
-                                customInput={customInput}
-                                setCustomInput={setCustomInput}
-                                handleGenerateFromCustomInput={handleGenerateFromCustomInput}
-                            />
-                        ) : (
-                            <div className="space-y-4 md:space-y-8 animate-in fade-in zoom-in-95 duration-500">
-                                {/* 1. TOP CONTROL BAR (Styles + Quantity) */}
-                                <div className="bg-navy-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-8 shadow-2xl flex flex-col xl:flex-row gap-4 md:gap-8 items-stretch xl:items-center animate-in slide-in-from-top-4 duration-500">
-                                    <div className="flex-1 w-full">
-                                        <div className="flex justify-between items-end mb-4">
-                                            <div>
-                                                <div className="flex items-center gap-3">
-                                                    <h2 className="text-lg md:text-2xl font-black text-white tracking-tighter">SELECT ART STYLE</h2>
-                                                    {selectedStyles.length > 0 && (
-                                                        <span className="bg-accent/10 border border-accent/20 text-accent text-[10px] font-black px-2 py-0.5 rounded-full animate-in fade-in zoom-in duration-300">
-                                                            {selectedStyles.length} ACTIVE
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <button onClick={selectAllStyles} className="text-[10px] font-bold text-slate-500 hover:text-accent uppercase transition-colors flex items-center gap-1.5">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
-                                                    {selectedStyles.length === AVAILABLE_ART_STYLES.length ? "Deselect All" : "Select All"}
-                                                </button>
-                                            </div>
+                        {appMode === 'art' && (
+                            <>
+                                {/* Lite/Pro Toggle */}
+                                <div className="flex justify-center mb-6">
+                                    <div className="relative bg-[#02040A]/60 backdrop-blur-xl p-1 rounded-full border border-white/10 flex items-center shadow-xl">
+                                        <div className="flex absolute inset-1 transition-all duration-300 pointer-events-none" style={{ padding: '4px', left: artInterfaceMode === 'lite' ? '0' : '50%', right: artInterfaceMode === 'lite' ? '50%' : '0' }}>
+                                            <div className="w-full h-full rounded-full shadow-[0_0_15px_rgba(255,255,255,0.15)] bg-white/10 backdrop-blur-md"></div>
                                         </div>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-5 gap-3">
-                                            {AVAILABLE_ART_STYLES.map((style, idx) => {
-                                                const isSelected = selectedStyles.includes(style.id);
-
-                                                return (
-                                                    <button
-                                                        key={style.id}
-                                                        onClick={() => toggleStyle(style.id)}
-                                                        className={`
-                                                    group relative h-16 p-3 rounded-xl border transition-all duration-300 text-left overflow-hidden flex flex-col justify-between
-                                                    ${isSelected
-                                                                ? 'bg-accent border-accent shadow-[0_0_25px_rgba(222,253,65,0.2)] scale-[1.02] z-10'
-                                                                : 'bg-black border-white/5 text-slate-500 hover:border-white/20 hover:bg-navy-900'
-                                                            }
-                                                `}
-                                                    >
-                                                        <div className="flex justify-between items-start z-10 w-full mb-1">
-                                                            <span className={`text-[8px] font-mono leading-none ${isSelected ? 'text-black/60' : 'text-slate-500'}`}>0{idx + 1}</span>
-                                                            <div className="flex items-center gap-1.5">
-                                                                {style.id === 'original' && (
-                                                                    <div className="w-3.5 h-3.5 rounded-full bg-[#DEFD41] flex items-center justify-center shadow-[0_0_10px_rgba(222,253,65,0.4)]" title="Highly Recommended">
-                                                                        <svg className="w-2 h-2 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z" /></svg>
-                                                                    </div>
-                                                                )}
-                                                                {isSelected && (
-                                                                    <div className="w-3 h-3 rounded-full bg-black flex items-center justify-center animate-in zoom-in duration-200">
-                                                                        <svg className="w-2 h-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="z-10">
-                                                            <span className={`text-[10px] font-black uppercase tracking-tight leading-none block ${isSelected ? 'text-black' : 'text-white'}`}>
-                                                                {style.name}
-                                                            </span>
-                                                        </div>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
+                                        <button onClick={() => setArtInterfaceMode('lite')} className={`relative z-10 w-24 md:w-32 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 rounded-full ${artInterfaceMode === 'lite' ? 'text-accent' : 'text-slate-400 hover:text-white'}`}>
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                            LITE
+                                        </button>
+                                        <button onClick={() => setArtInterfaceMode('pro')} className={`relative z-10 w-24 md:w-32 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 rounded-full ${artInterfaceMode === 'pro' ? 'text-blue-400' : 'text-slate-400 hover:text-white'}`}>
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                                            PRO
+                                        </button>
                                     </div>
                                 </div>
 
-                                {/* 2. GENERATORS ROW */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                    {/* ... (Remix, Random, Text components - same as previous) ... */}
-                                    <div className="relative bg-[#0B1221] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-blue-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
-                                        <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
-                                        <div className="relative z-10 flex flex-col h-full">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div>
-                                                    <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-[9px] font-bold uppercase tracking-widest mb-3">
-                                                        <span className={`w-1.5 h-1.5 rounded-full ${uploadedImage ? 'bg-blue-400' : 'bg-slate-600'} animate-pulse`}></span>
-                                                        {uploadedImage ? 'Image Ready' : 'Upload Source'}
+                                {artInterfaceMode === 'lite' ? (
+                                    <LiteModeWizard
+                                        currentUser={currentUser}
+                                        isGenerating={isGenerating}
+                                        uploadedImage={uploadedImage}
+                                        setUploadedImage={setUploadedImage}
+                                        fileInputRef={fileInputRef}
+                                        handleFileUpload={handleFileUpload}
+                                        handleDragOver={handleDragOver}
+                                        handleDragLeave={handleDragLeave}
+                                        handleRemixDrop={handleRemixDrop}
+                                        isDragging={isDragging}
+                                        selectedStyles={selectedStyles}
+                                        toggleStyle={toggleStyle}
+                                        selectAllStyles={selectAllStyles}
+                                        customRemixNarrative={customRemixNarrative}
+                                        setCustomRemixNarrative={setCustomRemixNarrative}
+                                        traitBaseImage={traitBaseImage}
+                                        setTraitBaseImage={setTraitBaseImage}
+                                        traitMode={traitMode}
+                                        setTraitMode={setTraitMode}
+                                        traitsInput={traitsInput}
+                                        setTraitsInput={setTraitsInput}
+                                        handleGenerateFromUpload={handleGenerateFromUpload}
+                                        handleGenerateTraits={handleGenerateTraits}
+                                        handleRemixPaste={handleRemixPaste}
+                                        customInput={customInput}
+                                        setCustomInput={setCustomInput}
+                                        handleGenerateFromCustomInput={handleGenerateFromCustomInput}
+                                    />
+                                ) : (
+                                    <div className="space-y-4 md:space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                                        {/* 1. TOP CONTROL BAR (Styles + Quantity) */}
+                                        <div className="bg-navy-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-8 shadow-2xl flex flex-col xl:flex-row gap-4 md:gap-8 items-stretch xl:items-center animate-in slide-in-from-top-4 duration-500">
+                                            <div className="flex-1 w-full">
+                                                <div className="flex justify-between items-end mb-4">
+                                                    <div>
+                                                        <div className="flex items-center gap-3">
+                                                            <h2 className="text-lg md:text-2xl font-black text-white tracking-tighter">SELECT ART STYLE</h2>
+                                                            {selectedStyles.length > 0 && (
+                                                                <span className="bg-accent/10 border border-accent/20 text-accent text-[10px] font-black px-2 py-0.5 rounded-full animate-in fade-in zoom-in duration-300">
+                                                                    {selectedStyles.length} ACTIVE
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">STORY MODE</h3>
-                                                    <p className="text-sm text-slate-400 mt-1 font-medium">Place character in new scenes.</p>
+                                                    <div className="flex gap-4">
+                                                        <button onClick={selectAllStyles} className="text-[10px] font-bold text-slate-500 hover:text-accent uppercase transition-colors flex items-center gap-1.5">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
+                                                            {selectedStyles.length === AVAILABLE_ART_STYLES.length ? "Deselect All" : "Select All"}
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex flex-col items-end gap-2">
-                                                    <InfoTooltip text="Upload an existing image to create new variations." />
-                                                    <div className="text-blue-500/20 group-hover:text-blue-500/40 transition-colors">
-                                                        <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                    </div>
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-5 gap-3">
+                                                    {AVAILABLE_ART_STYLES.map((style, idx) => {
+                                                        const isSelected = selectedStyles.includes(style.id);
+
+                                                        return (
+                                                            <button
+                                                                key={style.id}
+                                                                onClick={() => toggleStyle(style.id)}
+                                                                className={`
+                                                    group relative h-16 p-3 rounded-xl border transition-all duration-300 text-left overflow-hidden flex flex-col justify-between
+                                                    ${isSelected
+                                                                        ? 'bg-accent border-accent shadow-[0_0_25px_rgba(222,253,65,0.2)] scale-[1.02] z-10'
+                                                                        : 'bg-black border-white/5 text-slate-500 hover:border-white/20 hover:bg-navy-900'
+                                                                    }
+                                                `}
+                                                            >
+                                                                <div className="flex justify-between items-start z-10 w-full mb-1">
+                                                                    <span className={`text-[8px] font-mono leading-none ${isSelected ? 'text-black/60' : 'text-slate-500'}`}>0{idx + 1}</span>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        {style.id === 'original' && (
+                                                                            <div className="w-3.5 h-3.5 rounded-full bg-[#DEFD41] flex items-center justify-center shadow-[0_0_10px_rgba(222,253,65,0.4)]" title="Highly Recommended">
+                                                                                <svg className="w-2 h-2 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z" /></svg>
+                                                                            </div>
+                                                                        )}
+                                                                        {isSelected && (
+                                                                            <div className="w-3 h-3 rounded-full bg-black flex items-center justify-center animate-in zoom-in duration-200">
+                                                                                <svg className="w-2 h-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="z-10">
+                                                                    <span className={`text-[10px] font-black uppercase tracking-tight leading-none block ${isSelected ? 'text-black' : 'text-white'}`}>
+                                                                        {style.name}
+                                                                    </span>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
-                                            <div
-                                                onClick={() => fileInputRef.current?.click()}
-                                                onDragOver={handleDragOver}
-                                                onDragLeave={handleDragLeave}
-                                                onDrop={handleRemixDrop}
-                                                onPaste={handleRemixPaste}
-                                                className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
+                                        </div>
+
+                                        {/* 2. GENERATORS ROW */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                            {/* ... (Remix, Random, Text components - same as previous) ... */}
+                                            <div className="relative bg-[#0B1221] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-blue-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
+                                                <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+                                                <div className="relative z-10 flex flex-col h-full">
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <div>
+                                                            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-[9px] font-bold uppercase tracking-widest mb-3">
+                                                                <span className={`w-1.5 h-1.5 rounded-full ${uploadedImage ? 'bg-blue-400' : 'bg-slate-600'} animate-pulse`}></span>
+                                                                {uploadedImage ? 'Image Ready' : 'Upload Source'}
+                                                            </div>
+                                                            <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">STORY MODE</h3>
+                                                            <p className="text-sm text-slate-400 mt-1 font-medium">Place character in new scenes.</p>
+                                                        </div>
+                                                        <div className="flex flex-col items-end gap-2">
+                                                            <InfoTooltip text="Upload an existing image to create new variations." />
+                                                            <div className="text-blue-500/20 group-hover:text-blue-500/40 transition-colors">
+                                                                <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        onDragOver={handleDragOver}
+                                                        onDragLeave={handleDragLeave}
+                                                        onDrop={handleRemixDrop}
+                                                        onPaste={handleRemixPaste}
+                                                        className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
                                     ${uploadedImage ? 'bg-black border border-white/10' : ''}
                                     ${!uploadedImage && !isDragging ? 'bg-black/20 border-2 border-dashed border-white/10 hover:border-blue-400 hover:bg-blue-500/5' : ''}
                                     ${isDragging ? 'bg-blue-500/20 border-2 border-blue-500 scale-[1.02] shadow-[0_0_20px_rgba(59,130,246,0.2)]' : ''}
                                 `}
-                                            >
-                                                {uploadedImage ? (
-                                                    <>
-                                                        <img src={uploadedImage} className="w-full h-full object-contain" />
-                                                        <button onClick={(e) => { e.stopPropagation(); setUploadedImage(null) }} className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white p-1.5 rounded-lg backdrop-blur-sm transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-                                                    </>
-                                                ) : (
-                                                    <div className="text-center p-4 pointer-events-none">
-                                                        <div className="mb-2">
-                                                            <svg className={`w-8 h-8 mx-auto mb-2 transition-colors ${isDragging ? 'text-blue-400' : 'text-slate-600 group-hover/drop:text-blue-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                                            </svg>
-                                                        </div>
-                                                        <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors block mb-1 ${isDragging ? 'text-blue-300' : 'text-slate-500 group-hover/drop:text-blue-400'}`}>
-                                                            {isDragging ? 'DROP TO UPLOAD' : 'Click, Drop or Paste'}
-                                                        </span>
-                                                        <span className="text-[8px] text-slate-700 font-mono uppercase tracking-tighter block mt-1">Supports Clipboard (Ctrl+V)</span>
+                                                    >
+                                                        {uploadedImage ? (
+                                                            <>
+                                                                <img src={uploadedImage} className="w-full h-full object-contain" />
+                                                                <button onClick={(e) => { e.stopPropagation(); setUploadedImage(null) }} className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white p-1.5 rounded-lg backdrop-blur-sm transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                                                            </>
+                                                        ) : (
+                                                            <div className="text-center p-4 pointer-events-none">
+                                                                <div className="mb-2">
+                                                                    <svg className={`w-8 h-8 mx-auto mb-2 transition-colors ${isDragging ? 'text-blue-400' : 'text-slate-600 group-hover/drop:text-blue-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                                                    </svg>
+                                                                </div>
+                                                                <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors block mb-1 ${isDragging ? 'text-blue-300' : 'text-slate-500 group-hover/drop:text-blue-400'}`}>
+                                                                    {isDragging ? 'DROP TO UPLOAD' : 'Click, Drop or Paste'}
+                                                                </span>
+                                                                <span className="text-[8px] text-slate-700 font-mono uppercase tracking-tighter block mt-1">Supports Clipboard (Ctrl+V)</span>
+                                                            </div>
+                                                        )}
+                                                        <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
                                                     </div>
-                                                )}
-                                                <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 mb-4">
-                                                <div onClick={() => setPreserveOriginal(!preserveOriginal)} className={`cursor-pointer border rounded-lg p-2 flex flex-col justify-center transition-all ${preserveOriginal ? 'bg-blue-500/10 border-blue-500/50' : 'bg-black/20 border-white/5 hover:border-white/20'}`}>
-                                                    <div className="flex items-center justify-between mb-1"><span className={`text-[9px] font-bold uppercase ${preserveOriginal ? 'text-blue-300' : 'text-slate-500'}`}>Lock Pose</span><div className={`w-1.5 h-1.5 rounded-full ${preserveOriginal ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]' : 'bg-slate-700'}`}></div></div>
-                                                </div>
-                                                <div onClick={() => setShowCustomRemixLore(!showCustomRemixLore)} className={`cursor-pointer border rounded-lg p-2 flex flex-col justify-center transition-all ${showCustomRemixLore ? 'bg-white/10 border-white/20' : 'bg-black/20 border-white/5 hover:border-white/20'}`}>
-                                                    <div className="flex items-center justify-between"><span className={`text-[9px] font-bold uppercase ${showCustomRemixLore ? 'text-white' : 'text-slate-500'}`}>Add Lore</span><svg className={`w-3 h-3 transition-transform ${showCustomRemixLore ? 'rotate-180 text-white' : 'text-slate-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></div>
-                                                </div>
-                                            </div>
-                                            {showCustomRemixLore && <textarea placeholder="Add specific backstory..." value={customRemixNarrative} onChange={e => setCustomRemixNarrative(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-xs text-slate-200 placeholder:text-slate-700 focus:border-blue-500 outline-none resize-none mb-4" rows={2} />}
-                                            <div className="mt-auto relative">
-                                                {!currentUser?.can_use_art && !currentUser?.is_admin && (
-                                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
-                                                        <div className="flex items-center gap-2 text-red-500">
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                            <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                                    <div className="grid grid-cols-2 gap-2 mb-4">
+                                                        <div onClick={() => setPreserveOriginal(!preserveOriginal)} className={`cursor-pointer border rounded-lg p-2 flex flex-col justify-center transition-all ${preserveOriginal ? 'bg-blue-500/10 border-blue-500/50' : 'bg-black/20 border-white/5 hover:border-white/20'}`}>
+                                                            <div className="flex items-center justify-between mb-1"><span className={`text-[9px] font-bold uppercase ${preserveOriginal ? 'text-blue-300' : 'text-slate-500'}`}>Lock Pose</span><div className={`w-1.5 h-1.5 rounded-full ${preserveOriginal ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]' : 'bg-slate-700'}`}></div></div>
+                                                        </div>
+                                                        <div onClick={() => setShowCustomRemixLore(!showCustomRemixLore)} className={`cursor-pointer border rounded-lg p-2 flex flex-col justify-center transition-all ${showCustomRemixLore ? 'bg-white/10 border-white/20' : 'bg-black/20 border-white/5 hover:border-white/20'}`}>
+                                                            <div className="flex items-center justify-between"><span className={`text-[9px] font-bold uppercase ${showCustomRemixLore ? 'text-white' : 'text-slate-500'}`}>Add Lore</span><svg className={`w-3 h-3 transition-transform ${showCustomRemixLore ? 'rotate-180 text-white' : 'text-slate-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></div>
                                                         </div>
                                                     </div>
-                                                )}
-                                                {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
-                                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
-                                                        <div className="flex items-center gap-2 text-orange-500">
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                            <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                <Button onClick={handleGenerateFromUpload} disabled={!uploadedImage || selectedStyles.length === 0 || (!currentUser?.can_use_art && !currentUser?.is_admin)} className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${uploadedImage ? 'bg-blue-500 text-white hover:bg-blue-400 border-transparent shadow-blue-900/20' : 'bg-white/5 text-slate-600 border-white/5'}`}>REMIX</Button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* TRAIT MIXER */}
-                                    <div className="relative bg-[#100B05] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-orange-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
-                                        <div className="absolute inset-0 bg-[radial-gradient(#f9731605_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
-                                        <div className="relative z-10 flex flex-col h-full">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div>
-                                                    <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-300 text-[9px] font-bold uppercase tracking-widest mb-3">
-                                                        <span className={`w-1.5 h-1.5 rounded-full ${traitBaseImage ? 'bg-orange-400' : 'bg-slate-600'} animate-pulse`}></span>
-                                                        {traitBaseImage ? 'Identity Lock' : 'Upload Base'}
-                                                    </div>
-                                                    <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">CUSTOM MODE</h3>
-                                                    <p className="text-xs md:text-sm text-slate-400 mt-1 font-medium">Equip items, change backgrounds, characters and modify traits.</p>
-                                                </div>
-                                                <div className="flex flex-col items-end gap-2">
-                                                    <InfoTooltip text="Upload a focused character image, then list traits or scenarios to generate variations." />
-                                                    <div className="text-orange-500/20 group-hover:text-orange-500/40 transition-colors">
-                                                        <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                                                    {showCustomRemixLore && <textarea placeholder="Add specific backstory..." value={customRemixNarrative} onChange={e => setCustomRemixNarrative(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-xs text-slate-200 placeholder:text-slate-700 focus:border-blue-500 outline-none resize-none mb-4" rows={2} />}
+                                                    <div className="mt-auto relative">
+                                                        {!currentUser?.can_use_art && !currentUser?.is_admin && (
+                                                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
+                                                                <div className="flex items-center gap-2 text-red-500">
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                                    <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
+                                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
+                                                                <div className="flex items-center gap-2 text-orange-500">
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                                    <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        <Button onClick={handleGenerateFromUpload} disabled={!uploadedImage || selectedStyles.length === 0 || (!currentUser?.can_use_art && !currentUser?.is_admin)} className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${uploadedImage ? 'bg-blue-500 text-white hover:bg-blue-400 border-transparent shadow-blue-900/20' : 'bg-white/5 text-slate-600 border-white/5'}`}>REMIX</Button>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div
-                                                onClick={() => traitFileInputRef.current?.click()}
-                                                onDragOver={(e) => { e.preventDefault(); setIsDraggingTrait(true); }}
-                                                onDragLeave={(e) => { e.preventDefault(); setIsDraggingTrait(false); }}
-                                                onDrop={handleTraitDrop}
-                                                className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
+                                            {/* TRAIT MIXER */}
+                                            <div className="relative bg-[#100B05] border border-white/10 rounded-2xl p-4 md:p-6 hover:border-orange-400/50 transition-all hover:z-50 group flex flex-col h-full shadow-2xl">
+                                                <div className="absolute inset-0 bg-[radial-gradient(#f9731605_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+                                                <div className="relative z-10 flex flex-col h-full">
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <div>
+                                                            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-300 text-[9px] font-bold uppercase tracking-widest mb-3">
+                                                                <span className={`w-1.5 h-1.5 rounded-full ${traitBaseImage ? 'bg-orange-400' : 'bg-slate-600'} animate-pulse`}></span>
+                                                                {traitBaseImage ? 'Identity Lock' : 'Upload Base'}
+                                                            </div>
+                                                            <h3 className="text-xl md:text-3xl font-black text-white tracking-tight leading-none">CUSTOM MODE</h3>
+                                                            <p className="text-xs md:text-sm text-slate-400 mt-1 font-medium">Equip items, change backgrounds, characters and modify traits.</p>
+                                                        </div>
+                                                        <div className="flex flex-col items-end gap-2">
+                                                            <InfoTooltip text="Upload a focused character image, then list traits or scenarios to generate variations." />
+                                                            <div className="text-orange-500/20 group-hover:text-orange-500/40 transition-colors">
+                                                                <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div
+                                                        onClick={() => traitFileInputRef.current?.click()}
+                                                        onDragOver={(e) => { e.preventDefault(); setIsDraggingTrait(true); }}
+                                                        onDragLeave={(e) => { e.preventDefault(); setIsDraggingTrait(false); }}
+                                                        onDrop={handleTraitDrop}
+                                                        className={`relative w-full flex-1 min-h-[100px] md:min-h-[140px] rounded-xl transition-all duration-200 cursor-pointer overflow-hidden group/drop flex items-center justify-center mb-4 
                                     ${traitBaseImage ? 'bg-black border border-white/10' : ''}
                                     ${!traitBaseImage && !isDraggingTrait ? 'bg-black/20 border-2 border-dashed border-white/10 hover:border-orange-400 hover:bg-orange-500/5' : ''}
                                     ${isDraggingTrait ? 'bg-orange-500/20 border-2 border-orange-500 scale-[1.02] shadow-[0_0_20px_rgba(249,115,22,0.2)]' : ''}
                                 `}
-                                            >
-                                                {traitBaseImage ? (
-                                                    <>
-                                                        <img src={traitBaseImage} className="w-full h-full object-contain" />
-                                                        <button onClick={(e) => { e.stopPropagation(); setTraitBaseImage(null) }} className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white p-1.5 rounded-lg backdrop-blur-sm transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
-                                                    </>
-                                                ) : (
-                                                    <div className="text-center p-4 pointer-events-none">
-                                                        <div className="mb-2 text-orange-500/40 group-hover/drop:text-orange-500 transition-colors">
-                                                            <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                                        </div>
-                                                        <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors block mb-1 ${isDraggingTrait ? 'text-orange-300' : 'text-slate-500 group-hover/drop:text-orange-400'}`}>
-                                                            {isDraggingTrait ? 'DROP TO UPLOAD' : 'Click or Drop Base Image'}
-                                                        </span>
+                                                    >
+                                                        {traitBaseImage ? (
+                                                            <>
+                                                                <img src={traitBaseImage} className="w-full h-full object-contain" />
+                                                                <button onClick={(e) => { e.stopPropagation(); setTraitBaseImage(null) }} className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white p-1.5 rounded-lg backdrop-blur-sm transition-colors"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                                                            </>
+                                                        ) : (
+                                                            <div className="text-center p-4 pointer-events-none">
+                                                                <div className="mb-2 text-orange-500/40 group-hover/drop:text-orange-500 transition-colors">
+                                                                    <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                                </div>
+                                                                <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors block mb-1 ${isDraggingTrait ? 'text-orange-300' : 'text-slate-500 group-hover/drop:text-orange-400'}`}>
+                                                                    {isDraggingTrait ? 'DROP TO UPLOAD' : 'Click or Drop Base Image'}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        <input type="file" ref={traitFileInputRef} onChange={handleTraitFileUpload} accept="image/*" className="hidden" />
                                                     </div>
-                                                )}
-                                                <input type="file" ref={traitFileInputRef} onChange={handleTraitFileUpload} accept="image/*" className="hidden" />
-                                            </div>
 
-                                            {/* MODE TERMINAL UI */}
-                                            <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 mb-3">
-                                                <button onClick={() => setTraitMode('mix')} className={`flex-1 py-2 text-[9px] font-black rounded-lg transition-all uppercase tracking-widest ${traitMode === 'mix' ? 'bg-orange-500 text-black shadow-lg shadow-orange-950/20' : 'text-slate-500 hover:text-white'}`}>Mix Mode</button>
-                                                <button onClick={() => setTraitMode('scenes')} className={`flex-1 py-2 text-[9px] font-black rounded-lg transition-all uppercase tracking-widest ${traitMode === 'scenes' ? 'bg-orange-500 text-black shadow-lg shadow-orange-950/20' : 'text-slate-500 hover:text-white'}`}>Scenes Mode</button>
-                                            </div>
+                                                    {/* MODE TERMINAL UI */}
+                                                    <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 mb-3">
+                                                        <button onClick={() => setTraitMode('mix')} className={`flex-1 py-2 text-[9px] font-black rounded-lg transition-all uppercase tracking-widest ${traitMode === 'mix' ? 'bg-orange-500 text-black shadow-lg shadow-orange-950/20' : 'text-slate-500 hover:text-white'}`}>Mix Mode</button>
+                                                        <button onClick={() => setTraitMode('scenes')} className={`flex-1 py-2 text-[9px] font-black rounded-lg transition-all uppercase tracking-widest ${traitMode === 'scenes' ? 'bg-orange-500 text-black shadow-lg shadow-orange-950/20' : 'text-slate-500 hover:text-white'}`}>Scenes Mode</button>
+                                                    </div>
 
-                                            <div className="flex flex-col group/terminal bg-black/40 border border-white/10 rounded-xl overflow-hidden mb-4">
-                                                <div className="flex items-center justify-between px-3 py-1.5 bg-white/5 border-b border-white/10">
-                                                    <span className="text-[8px] font-black text-orange-500/60 uppercase tracking-widest">{traitMode === 'mix' ? 'Combinator' : 'Sequencer'} ACTIVE</span>
-                                                    <div className="flex gap-1.5">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500/20 italic animate-pulse"></div>
+                                                    <div className="flex flex-col group/terminal bg-black/40 border border-white/10 rounded-xl overflow-hidden mb-4">
+                                                        <div className="flex items-center justify-between px-3 py-1.5 bg-white/5 border-b border-white/10">
+                                                            <span className="text-[8px] font-black text-orange-500/60 uppercase tracking-widest">{traitMode === 'mix' ? 'Combinator' : 'Sequencer'} ACTIVE</span>
+                                                            <div className="flex gap-1.5">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500/20 italic animate-pulse"></div>
+                                                            </div>
+                                                        </div>
+                                                        <textarea
+                                                            value={traitsInput}
+                                                            onChange={(e) => setTraitsInput(e.target.value)}
+                                                            placeholder={traitMode === 'mix'
+                                                                ? "hat: blue hat, solana hat\nskin: red, yellow"
+                                                                : "Scene 1: black suit, sunglasses, wagmi hat\nScene 2: red suit, solana hat, solana necklace"}
+                                                            className="w-full bg-transparent p-3 text-xs text-orange-100 placeholder:text-slate-800 outline-none resize-none min-h-[90px] font-mono leading-relaxed"
+                                                            onPaste={handleTraitPaste}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mt-auto relative">
+                                                        {!currentUser?.can_use_art && !currentUser?.is_admin && (
+                                                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
+                                                                <div className="flex items-center gap-2 text-red-500">
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                                    <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
+                                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
+                                                                <div className="flex items-center gap-2 text-orange-500">
+                                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                                    <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        <Button
+                                                            onClick={handleGenerateTraits}
+                                                            disabled={isGenerating || !traitBaseImage || (!currentUser?.can_use_art && !currentUser?.is_admin)}
+                                                            className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${isGenerating || !traitBaseImage ? 'bg-white/5 text-slate-700' : 'bg-orange-600 text-white hover:bg-orange-500 shadow-orange-950/20'}`}
+                                                            icon={isGenerating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : undefined}
+                                                        >
+                                                            {isGenerating ? 'GENESIS...' : 'LAUNCH'}
+                                                        </Button>
                                                     </div>
                                                 </div>
-                                                <textarea
-                                                    value={traitsInput}
-                                                    onChange={(e) => setTraitsInput(e.target.value)}
-                                                    placeholder={traitMode === 'mix'
-                                                        ? "hat: blue hat, solana hat\nskin: red, yellow"
-                                                        : "Scene 1: black suit, sunglasses, wagmi hat\nScene 2: red suit, solana hat, solana necklace"}
-                                                    className="w-full bg-transparent p-3 text-xs text-orange-100 placeholder:text-slate-800 outline-none resize-none min-h-[90px] font-mono leading-relaxed"
-                                                    onPaste={handleTraitPaste}
-                                                />
                                             </div>
 
-                                            <div className="mt-auto relative">
-                                                {!currentUser?.can_use_art && !currentUser?.is_admin && (
-                                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
-                                                        <div className="flex items-center gap-2 text-red-500">
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                            <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                            <div id="create-from-text-card" className="bg-black border border-white/10 rounded-2xl p-4 md:p-6 hover:border-white/30 transition-all hover:z-50 flex flex-col justify-between h-full shadow-2xl relative">
+                                                <div className="absolute top-4 md:top-6 right-4 md:right-6 z-20"><InfoTooltip text="Describe your specific idea in text and let the AI visualize it." /></div>
+                                                <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_2px,3px_100%]"></div>
+                                                <div className="relative z-10 mt-4">
+                                                    <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-6">Custom Input</div>
+                                                    <h3 className="text-xl md:text-3xl font-black text-white mb-2 tracking-tight">CREATE FROM TEXT</h3>
+                                                    <p className="text-xs md:text-sm text-slate-500 mb-4 font-medium">Turn your text concepts into visual assets.</p>
+                                                    <div className="relative group/input"><textarea value={customInput} onChange={(e) => setCustomInput(e.target.value)} placeholder="Describe your character idea..." className="relative w-full bg-[#0A0A0A] border-2 border-white/10 rounded-xl p-4 text-sm text-accent placeholder:text-slate-700 focus:border-accent outline-none h-32 resize-none leading-relaxed font-mono tracking-wide" /></div>
+                                                </div>
+                                                <div className="mt-auto pt-4 relative z-10">
+                                                    {!currentUser?.can_use_art && !currentUser?.is_admin && (
+                                                        <div className="absolute inset-0 top-4 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
+                                                            <div className="flex items-center gap-2 text-red-500">
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                                <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
-                                                {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
-                                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
-                                                        <div className="flex items-center gap-2 text-orange-500">
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                            <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
+                                                    )}
+                                                    {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
+                                                        <div className="absolute inset-0 top-4 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
+                                                            <div className="flex items-center gap-2 text-orange-500">
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                                <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
-                                                <Button
-                                                    onClick={handleGenerateTraits}
-                                                    disabled={isGenerating || !traitBaseImage || (!currentUser?.can_use_art && !currentUser?.is_admin)}
-                                                    className={`w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest shadow-lg ${isGenerating || !traitBaseImage ? 'bg-white/5 text-slate-700' : 'bg-orange-600 text-white hover:bg-orange-500 shadow-orange-950/20'}`}
-                                                    icon={isGenerating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : undefined}
-                                                >
-                                                    {isGenerating ? 'GENESIS...' : 'LAUNCH'}
-                                                </Button>
+                                                    )}
+                                                    <Button
+                                                        onClick={handleGenerateFromCustomInput}
+                                                        disabled={!customInput.trim() || selectedStyles.length === 0 || isGenerating || (!currentUser?.can_use_art && !currentUser?.is_admin)}
+                                                        className="w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest bg-white/5 hover:bg-white/10 text-white border-accent/20 hover:border-accent shadow-xl"
+                                                    >
+                                                        GENERATE
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div id="create-from-text-card" className="bg-black border border-white/10 rounded-2xl p-4 md:p-6 hover:border-white/30 transition-all hover:z-50 flex flex-col justify-between h-full shadow-2xl relative">
-                                        <div className="absolute top-4 md:top-6 right-4 md:right-6 z-20"><InfoTooltip text="Describe your specific idea in text and let the AI visualize it." /></div>
-                                        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_2px,3px_100%]"></div>
-                                        <div className="relative z-10 mt-4">
-                                            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-6">Custom Input</div>
-                                            <h3 className="text-xl md:text-3xl font-black text-white mb-2 tracking-tight">CREATE FROM TEXT</h3>
-                                            <p className="text-xs md:text-sm text-slate-500 mb-4 font-medium">Turn your text concepts into visual assets.</p>
-                                            <div className="relative group/input"><textarea value={customInput} onChange={(e) => setCustomInput(e.target.value)} placeholder="Describe your character idea..." className="relative w-full bg-[#0A0A0A] border-2 border-white/10 rounded-xl p-4 text-sm text-accent placeholder:text-slate-700 focus:border-accent outline-none h-32 resize-none leading-relaxed font-mono tracking-wide" /></div>
-                                        </div>
-                                        <div className="mt-auto pt-4 relative z-10">
-                                            {!currentUser?.can_use_art && !currentUser?.is_admin && (
-                                                <div className="absolute inset-0 top-4 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-red-500/50">
-                                                    <div className="flex items-center gap-2 text-red-500">
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                                        <span className="text-[10px] font-black tracking-widest uppercase">Art Access Locked</span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {currentUser?.can_use_art && !currentUser?.is_admin && (currentUser?.art_credits || 0) <= 0 && (
-                                                <div className="absolute inset-0 top-4 bg-black/80 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-lg border border-orange-500/50 opacity-0 hover:opacity-100 transition-opacity">
-                                                    <div className="flex items-center gap-2 text-orange-500">
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                        <span className="text-[10px] font-black tracking-widest uppercase">Out of Art Credits</span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            <Button
-                                                onClick={handleGenerateFromCustomInput}
-                                                disabled={!customInput.trim() || selectedStyles.length === 0 || isGenerating || (!currentUser?.can_use_art && !currentUser?.is_admin)}
-                                                className="w-full py-3 md:py-4 text-sm md:text-lg font-black tracking-widest bg-white/5 hover:bg-white/10 text-white border-accent/20 hover:border-accent shadow-xl"
-                                            >
-                                                GENERATE
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                )}
+                            </>
                         )}
 
-                        {/* 3. TREND FINDER ROW (4x2 GRID) */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 pt-4">
+                        {appMode === 'scraper' && (
+                            <>
+                                {/* 3. TREND FINDER ROW (4x2 GRID) */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 pt-4">
 
-                            {/* 1. GOD MODE CARD (Compact) */}
-                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#181100] border-2 border-yellow-500/50 rounded-2xl text-left hover:border-yellow-400 transition-all hover:z-50 group shadow-[0_0_50px_rgba(234,179,8,0.1)] flex flex-col justify-between p-4 md:p-6">
-                                <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
-                                    <InfoTooltip text="GOD MODE: Scans ALL platforms (X, TikTok, Reddit, 4chan, News, KYM) to find the ultimate viral intersection." />
-                                </div>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
-                                    <svg className="w-24 h-24 text-yellow-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z" /></svg>
-                                </div>
-                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                        <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                        <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
-                                    </div>
-                                )}
-                                {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                        <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
-                                    </div>
-                                )}
+                                    {/* 1. GOD MODE CARD (Compact) */}
+                                    <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#181100] border-2 border-yellow-500/50 rounded-2xl text-left hover:border-yellow-400 transition-all hover:z-50 group shadow-[0_0_50px_rgba(234,179,8,0.1)] flex flex-col justify-between p-4 md:p-6">
+                                        <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
+                                            <InfoTooltip text="GOD MODE: Scans ALL platforms (X, TikTok, Reddit, 4chan, News, KYM) to find the ultimate viral intersection." />
+                                        </div>
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
+                                            <svg className="w-24 h-24 text-yellow-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z" /></svg>
+                                        </div>
+                                        {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
+                                            </div>
+                                        )}
+                                        {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
+                                            </div>
+                                        )}
 
-                                <div className="relative z-10 pointer-events-none">
-                                    <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-yellow-400 transition-colors">GOD MODE</h3>
-                                    <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Scans X, Reddit, 4chan, TikTok & News.</p>
-                                </div>
+                                        <div className="relative z-10 pointer-events-none">
+                                            <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-yellow-400 transition-colors">GOD MODE</h3>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Scans X, Reddit, 4chan, TikTok & News.</p>
+                                        </div>
 
-                                <div className="relative z-10 flex flex-col gap-2">
-                                    <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm z-30 items-center" onClick={(e) => e.stopPropagation()}>
-                                        {['24h', '48h', '1w'].map(t => (
-                                            <button
-                                                key={t}
-                                                onClick={() => setTimeRange(t as any)}
-                                                className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-yellow-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}
-                                            >
-                                                {t.toUpperCase()}
-                                            </button>
-                                        ))}
-                                        <button
-                                            onClick={() => setTimeRange('all')}
-                                            className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ml-1 ${timeRange === 'all' ? 'bg-yellow-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-                                        >
-                                            ALL
-                                        </button>
+                                        <div className="relative z-10 flex flex-col gap-2">
+                                            <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm z-30 items-center" onClick={(e) => e.stopPropagation()}>
+                                                {['24h', '48h', '1w'].map(t => (
+                                                    <button
+                                                        key={t}
+                                                        onClick={() => setTimeRange(t as any)}
+                                                        className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-yellow-500 text-black shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                                    >
+                                                        {t.toUpperCase()}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    onClick={() => setTimeRange('all')}
+                                                    className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ml-1 ${timeRange === 'all' ? 'bg-yellow-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                                >
+                                                    ALL
+                                                </button>
+                                            </div>
+
+                                            <div className="flex gap-0 group/input bg-black border border-yellow-500/30 rounded-lg overflow-hidden focus-within:border-yellow-400 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                                <input
+                                                    placeholder="TOPIC (OPTIONAL)..."
+                                                    value={godModeInput} onChange={e => setGodModeInput(e.target.value)}
+                                                    className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-yellow-700/50"
+                                                    disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin}
+                                                />
+                                                <button
+                                                    onClick={() => handleStartResearch('godmode')}
+                                                    disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin}
+                                                    className="px-3 bg-yellow-500 hover:bg-yellow-400 text-black font-black transition-colors text-[10px]"
+                                                >
+                                                    SCAN
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div className="flex gap-0 group/input bg-black border border-yellow-500/30 rounded-lg overflow-hidden focus-within:border-yellow-400 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
-                                        <input
-                                            placeholder="TOPIC (OPTIONAL)..."
-                                            value={godModeInput} onChange={e => setGodModeInput(e.target.value)}
-                                            className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-yellow-700/50"
-                                            disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin}
-                                        />
-                                        <button
-                                            onClick={() => handleStartResearch('godmode')}
-                                            disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin}
-                                            className="px-3 bg-yellow-500 hover:bg-yellow-400 text-black font-black transition-colors text-[10px]"
-                                        >
-                                            SCAN
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                                    {/* 2. X SCANNER */}
+                                    <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('x')} className="h-auto md:h-48 min-h-[12rem] relative bg-black border-2 border-white/10 rounded-2xl text-left hover:border-[#1DA1F2] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6 w-full">
+                                        {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
+                                            </div>
+                                        )}
+                                        {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
+                                            <InfoTooltip text="Scans Twitter/X for the top trending topics right now." />
+                                        </div>
+                                        <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
+                                            <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                                        </div>
+                                        <div className="relative z-10">
+                                            <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-[#1DA1F2] transition-colors">X TRENDS</h3>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Viral narratives & breaking topics.</p>
+                                        </div>
+                                        <div className="relative z-10 flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-slate-500 group-hover:text-white transition-colors">
+                                                <span className="text-[10px] font-mono uppercase">Start Scan</span>
+                                                <svg className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                                            </div>
+                                            <span className="text-[9px] font-mono text-[#1DA1F2] bg-[#1DA1F2]/10 border border-[#1DA1F2]/30 px-2 py-0.5 rounded">24H Only</span>
+                                        </div>
+                                    </button>
 
-                            {/* 2. X SCANNER */}
-                            <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('x')} className="h-auto md:h-48 min-h-[12rem] relative bg-black border-2 border-white/10 rounded-2xl text-left hover:border-[#1DA1F2] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6 w-full">
-                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                        <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
+                                    {/* 3. TIKTOK TRENDS RESEARCH */}
+                                    <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#0d0205] border-2 border-white/10 rounded-2xl text-left hover:border-[#ff0050] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
+                                        {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
+                                            </div>
+                                        )}
+                                        {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans TikTok for viral challenges." /></div>
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none"><svg className="w-24 h-24 text-[#ff0050]" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" /></svg></div>
+                                        <div className="relative z-10 pointer-events-none">
+                                            <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-[#ff0050] transition-colors">TIKTOK TRENDS</h3>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Trending sounds & viral challenges.</p>
+                                        </div>
+                                        <div className="relative z-10 flex items-center justify-between gap-2 z-30">
+                                            <div className="flex bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
+                                                {['24h', '48h', '1w'].map(t => (<button key={t} onClick={() => setTimeRange(t as any)} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-[#ff0050] text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>{t.toUpperCase()}</button>))}
+                                            </div>
+                                            <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('tiktok')} className="px-3 py-1 bg-[#ff0050] hover:bg-[#d60045] text-white font-black rounded-lg text-[10px] tracking-wider transition-all shadow-lg hover:shadow-[#ff0050]/50 h-full">SCAN</button>
+                                        </div>
                                     </div>
-                                )}
-                                {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
-                                    <InfoTooltip text="Scans Twitter/X for the top trending topics right now." />
-                                </div>
-                                <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-                                    <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-[#1DA1F2] transition-colors">X TRENDS</h3>
-                                    <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Viral narratives & breaking topics.</p>
-                                </div>
-                                <div className="relative z-10 flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-slate-500 group-hover:text-white transition-colors">
-                                        <span className="text-[10px] font-mono uppercase">Start Scan</span>
-                                        <svg className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                                    </div>
-                                    <span className="text-[9px] font-mono text-[#1DA1F2] bg-[#1DA1F2]/10 border border-[#1DA1F2]/30 px-2 py-0.5 rounded">24H Only</span>
-                                </div>
-                            </button>
 
-                            {/* 3. TIKTOK TRENDS RESEARCH */}
-                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#0d0205] border-2 border-white/10 rounded-2xl text-left hover:border-[#ff0050] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
-                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                        <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
-                                    </div>
-                                )}
-                                {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans TikTok for viral challenges." /></div>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none"><svg className="w-24 h-24 text-[#ff0050]" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" /></svg></div>
-                                <div className="relative z-10 pointer-events-none">
-                                    <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-[#ff0050] transition-colors">TIKTOK TRENDS</h3>
-                                    <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Trending sounds & viral challenges.</p>
-                                </div>
-                                <div className="relative z-10 flex items-center justify-between gap-2 z-30">
-                                    <div className="flex bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
-                                        {['24h', '48h', '1w'].map(t => (<button key={t} onClick={() => setTimeRange(t as any)} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-[#ff0050] text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>{t.toUpperCase()}</button>))}
-                                    </div>
-                                    <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('tiktok')} className="px-3 py-1 bg-[#ff0050] hover:bg-[#d60045] text-white font-black rounded-lg text-[10px] tracking-wider transition-all shadow-lg hover:shadow-[#ff0050]/50 h-full">SCAN</button>
-                                </div>
-                            </div>
-
-                            {/* 4. VIRAL NEWS (GLOBAL NEWS) */}
-                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#050A18] border-2 border-white/10 rounded-2xl text-left hover:border-blue-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
-                                {!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                        <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
-                                    </div>
-                                )}
-                                {(currentUser?.can_use_scrape || currentUser?.can_use_news_scrape) && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
-                                    <InfoTooltip text="Scans global news sources for absurd or funny stories." />
-                                </div>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
-                                    <svg className="w-20 h-20 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                </div>
-                                <div className="relative z-10 pointer-events-none">
-                                    <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-blue-400 transition-colors">VIRAL NEWS</h3>
-                                    <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Absurd global events & oddities.</p>
-                                </div>
-                                <div className="relative z-10 flex flex-col gap-2">
-                                    <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm mb-1 z-30" onClick={(e) => e.stopPropagation()}>
-                                        {['24h', '48h', '1w'].map(t => (
-                                            <button
-                                                key={t}
-                                                onClick={() => setTimeRange(t as any)}
-                                                className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-blue-500 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-                                            >
-                                                {t.toUpperCase()}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                    {/* 4. VIRAL NEWS (GLOBAL NEWS) */}
+                                    <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#050A18] border-2 border-white/10 rounded-2xl text-left hover:border-blue-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
                                         {!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin && (
-                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
                                             </div>
                                         )}
-                                        <input
-                                            placeholder="TOPIC..."
-                                            value={newsInput} onChange={e => setNewsInput(e.target.value)}
-                                            className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700"
-                                            disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin}
-                                        />
-                                        <button disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('news')} className="px-3 bg-blue-600 hover:bg-blue-500 text-white font-black transition-colors text-[10px]">SCAN</button>
+                                        {(currentUser?.can_use_scrape || currentUser?.can_use_news_scrape) && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}>
+                                            <InfoTooltip text="Scans global news sources for absurd or funny stories." />
+                                        </div>
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
+                                            <svg className="w-20 h-20 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </div>
+                                        <div className="relative z-10 pointer-events-none">
+                                            <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-blue-400 transition-colors">VIRAL NEWS</h3>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Absurd global events & oddities.</p>
+                                        </div>
+                                        <div className="relative z-10 flex flex-col gap-2">
+                                            <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm mb-1 z-30" onClick={(e) => e.stopPropagation()}>
+                                                {['24h', '48h', '1w'].map(t => (
+                                                    <button
+                                                        key={t}
+                                                        onClick={() => setTimeRange(t as any)}
+                                                        className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-blue-500 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                                    >
+                                                        {t.toUpperCase()}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                                {!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin && (
+                                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                                    </div>
+                                                )}
+                                                <input
+                                                    placeholder="TOPIC..."
+                                                    value={newsInput} onChange={e => setNewsInput(e.target.value)}
+                                                    className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700"
+                                                    disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin}
+                                                />
+                                                <button disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('news')} className="px-3 bg-blue-600 hover:bg-blue-500 text-white font-black transition-colors text-[10px]">SCAN</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* 5. 4CHAN SCANNER */}
-                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#051105] border-2 border-white/10 rounded-2xl text-left hover:border-[#00FF00] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
-                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                        <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
-                                    </div>
-                                )}
-                                {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans 4chan /biz/ and other boards." /></div>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
-                                    <img src="/4chan-logo.png" alt="4chan Logo" className="w-24 h-24 object-contain opacity-80" />
-                                </div>
-                                <div className="relative z-10 pointer-events-none">
-                                    <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-[#00FF00] transition-colors">4CHAN /BIZ/</h3>
-                                    <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">/biz/ alpha & legendary lore.</p>
-                                </div>
-                                <div className="relative z-10 flex flex-col gap-2">
-                                    <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm z-30 items-center" onClick={(e) => e.stopPropagation()}>
-                                        {['24h', '48h', '1w'].map(t => (<button key={t} onClick={() => { setTimeRange(t as any); setFourChanYear(""); }} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t && !fourChanYear ? 'bg-green-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>{t.toUpperCase()}</button>))}
-                                        <button onClick={() => { setTimeRange('all'); setFourChanYear(""); }} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ml-1 ${timeRange === 'all' && !fourChanYear ? 'bg-[#00FF00] text-black shadow-lg shadow-[#00FF00]/50' : 'text-slate-500 hover:text-white'}`}>ALL</button>
-                                        <input type="text" placeholder="YEAR" value={fourChanYear} onChange={(e) => setFourChanYear(e.target.value.replace(/\D/g, '').slice(0, 4))} className={`w-10 ml-2 bg-transparent border-b border-white/20 text-[9px] font-mono text-center outline-none focus:border-[#00FF00] ${fourChanYear ? 'text-[#00FF00] border-[#00FF00]' : 'text-slate-500'}`} />
-                                    </div>
-                                    <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-[#00FF00] transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                    {/* 5. 4CHAN SCANNER */}
+                                    <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#051105] border-2 border-white/10 rounded-2xl text-left hover:border-[#00FF00] transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
                                         {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
                                             </div>
                                         )}
-                                        <input disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} placeholder="KEYWORD..." value={fourChanInput} onChange={e => setFourChanInput(e.target.value)} className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700" />
-                                        <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('4chan')} className="px-3 bg-[#009900] hover:bg-[#00FF00] hover:text-black text-white font-black transition-colors text-[10px]">SCAN</button>
+                                        {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans 4chan /biz/ and other boards." /></div>
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
+                                            <img src="/4chan-logo.png" alt="4chan Logo" className="w-24 h-24 object-contain opacity-80" />
+                                        </div>
+                                        <div className="relative z-10 pointer-events-none">
+                                            <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-[#00FF00] transition-colors">4CHAN /BIZ/</h3>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">/biz/ alpha & legendary lore.</p>
+                                        </div>
+                                        <div className="relative z-10 flex flex-col gap-2">
+                                            <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm z-30 items-center" onClick={(e) => e.stopPropagation()}>
+                                                {['24h', '48h', '1w'].map(t => (<button key={t} onClick={() => { setTimeRange(t as any); setFourChanYear(""); }} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t && !fourChanYear ? 'bg-green-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>{t.toUpperCase()}</button>))}
+                                                <button onClick={() => { setTimeRange('all'); setFourChanYear(""); }} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ml-1 ${timeRange === 'all' && !fourChanYear ? 'bg-[#00FF00] text-black shadow-lg shadow-[#00FF00]/50' : 'text-slate-500 hover:text-white'}`}>ALL</button>
+                                                <input type="text" placeholder="YEAR" value={fourChanYear} onChange={(e) => setFourChanYear(e.target.value.replace(/\D/g, '').slice(0, 4))} className={`w-10 ml-2 bg-transparent border-b border-white/20 text-[9px] font-mono text-center outline-none focus:border-[#00FF00] ${fourChanYear ? 'text-[#00FF00] border-[#00FF00]' : 'text-slate-500'}`} />
+                                            </div>
+                                            <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-[#00FF00] transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
+                                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                                    </div>
+                                                )}
+                                                <input disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} placeholder="KEYWORD..." value={fourChanInput} onChange={e => setFourChanInput(e.target.value)} className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700" />
+                                                <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('4chan')} className="px-3 bg-[#009900] hover:bg-[#00FF00] hover:text-black text-white font-black transition-colors text-[10px]">SCAN</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* 6. KNOW YOUR MEME (KYM) */}
-                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#080d1a] border-2 border-white/10 rounded-2xl text-left hover:border-cyan-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
-                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                        <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
-                                    </div>
-                                )}
-                                {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans KnowYourMeme.com for viral memes." /></div>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none"><svg className="w-24 h-24 text-cyan-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19 2H9c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 20V4h10v16H9zm-4-2h2v-2H5v2zm0-4h2v-2H5v2zm0-4h2V8H5v2zm0-4h2V4H5v2z" /></svg></div>
-                                <div className="relative z-10 pointer-events-none">
-                                    <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-cyan-500 transition-colors">KnowYourMeme</h3>
-                                    <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Meme database & history.</p>
-                                </div>
-                                <div className="relative z-10 flex flex-col gap-2">
-                                    <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm z-30 items-center" onClick={(e) => e.stopPropagation()}>
-                                        {['24h', '48h', '1w'].map(t => (<button key={t} onClick={() => setTimeRange(t as any)} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>{t.toUpperCase()}</button>))}
-                                        <button onClick={() => setTimeRange('all')} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ml-1 ${timeRange === 'all' ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/50' : 'text-slate-500 hover:text-white'}`}>ALL</button>
-                                    </div>
-                                    <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-cyan-500 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                    {/* 6. KNOW YOUR MEME (KYM) */}
+                                    <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#080d1a] border-2 border-white/10 rounded-2xl text-left hover:border-cyan-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
                                         {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
                                             </div>
                                         )}
-                                        <input disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} placeholder="KEYWORD..." value={kymInput} onChange={e => setKymInput(e.target.value)} className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700" />
-                                        <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('kym')} className="px-3 bg-cyan-600 hover:bg-cyan-500 text-white font-black transition-colors text-[10px]">SCAN</button>
+                                        {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans KnowYourMeme.com for viral memes." /></div>
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none"><svg className="w-24 h-24 text-cyan-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19 2H9c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 20V4h10v16H9zm-4-2h2v-2H5v2zm0-4h2v-2H5v2zm0-4h2V8H5v2zm0-4h2V4H5v2z" /></svg></div>
+                                        <div className="relative z-10 pointer-events-none">
+                                            <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-cyan-500 transition-colors">KnowYourMeme</h3>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Meme database & history.</p>
+                                        </div>
+                                        <div className="relative z-10 flex flex-col gap-2">
+                                            <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm z-30 items-center" onClick={(e) => e.stopPropagation()}>
+                                                {['24h', '48h', '1w'].map(t => (<button key={t} onClick={() => setTimeRange(t as any)} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>{t.toUpperCase()}</button>))}
+                                                <button onClick={() => setTimeRange('all')} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ml-1 ${timeRange === 'all' ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/50' : 'text-slate-500 hover:text-white'}`}>ALL</button>
+                                            </div>
+                                            <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-cyan-500 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
+                                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                                    </div>
+                                                )}
+                                                <input disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} placeholder="KEYWORD..." value={kymInput} onChange={e => setKymInput(e.target.value)} className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700" />
+                                                <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('kym')} className="px-3 bg-cyan-600 hover:bg-cyan-500 text-white font-black transition-colors text-[10px]">SCAN</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* 7. REDDIT LORE RESEARCH */}
-                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#1a0b05] border-2 border-white/10 rounded-2xl text-left hover:border-orange-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
-                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                        <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
-                                    </div>
-                                )}
-                                {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans Reddit for memeable threads." /></div>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
-                                    <img src="/reddit-logo.webp" alt="Reddit Logo" className="w-24 h-24 object-contain opacity-80" />
-                                </div>
-                                <div className="relative z-10 pointer-events-none">
-                                    <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-orange-500 transition-colors">REDDIT LORE</h3>
-                                    <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Community threads & stories.</p>
-                                </div>
-                                <div className="relative z-10 flex flex-col gap-2">
-                                    <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm z-30 items-center" onClick={(e) => e.stopPropagation()}>
-                                        {['24h', '48h', '1w'].map(t => (<button key={t} onClick={() => setTimeRange(t as any)} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>{t.toUpperCase()}</button>))}
-                                        <button onClick={() => setTimeRange('all')} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ml-1 ${timeRange === 'all' ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/50' : 'text-slate-500 hover:text-white'}`}>ALL</button>
-                                    </div>
-                                    <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-orange-500 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                    {/* 7. REDDIT LORE RESEARCH */}
+                                    <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#1a0b05] border-2 border-white/10 rounded-2xl text-left hover:border-orange-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between p-4 md:p-6">
                                         {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
                                             </div>
                                         )}
-                                        <input disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} placeholder="KEYWORD..." value={redditInput} onChange={e => setRedditInput(e.target.value)} className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700" />
-                                        <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('reddit')} className="px-3 bg-orange-600 hover:bg-orange-500 text-white font-black transition-colors text-[10px]">SCAN</button>
+                                        {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute top-4 right-4 z-20" onClick={(e) => e.stopPropagation()}><InfoTooltip text="Scans Reddit for memeable threads." /></div>
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
+                                            <img src="/reddit-logo.webp" alt="Reddit Logo" className="w-24 h-24 object-contain opacity-80" />
+                                        </div>
+                                        <div className="relative z-10 pointer-events-none">
+                                            <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-orange-500 transition-colors">REDDIT LORE</h3>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Community threads & stories.</p>
+                                        </div>
+                                        <div className="relative z-10 flex flex-col gap-2">
+                                            <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm z-30 items-center" onClick={(e) => e.stopPropagation()}>
+                                                {['24h', '48h', '1w'].map(t => (<button key={t} onClick={() => setTimeRange(t as any)} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>{t.toUpperCase()}</button>))}
+                                                <button onClick={() => setTimeRange('all')} className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ml-1 ${timeRange === 'all' ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/50' : 'text-slate-500 hover:text-white'}`}>ALL</button>
+                                            </div>
+                                            <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-orange-500 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
+                                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                                    </div>
+                                                )}
+                                                <input disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} placeholder="KEYWORD..." value={redditInput} onChange={e => setRedditInput(e.target.value)} className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700" />
+                                                <button disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('reddit')} className="px-3 bg-orange-600 hover:bg-orange-500 text-white font-black transition-colors text-[10px]">SCAN</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* 8. META HUNTER */}
-                            <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#0a1812] border-2 border-white/10 rounded-2xl p-4 md:p-6 hover:border-emerald-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between">
-                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                        <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
-                                    </div>
-                                )}
-                                {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
-                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 z-20"><InfoTooltip text="Search for specific keywords (e.g. 'Bull', 'Pepe') to find niche viral content." /></div>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
-                                    <svg className="w-32 h-32 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="0.5" /><circle cx="12" cy="12" r="6" strokeWidth="0.5" /><circle cx="12" cy="12" r="2" strokeWidth="1" className="fill-emerald-500/20" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 2v20M2 12h20" /></svg>
-                                </div>
-                                <div className="relative z-10 pointer-events-none">
-                                    <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-emerald-400 transition-colors">META HUNTER</h3>
-                                    <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Track specific keywords.</p>
-                                </div>
-                                <div className="relative z-10 flex flex-col gap-2">
-                                    <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm mb-1 z-30" onClick={(e) => e.stopPropagation()}>
-                                        {['24h', '48h', '1w'].map(t => (
-                                            <button
-                                                key={t}
-                                                onClick={() => setTimeRange(t as any)}
-                                                className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-                                            >
-                                                {t.toUpperCase()}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-emerald-500 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                    {/* 8. META HUNTER */}
+                                    <div className="h-auto md:h-48 min-h-[12rem] relative bg-[#0a1812] border-2 border-white/10 rounded-2xl p-4 md:p-6 hover:border-emerald-500 transition-all hover:z-50 group shadow-xl flex flex-col justify-between">
                                         {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
-                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-red-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                <span className="text-xs text-red-500 font-black tracking-widest uppercase">Scrape Locked</span>
                                             </div>
                                         )}
-                                        <input disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} placeholder="KEYWORD..." value={metaInput} onChange={e => setMetaInput(e.target.value)} className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700" />
-                                        <button onClick={() => handleStartResearch('meta')} disabled={!metaInput.trim() || (!currentUser?.can_use_scrape && !currentUser?.is_admin)} className="px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-[10px]">HUNT</button>
+                                        {currentUser?.can_use_scrape && !currentUser?.is_admin && (currentUser?.lore_credits || 0) <= 0 && (
+                                            <div className="absolute inset-0 bg-black/80 backdrop-blur-[2px] z-40 rounded-xl flex flex-col items-center justify-center border border-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-8 h-8 text-orange-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                <span className="text-xs text-orange-500 font-black tracking-widest uppercase">Out of Lore Credits</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute top-4 right-4 z-20"><InfoTooltip text="Search for specific keywords (e.g. 'Bull', 'Pepe') to find niche viral content." /></div>
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity pointer-events-none">
+                                            <svg className="w-32 h-32 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="0.5" /><circle cx="12" cy="12" r="6" strokeWidth="0.5" /><circle cx="12" cy="12" r="2" strokeWidth="1" className="fill-emerald-500/20" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 2v20M2 12h20" /></svg>
+                                        </div>
+                                        <div className="relative z-10 pointer-events-none">
+                                            <h3 className="text-xl font-black text-white tracking-tighter group-hover:text-emerald-400 transition-colors">META HUNTER</h3>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Track specific keywords.</p>
+                                        </div>
+                                        <div className="relative z-10 flex flex-col gap-2">
+                                            <div className="flex self-start bg-black/40 rounded-lg p-1 border border-white/10 backdrop-blur-sm mb-1 z-30" onClick={(e) => e.stopPropagation()}>
+                                                {['24h', '48h', '1w'].map(t => (
+                                                    <button
+                                                        key={t}
+                                                        onClick={() => setTimeRange(t as any)}
+                                                        className={`px-1.5 py-0.5 text-[8px] font-bold rounded transition-colors uppercase ${timeRange === t ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                                    >
+                                                        {t.toUpperCase()}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="flex gap-0 group/input bg-black border border-white/20 rounded-lg overflow-hidden focus-within:border-emerald-500 transition-colors shadow-lg z-30 relative" onClick={(e) => e.stopPropagation()}>
+                                                {!currentUser?.can_use_scrape && !currentUser?.is_admin && (
+                                                    <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
+                                                    </div>
+                                                )}
+                                                <input disabled={!currentUser?.can_use_scrape && !currentUser?.is_admin} placeholder="KEYWORD..." value={metaInput} onChange={e => setMetaInput(e.target.value)} className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700" />
+                                                <button onClick={() => handleStartResearch('meta')} disabled={!metaInput.trim() || (!currentUser?.can_use_scrape && !currentUser?.is_admin)} className="px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-[10px]">HUNT</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
 
-                        </div>
+                                </div>
+                            </>
+                        )}
 
                     </div>
                 )}
