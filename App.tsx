@@ -1267,7 +1267,48 @@ const App: React.FC = () => {
     }
 
     return (
-        <div ref={topRef} className="min-h-screen bg-navy-950 text-slate-200 selection:bg-accent selection:text-black">
+        <div ref={topRef} className="min-h-screen bg-navy-950/95 text-slate-200 selection:bg-accent selection:text-black relative overflow-hidden">
+            {/* === AMBIENT BACKGROUND LAYERS === */}
+            <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
+                {/* Radial Glow — Top Left (Accent) */}
+                <div
+                    className="absolute -top-[300px] -left-[300px] w-[800px] h-[800px] rounded-full opacity-[0.04]"
+                    style={{
+                        background: 'radial-gradient(circle, #DEFD41 0%, transparent 70%)',
+                        animation: 'ambientDrift 60s ease-in-out infinite'
+                    }}
+                />
+                {/* Radial Glow — Bottom Right (Purple) */}
+                <div
+                    className="absolute -bottom-[300px] -right-[200px] w-[700px] h-[700px] rounded-full opacity-[0.04]"
+                    style={{
+                        background: 'radial-gradient(circle, #C084FC 0%, transparent 70%)',
+                        animation: 'ambientDrift 55s ease-in-out infinite reverse'
+                    }}
+                />
+                {/* Radial Glow — Center subtle warmth */}
+                <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[600px] rounded-full opacity-[0.02]"
+                    style={{
+                        background: 'radial-gradient(ellipse, #DEFD41 0%, transparent 70%)'
+                    }}
+                />
+                {/* Top Edge Light */}
+                <div className="absolute top-0 left-0 right-0 h-[400px] opacity-100"
+                    style={{
+                        background: 'linear-gradient(to bottom, rgba(222,253,65,0.03) 0%, transparent 100%)'
+                    }}
+                />
+                {/* Subtle noise/grain texture overlay */}
+                <div className="absolute inset-0 opacity-[0.015]"
+                    style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                        backgroundRepeat: 'repeat',
+                        backgroundSize: '256px 256px'
+                    }}
+                />
+            </div>
+
             {/* ... Navigation (same as before) ... */}
             <nav className="border-b border-white/5 bg-navy-950/90 backdrop-blur-md sticky top-0 z-40 h-20 flex items-center">
                 <div className="w-full max-w-[1800px] mx-auto px-6 flex items-center justify-between">
