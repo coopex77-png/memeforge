@@ -1272,39 +1272,43 @@ const App: React.FC = () => {
             <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
                 {/* Radial Glow — Top Left (Accent) */}
                 <div
-                    className="absolute -top-[300px] -left-[300px] w-[800px] h-[800px] rounded-full opacity-[0.04]"
+                    className="absolute -top-[300px] -left-[300px] w-[800px] h-[800px] rounded-full opacity-[0.18]"
                     style={{
                         background: 'radial-gradient(circle, #DEFD41 0%, transparent 70%)',
-                        animation: 'ambientDrift 60s ease-in-out infinite'
+                        animation: 'ambientDrift 60s ease-in-out infinite',
+                        filter: 'blur(50px)'
                     }}
                 />
                 {/* Radial Glow — Bottom Right (Purple) */}
                 <div
-                    className="absolute -bottom-[300px] -right-[200px] w-[700px] h-[700px] rounded-full opacity-[0.04]"
+                    className="absolute -bottom-[300px] -right-[200px] w-[700px] h-[700px] rounded-full opacity-[0.20]"
                     style={{
                         background: 'radial-gradient(circle, #C084FC 0%, transparent 70%)',
-                        animation: 'ambientDrift 55s ease-in-out infinite reverse'
+                        animation: 'ambientDrift 55s ease-in-out infinite reverse',
+                        filter: 'blur(60px)'
                     }}
                 />
                 {/* Radial Glow — Center subtle warmth */}
                 <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[600px] rounded-full opacity-[0.02]"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[600px] rounded-full opacity-[0.08]"
                     style={{
-                        background: 'radial-gradient(ellipse, #DEFD41 0%, transparent 70%)'
+                        background: 'radial-gradient(ellipse, #DEFD41 0%, transparent 70%)',
+                        filter: 'blur(80px)'
                     }}
                 />
                 {/* Top Edge Light */}
                 <div className="absolute top-0 left-0 right-0 h-[400px] opacity-100"
                     style={{
-                        background: 'linear-gradient(to bottom, rgba(222,253,65,0.03) 0%, transparent 100%)'
+                        background: 'linear-gradient(to bottom, rgba(222,253,65,0.08) 0%, transparent 100%)'
                     }}
                 />
                 {/* Subtle noise/grain texture overlay */}
-                <div className="absolute inset-0 opacity-[0.015]"
+                <div className="absolute inset-0 opacity-[0.04]"
                     style={{
                         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
                         backgroundRepeat: 'repeat',
-                        backgroundSize: '256px 256px'
+                        backgroundSize: '256px 256px',
+                        mixBlendMode: 'overlay'
                     }}
                 />
             </div>
