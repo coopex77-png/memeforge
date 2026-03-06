@@ -1314,7 +1314,7 @@ const App: React.FC = () => {
             </div>
 
             {/* ... Navigation (same as before) ... */}
-            <nav className="border-b border-white/5 bg-navy-950/90 backdrop-blur-md sticky top-0 z-40 h-20 flex items-center">
+            <nav className="border-b border-white/5 bg-transparent backdrop-blur-xl sticky top-0 z-40 h-20 flex items-center">
                 <div className="w-full max-w-[1800px] mx-auto px-6 flex items-center justify-between">
                     <div className="flex items-center gap-6">
                         <div className="flex-shrink-0 flex items-center gap-3 relative">
