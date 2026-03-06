@@ -302,7 +302,7 @@ export const LiteModeWizard: React.FC<LiteModeWizardProps> = ({
                                                     </div>
                                                     <div>
                                                         <div className="text-[11px] font-black text-white tracking-widest uppercase">Context & Lore (Optional)</div>
-                                                        <div className="text-[10px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">Guide the AI with narrative constraints</div>
+                                                        <div className="text-[10px] text-slate-500 font-medium mt-0.5">Provide context or details about the character for significantly better results</div>
                                                     </div>
                                                 </div>
                                                 <svg className={`w-5 h-5 transition-transform ${showLore ? 'rotate-180 text-blue-400' : 'text-slate-600 group-hover:text-blue-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
