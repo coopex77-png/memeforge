@@ -2209,7 +2209,7 @@ const App: React.FC = () => {
                 {hasMascots && (
                     <div className="animate-in fade-in duration-500">
                         {/* ... (Output Header and Grid same as previous) ... */}
-                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 mb-8 pb-6 border-b border-white/5 sticky top-16 md:top-20 bg-navy-950/95 backdrop-blur z-30 pt-4">
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 mb-8 pb-6 border-b border-white/5 sticky top-16 md:top-20 bg-transparent backdrop-blur-xl z-30 pt-4">
                             <div>
                                 <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter">Session Output</h2>
                                 <div className="flex items-center gap-2 mt-1 md:mt-2">
