@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
 import { DatabaseUser, DiscountCode } from '../types';
 
@@ -31,6 +31,68 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     const [discountError, setDiscountError] = useState('');
     const [discountSuccess, setDiscountSuccess] = useState('');
     const [showDiscountInput, setShowDiscountInput] = useState(false);
+
+    // Scroll-driven cinematic zoom — continuous rAF loop, delta-time lerp, GPU-only
+    const showcaseRef = useRef<HTMLDivElement>(null);
+    const showcaseTargetScale = useRef(0.92);
+    const showcaseCurrentScale = useRef(0.92);
+    const lastTimeRef = useRef(0);
+
+    useEffect(() => {
+        let rafId: number;
+        let alive = true;
+
+        // Scroll handler: ONLY computes the target value. Zero DOM work.
+        const computeTarget = () => {
+            if (!showcaseRef.current) return;
+            const rect = showcaseRef.current.getBoundingClientRect();
+            const wH = window.innerHeight;
+            const elemCenter = rect.top + rect.height / 2;
+            const dist = Math.abs(elemCenter - wH / 2);
+            const maxDist = wH / 2 + rect.height / 2;
+            const raw = Math.max(0, Math.min(1, 1 - dist / maxDist));
+            // Smoothstep
+            const t = raw * raw * (3 - 2 * raw);
+            // Scale range: 0.92 → 1.02
+            showcaseTargetScale.current = 0.92 + t * 0.10;
+        };
+
+        // Continuous animation loop — runs EVERY frame, always
+        const tick = (now: number) => {
+            if (!alive) return;
+
+            const dt = lastTimeRef.current ? (now - lastTimeRef.current) / 1000 : 0.016;
+            lastTimeRef.current = now;
+
+            // Exponential decay lerp: speed = 4 means ~98% settled in 1 second
+            // Formula: current += (target - current) * (1 - e^(-speed * dt))
+            const speed = 4;
+            const factor = 1 - Math.exp(-speed * dt);
+            const prev = showcaseCurrentScale.current;
+            const target = showcaseTargetScale.current;
+            const next = prev + (target - prev) * factor;
+            showcaseCurrentScale.current = next;
+
+            // Only touch the DOM if the value actually changed
+            if (showcaseRef.current && Math.abs(next - prev) > 0.00001) {
+                showcaseRef.current.style.transform = `scale3d(${next},${next},1)`;
+            }
+
+            rafId = requestAnimationFrame(tick);
+        };
+
+        const onScroll = () => computeTarget();
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        computeTarget(); // initial
+        rafId = requestAnimationFrame(tick);
+
+        return () => {
+            alive = false;
+            cancelAnimationFrame(rafId);
+            window.removeEventListener('scroll', onScroll);
+        };
+    }, []);
 
     // Custom Anchor Component for Precise Smooth Scroll
     const A = ({ href, children, className, onClick }: { href: string, children: React.ReactNode, className: string, onClick?: () => void }) => {
@@ -368,11 +430,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                 </section>
 
                 {/* Section 2: App Screen Showcase */}
-                <section id="features" className="scroll-mt-32 pt-4 pb-24 md:-mt-12 overflow-hidden relative z-20">
+                <section id="features" className="scroll-mt-32 pt-4 pb-24 md:-mt-12 overflow-visible relative z-20">
                     <div className="px-6 max-w-[1400px] mx-auto relative z-10">
-                        <div className="relative max-w-[1400px] mx-auto mb-20 group perspective-1000">
+                        <div
+                            ref={showcaseRef}
+                            className="relative max-w-[1400px] mx-auto mb-20 group"
+                            style={{
+                                transform: 'scale3d(0.92,0.92,1)',
+                                willChange: 'transform',
+                            }}
+                        >
                             {/* Inner App Window Screenshot (macOS Style) */}
-                            <div className="relative bg-[#02040A] rounded-xl flex flex-col shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden border border-white/5 transition-all duration-500 z-10 w-full animate-fade-in-up hover:border-white/10 hover:shadow-[0_20px_80px_rgba(0,0,0,0.9)]">
+                            <div
+                                className="relative bg-[#02040A] rounded-xl flex flex-col overflow-hidden border border-white/5 z-10 w-full animate-fade-in-up shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),_0_20px_60px_rgba(0,0,0,0.8)]"
+                            >
 
                                 {/* macOS Style Title Bar */}
                                 <div className="bg-navy-950/80 border-b border-white/10 px-4 py-3 flex items-center justify-start gap-2 w-full z-20 backdrop-blur-md">
@@ -385,7 +456,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 <div className="relative w-full">
                                     {/* Subtle reflection on the screen */}
                                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.1] pointer-events-none"></div>
-                                    <img src="/app_screenshot_v2.png" alt="MemeForge Art Engine Interface" className="w-full h-auto object-cover relative z-10" />
+                                    <img src="/app_screenshot_v3.png" alt="MemeForge Art Engine Interface" className="w-full h-auto object-cover relative z-10" />
                                 </div>
                             </div>
                         </div>

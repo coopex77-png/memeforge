@@ -180,6 +180,7 @@ const App: React.FC = () => {
     const [researchMode, setResearchMode] = useState<'x' | 'news' | 'meta' | '4chan' | 'kym' | 'reddit' | 'tiktok' | 'godmode' | null>(null);
     const [metaInput, setMetaInput] = useState("");
     const [newsInput, setNewsInput] = useState("");
+    const [newsCategory, setNewsCategory] = useState<string>('all');
     const [fourChanInput, setFourChanInput] = useState("");
     const [fourChanYear, setFourChanYear] = useState("");
     const [kymInput, setKymInput] = useState("");
@@ -316,7 +317,7 @@ const App: React.FC = () => {
         return filteredTrends.sort((a, b) => (b.memeScore || 0) - (a.memeScore || 0));
     };
 
-    const handleStartResearch = async (mode: 'x' | 'news' | 'meta' | '4chan' | 'kym' | 'reddit' | 'tiktok' | 'godmode') => {
+    const handleStartResearch = async (mode: 'x' | 'news' | 'meta' | '4chan' | 'kym' | 'reddit' | 'tiktok' | 'godmode', newsCategoryOverride?: string) => {
         if (!currentUser) return;
         if (isExpired) {
             alert("Your subscription has expired.");
@@ -361,7 +362,7 @@ const App: React.FC = () => {
             } else if (mode === 'godmode') {
                 trends = await performGodModeResearch([], timeRange === 'all' ? '24h' : timeRange, godModeInput);
             } else {
-                trends = await performGlobalNewsResearch([], timeRange === 'all' ? '24h' : timeRange, newsInput);
+                trends = await performGlobalNewsResearch([], timeRange === 'all' ? '24h' : timeRange, newsInput || undefined, newsCategoryOverride || newsCategory);
             }
 
             let filteredTrends = sortAndDedupTrends(trends);
@@ -433,7 +434,7 @@ const App: React.FC = () => {
             } else if (researchMode === 'godmode') {
                 newTrends = await performGodModeResearch(currentTopics, timeRange === 'all' ? '24h' : timeRange, godModeInput);
             } else {
-                newTrends = await performGlobalNewsResearch(currentTopics, timeRange === 'all' ? '24h' : timeRange, newsInput);
+                newTrends = await performGlobalNewsResearch(currentTopics, timeRange === 'all' ? '24h' : timeRange, newsInput || undefined, newsCategory);
             }
 
             const currentCount = xTrends.length;
@@ -1033,7 +1034,8 @@ const App: React.FC = () => {
         if (researchMode === 'x') {
             title = "Twitter / X Trends"; statusText = "Searching trending topics...";
         } else if (researchMode === 'news') {
-            title = `Viral News${newsInput ? `: "${newsInput}"` : ''}`; statusText = "Searching global news...";
+            const categoryLabels: Record<string, string> = { all: 'All', animal: 'Animal', hero: 'Hero', absurd: 'Absurd', community: 'Community' };
+            title = `Viral News: ${categoryLabels[newsCategory] || 'All'}`; statusText = "Searching global news...";
             borderColorClass = "border-blue-500"; textColorClass = "text-blue-500"; bgColorClass = "bg-blue-500";
             hoverBorderClass = "hover:border-blue-500"; hoverTextClass = "group-hover:text-blue-500"; groupHoverBgClass = "group-hover:bg-blue-500";
             numberHotColor = "text-blue-500 drop-shadow-lg";
@@ -1129,7 +1131,7 @@ const App: React.FC = () => {
 
                             return (
                                 <>
-                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                    <div className="columns-1 xl:columns-2 gap-3 w-full">
                                         {xTrends.map((trend, idx) => {
                                             const score = trend.memeScore || 5;
                                             const isHot = score >= 8;
@@ -1171,11 +1173,11 @@ const App: React.FC = () => {
                                             const isLocked = !currentUser?.is_admin && idx >= unlockedTrendsCount;
 
                                             return (
-                                                <div key={idx} className={`relative ${isLocked ? 'cursor-pointer group/locked' : ''}`} onClick={isLocked ? handleUnlockMore : undefined}>
-                                                    <div className={`bg-navy-900 border border-white/5 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all p-4 md:p-8 rounded-xl flex flex-col md:flex-row gap-4 md:gap-8 group relative overflow-hidden ${hoverBorderClass} ${isLocked ? 'blur-md pointer-events-none opacity-40 grayscale select-none' : ''}`}>
+                                                <div key={idx} className={`relative break-inside-avoid inline-block w-full mb-3 ${isLocked ? 'cursor-pointer group/locked' : ''}`} onClick={isLocked ? handleUnlockMore : undefined}>
+                                                    <div className={`bg-navy-900 border border-white/5 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all p-3 md:p-4 rounded-xl flex flex-col md:flex-row gap-3 md:gap-4 group relative overflow-hidden ${hoverBorderClass} ${isLocked ? 'blur-md pointer-events-none opacity-40 grayscale select-none' : ''}`}>
 
                                                         {/* Score Box */}
-                                                        <div className="w-full md:w-32 shrink-0 flex flex-row md:flex-col justify-center items-center border-b md:border-b-0 md:border-r border-white/5 pb-4 md:pb-0 md:pr-8 gap-4 md:gap-0">
+                                                        <div className="w-full md:w-32 shrink-0 flex flex-row md:flex-col justify-center items-center border-b md:border-b-0 md:border-r border-white/5 pb-4 md:pb-0 md:pr-6 gap-4 md:gap-0">
                                                             <div className="text-[10px] font-mono uppercase text-slate-500 tracking-[0.2em] md:hidden">SCORE:</div>
                                                             <div className={`text-4xl md:text-6xl font-black font-sans tracking-tighter leading-none ${isHot ? numberHotColor : numberColor}`}>
                                                                 {score}
@@ -1183,17 +1185,17 @@ const App: React.FC = () => {
                                                             <div className="hidden md:block text-[10px] font-mono uppercase text-slate-500 mt-2 tracking-[0.2em]">SCORE</div>
                                                         </div>
 
-                                                        <div className="flex-1 z-10 flex flex-col justify-center">
+                                                        <div className="flex-1 min-w-0 z-10 flex flex-col justify-center">
                                                             <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3 flex-wrap">
                                                                 {/* SOURCE BADGE FOR GOD MODE */}
                                                                 {trend.source && <SourceBadge source={trend.source} />}
                                                                 <span className="text-[10px] bg-white/5 text-slate-400 px-3 py-1 rounded-full uppercase font-bold tracking-wider border border-white/5 whitespace-nowrap">{trend.category}</span>
                                                             </div>
-                                                            <h3 className={`text-lg md:text-2xl font-bold text-white mb-2 md:mb-3 font-sans transition-colors leading-tight ${hoverTextClass}`}>{displayedTitle}</h3>
+                                                            <h3 className={`text-base md:text-xl font-bold text-white mb-2 md:mb-3 font-sans transition-colors leading-snug line-clamp-4 text-ellipsis ${hoverTextClass}`}>{displayedTitle}</h3>
                                                             <p className="text-xs md:text-sm text-slate-400 leading-relaxed font-mono">{trend.description}</p>
                                                         </div>
 
-                                                        <div className="flex flex-col md:flex-col gap-2 items-center justify-center pt-4 md:pt-0 md:pl-8 border-t md:border-t-0 md:border-l border-white/5 z-10 w-full md:w-48">
+                                                        <div className="flex flex-col md:flex-col gap-2 items-center justify-center pt-4 md:pt-0 md:pl-8 border-t md:border-t-0 md:border-l border-white/5 z-10 shrink-0 w-full md:w-48">
                                                             <Button onClick={() => handleUseTrend(trend)} size="md" variant="secondary" className={`w-full group-hover:text-black font-black tracking-wider text-[10px] py-4 md:py-2 ${groupHoverBgClass} ${buttonTextColor}`}>
                                                                 CREATE MASCOT
                                                             </Button>
@@ -2026,13 +2028,23 @@ const App: React.FC = () => {
                                                     <div className="absolute inset-0 bg-black/80 backdrop-blur-[1px] z-20 flex items-center justify-center border border-red-500/50 opacity-0 group-hover/input:opacity-100 transition-opacity">
                                                     </div>
                                                 )}
-                                                <input
-                                                    placeholder="TOPIC..."
-                                                    value={newsInput} onChange={e => setNewsInput(e.target.value)}
-                                                    className="flex-1 bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-mono placeholder:text-slate-700"
-                                                    disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin}
-                                                />
-                                                <button disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('news')} className="px-3 bg-blue-600 hover:bg-blue-500 text-white font-black transition-colors text-[10px]">SCAN</button>
+                                                <div className="flex-1 relative flex items-center">
+                                                    <select
+                                                        value={newsCategory} onChange={e => setNewsCategory(e.target.value)}
+                                                        className="w-full bg-transparent px-2 py-1.5 text-xs font-bold text-white outline-none uppercase font-sans cursor-pointer appearance-none z-10 relative pr-6"
+                                                        disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin}
+                                                    >
+                                                        <option value="all" className="bg-navy-900 text-white font-sans">ALL CATEGORIES</option>
+                                                        <option value="animal" className="bg-navy-900 text-white font-sans">ANIMAL STORIES</option>
+                                                        <option value="hero" className="bg-navy-900 text-white font-sans">HERO / SURVIVAL</option>
+                                                        <option value="absurd" className="bg-navy-900 text-white font-sans">ABSURD & BIZARRE</option>
+                                                        <option value="community" className="bg-navy-900 text-white font-sans">LORE & COMMUNITY</option>
+                                                    </select>
+                                                    <div className="absolute right-2 pointer-events-none text-slate-400 z-0">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                    </div>
+                                                </div>
+                                                <button disabled={!currentUser?.can_use_scrape && !currentUser?.can_use_news_scrape && !currentUser?.is_admin} onClick={() => handleStartResearch('news', newsCategory)} className="px-3 bg-blue-600 hover:bg-blue-500 text-white font-black transition-colors text-[10px] z-10 relative border-l border-white/10">SCAN</button>
                                             </div>
                                         </div>
                                     </div>

@@ -1,6 +1,7 @@
 
 import { GoogleGenAI, Type, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import { Mascot, MascotIdea, Scene, XTrend } from "../types";
+import { fetchAllNewsFeeds, RawNewsItem } from "./newsService";
 
 // --- MULTI-KEY CLIENT POOL SETUP ---
 
@@ -1557,155 +1558,240 @@ export const performMetaResearch = async (metaKeyword: string, excludedTopics: s
     }
 };
 
-export const performGlobalNewsResearch = async (excludedTopics: string[] = [], timeRange: '24h' | '48h' | '1w' = '24h', targetKeyword?: string): Promise<XTrend[]> => {
-    const exclusionList = excludedTopics.length > 0 ? `DO NOT include these topics that were already found: ${JSON.stringify(excludedTopics)}` : "";
+export const performGlobalNewsResearch = async (excludedTopics: string[] = [], timeRange: '24h' | '48h' | '1w' = '24h', targetKeyword?: string, themeFilter?: string): Promise<XTrend[]> => {
+    /**
+     * TWO-PHASE ARCHITECTURE: Fetcher → Curator
+     * Phase 1: Fetch REAL headlines from verified news RSS feeds (zero hallucination)
+     * Phase 2: Send real headlines to Gemini for meme-potential scoring ONLY (no search)
+     */
 
-    // Explicit Date Enforcements
-    const now = new Date();
-    const past = new Date();
+    // Build theme-specific curation instruction for Gemini
+    let themeFocusInstruction = '';
+    if (themeFilter && themeFilter !== 'all') {
+        const themeInstructions: Record<string, string> = {
+            'animal': `🐾 THEME FILTER: ANIMAL STORIES ONLY
+            FOCUS EXCLUSIVELY on animal stories. Prioritize:
+            - Rescued pets with miraculous survival stories
+            - Wild animal encounters, funny animal behavior
+            - Animals with internet fame potential (cute, bizarre, heroic)
+            - Human-animal bonds, pet rescue operations
+            - Endangered species discoveries, animal comebacks
+            DISCARD any headline that does NOT prominently feature an animal as the main protagonist.`,
 
-    if (timeRange === '24h') { past.setDate(now.getDate() - 1); }
-    else if (timeRange === '48h') { past.setDate(now.getDate() - 2); }
-    else if (timeRange === '1w') { past.setDate(now.getDate() - 7); }
+            'hero': `🦸 THEME FILTER: HERO & SURVIVAL STORIES ONLY
+            FOCUS EXCLUSIVELY on heroism and survival narratives. Prioritize:
+            - Underdog survival stories (person or animal against impossible odds)
+            - Community heroes, first responders, everyday acts of bravery
+            - "Against all odds" recoveries, miraculous escapes
+            - People standing up to injustice or fighting back
+            DISCARD any headline that does NOT feature a clear protagonist overcoming adversity.`,
 
-    const todayIso = now.toISOString().split('T')[0];
-    const pastIso = past.toISOString().split('T')[0];
+            'absurd': `🤡 THEME FILTER: ABSURD & BIZARRE ONLY
+            FOCUS EXCLUSIVELY on absurd, bizarre, Florida-Man-type events. Prioritize:
+            - "Glitch in the matrix" events that seem unbelievable
+            - Comically stupid crimes, bizarre accidents
+            - Surreal coincidences, unexplained phenomena
+            - "You can't make this up" situations
+            DISCARD any headline that is normal, mundane, or informational.`,
 
-    // Create tomorrow's date for 'before' filter so we don't exclude today in Google search
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    const tomorrowIso = tomorrow.toISOString().split('T')[0];
-    const exactTime = now.toISOString();
-
-    const timeLabel = timeRange === '24h' ? 'Last 24 Hours' : timeRange === '48h' ? 'Last 48 Hours' : 'Last 7 Days';
-
-    const searchFocus = targetKeyword
-        ? `PHASE 3: Search specifically for funny, absurd, or lore-heavy angles related to the keyword: "${targetKeyword}" within the dates [${pastIso} to ${todayIso}].`
-        : `PHASE 1 & 2: Search for bizarre real news from mainstream outlets AND viral internet culture/animal stories.`;
-
-    const prompt = `
-        ROLE: "Viral News Memecoin Scout"
-        
-        DATE CONTEXT:
-        Current Date: ${now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} (${todayIso})
-        Exact Execution Time: ${exactTime}
-        Lookback Start Date: ${past.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} (${pastIso})
-        
-        TIME RULE: 
-        ABSOLUTE RULE: Every result MUST have been published between ${pastIso} and ${todayIso} (${timeLabel}). 
-        Verify each result's publication date using search. If uncertain or older, DISCARD it.
-        
-        ${searchFocus}
-        
-        SEARCH QUERIES TO USE (via Google Search):
-        ${targetKeyword ?
-            `- "${targetKeyword} funny absurd lore after:${pastIso} before:${tomorrowIso}"
-        - "${targetKeyword} weird news after:${pastIso} before:${tomorrowIso}"` :
-            `- "bizarre unusual funny news after:${pastIso} before:${tomorrowIso}"
-        - "viral animal story OR florida man OR internet culture after:${pastIso} before:${tomorrowIso}"`}
-
-        MEMECOIN EVALUATION (Discard if boring):
-        - Main Character Energy: Person/animal/object that IS the story.
-        - Absurdity: "Not The Onion" level (unbelievable but true).
-        - Ticker Potential: Can you imagine $TICKER for this?
-        - Visual: Would this make a good mascot/meme image?
-
-        ${exclusionList}
-
-        OUTPUT FORMAT (Return an array of EXACTLY 15 objects):
-        [ 
-            { 
-                "topic": "Punchy Headline", 
-                "publishedDate": "YYYY-MM-DD",
-                "category": "Bizarre/Animal/FloridaMan/Internet Culture", 
-                "description": "The exact lore. Why memecoin potential. What happened exactly.", 
-                "memeScore": 9, 
-                "volume": "Going Viral / Regional Hit / Niche Gold", 
-                "url": "https://www.google.com/search?q=exact+headline+encoded",
-                "source": "news" 
-            } 
-        ]
-        
-        CRITICAL RULES:
-        - \`url\` MUST be a Google Search link constructed from the headline.
-        
-        Return ONLY raw JSON.
-    `;
+            'community': `👥 THEME FILTER: COMMUNITY & LORE ONLY
+            FOCUS EXCLUSIVELY on community-building, cult-following, lore-worthy events. Prioritize:
+            - Mysterious objects, unexplained phenomena that spawn communities
+            - Internet rabbit holes, deep lore, conspiracy-adjacent oddities
+            - Grassroots movements, viral community actions
+            - Cultural phenomena with meme-building potential
+            DISCARD any headline that does NOT have community-rallying or lore-building potential.`
+        };
+        themeFocusInstruction = themeInstructions[themeFilter] || '';
+    }
 
     try {
-        const { trends, groundingUrls } = await withRetry(async (ai) => {
+        // ═══════════════════════════════════════════════════════════
+        // PHASE 1: FETCH — Get real news from RSS feeds
+        // ═══════════════════════════════════════════════════════════
+        console.log(`[NewsResearch] Phase 1: Fetching RSS feeds (${timeRange}, keyword: ${targetKeyword || 'none'}, theme: ${themeFilter || 'all'})...`);
+        const rawNews = await fetchAllNewsFeeds(timeRange, targetKeyword, excludedTopics, themeFilter);
+
+        if (rawNews.length === 0) {
+            console.error("[NewsResearch] ⚠️ Phase 1 returned 0 items! Check console for Feed Health Report above.");
+            console.error("[NewsResearch] Possible causes: All feeds failed (CORS/proxy issue), keyword too specific, or time range too narrow.");
+            return [];
+        }
+
+        console.log(`[NewsResearch] Phase 1 complete: ${rawNews.length} real articles fetched. Proceeding to AI curation...`);
+
+        // Take up to 80 items for Gemini to evaluate (increased for better coverage with more feeds)
+        const itemsForCuration = rawNews.slice(0, 80);
+
+        // Build a numbered list of headlines for Gemini
+        const headlineList = itemsForCuration.map((item, i) =>
+            `${i + 1}. "${item.title}" (Source: ${item.sourceName}, Date: ${item.pubDate}, Snippet: ${item.description.substring(0, 150)})`
+        ).join("\n");
+
+        // ═══════════════════════════════════════════════════════════
+        // PHASE 2: CURATE — Gemini scores real headlines for meme potential
+        // ═══════════════════════════════════════════════════════════
+        console.log(`[NewsResearch] Phase 2: Sending ${itemsForCuration.length} headlines to Gemini for curation...`);
+
+        const prompt = `
+            YOU ARE A "MEMECOIN ALPHA HUNTER" — the internet's most elite degen narrative scout.
+            You think like a crypto trader who finds the NEXT viral memecoin before anyone else.
+
+            ${themeFocusInstruction}
+
+            CONTEXT: Below is a list of REAL, VERIFIED news headlines. Your job is to find the ones
+            that could become the next $DOGE, $PEPE, or $BONK level memecoin narrative.
+
+            HEADLINES TO EVALUATE:
+            ${headlineList}
+
+            ═══════════════════════════════════════════
+            🚫 INSTANT DISCARD — DO NOT EVEN CONSIDER:
+            ═══════════════════════════════════════════
+            - War, military operations, geopolitical tensions, armed conflicts
+            - Political elections, government policy, legislation, diplomacy
+            - Tragic deaths, mass shootings, natural disasters, terrorism
+            - Stock market/finance/corporate earnings/business mergers
+            - Sports scores, game results, player transfers
+            - Weather reports, climate change statistics
+            - Celebrity relationship drama without humor
+            - Generic tech product launches/updates
+            - Any headline that would make people SAD, ANGRY, or BORED
+
+            ═══════════════════════════════════════════
+            🔥 MEMECOIN GOLD (NARRATIVE/LORE FOCUS) — THESE ARE WHAT WE WANT:
+            ═══════════════════════════════════════════
+            - **PROTAGONIST / SURVIVAL**: A clear hero (animal or person) overcoming huge odds. 
+              Examples: "Dog survives 9 days alone on mountain", "Man finds old crypto hard drive in landfill"
+            - **THE UNDERDOG**: A person, animal, or community fighting against the system or bad luck.
+              Examples: "Tiny town defeats massive corporation", "Stray cat adopted by fire department"
+            - **ABSURD HUMAN STORIES**: People doing incredibly bizarre things where THEY are the main character.
+              Examples: "Man tries to rob bank dressed as banana", "Guy accidentally buys an entire village"  
+            - **GLITCH IN THE MATRIX**: Events so bizarre they seem fake but are real.
+              Examples: "Identical strangers keep meeting", "Town's entire internet breaks because of a microwave"
+            - **COMMUNITY & LORE**: Stories that easily translate into a cult following or deep "lore".
+              Examples: "Cult forms around mysterious monolith", "Ancient cursed object returned to museum by regretful thief"
+
+            ═══════════════════════════════════════════
+            📊 SCORING (1-10) - BASE ON NARRATIVE POTENTIAL:
+            ═══════════════════════════════════════════
+            1-4: TRASH. Discard. Boring, informational, political, no character, no story arc.
+            5-6: HAS POTENTIAL. Interesting event, but the protagonist/story isn't super strong.
+            7-8: STRONG NARRATIVE. Good story, relatable character, high community-building potential.
+            9-10: GOD TIER LORE. Clear protagonist, dramatic story, emotional hook. A character the internet will rally behind.
+
+            ═══════════════════════════════════════════
+            📋 RULES:
+            ═══════════════════════════════════════════
+            1. Return ONLY items from the list above. Do NOT invent new headlines.
+            2. Use the EXACT headline number to reference each item.
+            3. CRITICAL: You MUST return EXACTLY 15 items. Find the best 15 from the list even if some score lower.
+            4. For each item, write a "description": A maximum 1 sentence explanation of what happened and why it's a good memecoin narrative. DO NOT include ticker suggestions.
+            5. Rewrite the original long headline into a "shortTitle": A punchy, catchy, summarized version of the event. MAXIMUM 6-8 WORDS.
+
+            OUTPUT FORMAT (JSON array, MUST contain exactly 15 objects):
+            [
+                {
+                    "index": 1,
+                    "memeScore": 9,
+                    "shortTitle": "A short punchy summarized headline here",
+                    "category": "Survival Tale / Underdog Character / Bizarre Event / Glitch in Matrix / Viral Hero",
+                    "lore": "A single, short sentence explaining the event and its narrative potential.",
+                    "volume": "Going Viral / Regional Hit / Niche Gold / God Tier Alpha"
+                }
+            ]
+
+            Return ONLY raw JSON array. No markdown, no explanation.
+        `;
+
+        const curationResult = await withRetry(async (ai) => {
             const response = await ai.models.generateContent({
                 model: "gemini-2.5-flash",
                 contents: prompt,
                 config: {
-                    tools: [{ googleSearch: {} }],
-                    systemInstruction: `You are a Memecoin Alpha Hunter specializing in bizarre news. ABSOLUTE TIME RULE: Only results from ${pastIso} to ${todayIso}. Verify EVERY article date. When in doubt, DISCARD.`,
-                    temperature: 0.5
+                    responseMimeType: "application/json",
+                    temperature: 0.85
                 }
             });
 
-            let trends: XTrend[] = [];
-            if (response.text) {
-                const cleanedText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
-                const firstBracket = cleanedText.indexOf('[');
-                const lastBracket = cleanedText.lastIndexOf(']');
-                if (firstBracket !== -1 && lastBracket !== -1) {
-                    const jsonString = cleanedText.substring(firstBracket, lastBracket + 1);
-                    trends = JSON.parse(jsonString) as XTrend[];
-                } else {
-                    throw new Error("Failed to parse Global News JSON");
-                }
-            } else {
-                throw new Error("No text response from Global News API");
-            }
+            if (!response.text) throw new Error("No text response from Gemini curation");
 
-            // Extract real URLs from grounding metadata
-            const groundingUrls: { uri: string; title: string }[] = [];
-            const candidates = (response as any).candidates;
-            if (candidates?.[0]?.groundingMetadata?.groundingChunks) {
-                for (const chunk of candidates[0].groundingMetadata.groundingChunks) {
-                    if (chunk.web?.uri) {
-                        groundingUrls.push({ uri: chunk.web.uri, title: chunk.web.title || '' });
+            const cleanedText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const firstBracket = cleanedText.indexOf('[');
+            const lastBracket = cleanedText.lastIndexOf(']');
+            if (firstBracket === -1 || lastBracket === -1) {
+                throw new Error("Failed to parse curation JSON");
+            }
+            return JSON.parse(cleanedText.substring(firstBracket, lastBracket + 1));
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // MERGE: Combine real RSS data with Gemini's curation scores
+        // ═══════════════════════════════════════════════════════════
+        const trends: XTrend[] = [];
+        const usedIndexes = new Set<number>();
+
+        // Add curated items first
+        for (const scored of curationResult) {
+            const idx = (scored.index || 0) - 1; // Convert 1-indexed to 0-indexed
+            if (idx < 0 || idx >= itemsForCuration.length) continue;
+
+            usedIndexes.add(idx);
+            const realItem = itemsForCuration[idx];
+
+            let publishedDate = '';
+            try {
+                const d = new Date(realItem.pubDate);
+                if (!isNaN(d.getTime())) {
+                    publishedDate = d.toISOString().split('T')[0];
+                }
+            } catch { /* leave empty */ }
+
+            trends.push({
+                topic: scored.shortTitle || realItem.title,
+                publishedDate: publishedDate,
+                category: scored.category || "Viral News",
+                description: scored.lore || realItem.description,
+                memeScore: scored.memeScore || 5,
+                volume: scored.volume || "Trending",
+                url: realItem.link,       // SOURCE button: REAL article URL from RSS
+                newsUrl: `https://www.google.com/search?q=${encodeURIComponent(realItem.title)}`,  // NEWS button: Google search for this headline
+                source: 'news'
+            });
+
+            if (trends.length >= 15) break;
+        }
+
+        // FALLBACK: If Gemini returned less than 15, fill up the rest from the raw items
+        let fallbackIdx = 0;
+        while (trends.length < 15 && fallbackIdx < itemsForCuration.length) {
+            if (!usedIndexes.has(fallbackIdx)) {
+                const realItem = itemsForCuration[fallbackIdx];
+                let publishedDate = '';
+                try {
+                    const d = new Date(realItem.pubDate);
+                    if (!isNaN(d.getTime())) {
+                        publishedDate = d.toISOString().split('T')[0];
                     }
-                }
+                } catch { /* leave empty */ }
+
+                trends.push({
+                    topic: realItem.title,
+                    publishedDate: publishedDate,
+                    category: "Trending News",
+                    description: realItem.description.substring(0, 150) + '...',
+                    memeScore: 5,
+                    volume: "Trending",
+                    url: realItem.link,       // SOURCE button: REAL article URL from RSS
+                    newsUrl: `https://www.google.com/search?q=${encodeURIComponent(realItem.title)}`,  // NEWS button: Google search for this headline
+                    source: 'news'
+                });
             }
+            fallbackIdx++;
+        }
 
-            return { trends, groundingUrls };
-        });
-
-        // Validation Post-Processing and URL Matching
-        const validTrends = trends.filter(trend => {
-            if (!trend.publishedDate) return false;
-            return trend.publishedDate >= pastIso && trend.publishedDate <= todayIso;
-        });
-
-        return validTrends.map(trend => {
-            const topicWords = trend.topic.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-
-            let bestMatch = '';
-            let bestScore = 0;
-
-            for (const { uri, title } of groundingUrls) {
-                const titleLower = title.toLowerCase();
-                // Score based on how many important topic words appear in the source title
-                const score = topicWords.filter(w => titleLower.includes(w)).length;
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMatch = uri;
-                }
-            }
-
-            // If we found a good grounding match (score > 0), use it. Otherwise fallback to Google News.
-            const newsUrl = (bestScore > 0 && bestMatch)
-                ? bestMatch
-                : `https://news.google.com/search?q=${encodeURIComponent(trend.topic)}`;
-
-            return {
-                ...trend,
-                newsUrl,
-                url: `https://www.google.com/search?q=${encodeURIComponent(trend.topic)}`
-            };
-        });
+        console.log(`[NewsResearch] Complete: ${trends.length} curated trends from ${rawNews.length} real articles.`);
+        return trends;
 
     } catch (e) {
         console.error("Global News Research failed", e);
