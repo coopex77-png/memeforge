@@ -84,7 +84,8 @@ export const AVAILABLE_ART_STYLES: ArtStyleDef[] = [
     { id: "dank_shitpost", name: "Internet Junk", prompt: "Low resolution shitpost aesthetic, deep fried meme, jpeg artifacts, chaotic energy, cursed image, internet brainrot, surreal and nonsensical, NO TEXT, NO WORDS, NO TYPOGRAPHY, visual meme aesthetic only" },
     { id: "cryptid_cctv", name: "CCTV", prompt: "Grainy security camera footage, low resolution, night vision green tint, motion blur, cryptid sighting aesthetic, caught on camera, unsettling and mysterious, 'Backrooms' vibe" },
     { id: "weirdcore", name: "Dreamcore", prompt: "Weirdcore aesthetic, low quality amateur photography, liminal space background, unsettling nostalgia, dreamcore, glitchy text, early 2000s internet vibe, surreal" },
-    { id: "viral_mugshot", name: "Mugshot", prompt: "Police booking photo, harsh direct flash, height chart in background, character wearing a bright orange american prison jumpsuit, holding a booking placard with random numbers only, realistic but gritty, grainy cctv quality, disheveled appearance, 'Florida Man' news aesthetic" }
+    { id: "viral_mugshot", name: "Mugshot", prompt: "Police booking photo, harsh direct flash, height chart in background, character wearing a bright orange american prison jumpsuit, holding a booking placard with random numbers only, realistic but gritty, grainy cctv quality, disheveled appearance, 'Florida Man' news aesthetic" },
+    { id: "glowing_aura", name: "Glowing Aura", prompt: "Add a magical glowing aura around the character while preserving both the background and the character 100% intact." }
 ];
 
 /**
@@ -497,6 +498,22 @@ export const generateMascotImageOnly = async (idea: MascotIdea): Promise<{ image
                 STRICT CHARACTER ATTRIBUTE INPAINTING.
                 ...
             `});
+        } else if (idea.styleId === 'glowing_aura') {
+            parts.push({
+                text: `
+                STRICT IMAGE EDITING MODE: "GLOWING AURA" EFFECT.
+                The attached image is the "Master Asset". DO NOT CHANGE THE MAIN CHARACTER OR THE BACKGROUND.
+                
+                YOUR ONLY TASK: Add a brilliant, magical glowing aura (like sparkling energy, neon glow, or radiant magical light) SURROUNDING the character in the image.
+                
+                CORE RULES:
+                1. THE MAIN CHARACTER'S FACIAL FEATURES, ANATOMY, CLOTHING, AND OVERALL IDENTITY MUST REMAIN 100% UNTOUCHED AND UNALTERED. They are the anchor.
+                2. THE BACKGROUND MUST REMAIN 100% UNCHANGED.
+                3. ONLY ADD THE GLOWING EFFECT AROUND THE PERIMETER, EDGES, AND IMMEDIATELY BEHIND THE CHARACTER.
+                4. DO NOT redraw the character's face, body, or expression.
+                5. Do NOT apply any other art style to the image. ONLY add the glow effect to the existing image.
+                `
+            });
         } else if (idea.preserveOriginal || constraintBlock.length > 0) {
             // STRICT PRESERVATION / CONSTRAINT MODE
             parts.push({

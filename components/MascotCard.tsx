@@ -29,6 +29,7 @@ const ASPECT_RATIOS = ["1:1", "3:4"];
 export const MascotCard: React.FC<MascotCardProps> = ({ mascot, onSelect, onImageClick, onGenerateScenes, onEdit, onUpdateMascot, isGenerating = false }) => {
     const isLoading = mascot.imageUrl === "LOADING";
     const isFlash = mascot.modelUsed?.includes('flash');
+    const isGlowingAura = mascot.styleId === 'glowing_aura';
 
     // Generation Configuration State
     const [count, setCount] = useState(2);
@@ -77,7 +78,7 @@ export const MascotCard: React.FC<MascotCardProps> = ({ mascot, onSelect, onImag
         e.stopPropagation();
         if (onGenerateScenes) {
             onGenerateScenes(mascot.id, {
-                count,
+                count: isGlowingAura ? 0 : count,
                 includeDex,
                 includeXComm,
                 models: selectedModels,
@@ -225,49 +226,53 @@ export const MascotCard: React.FC<MascotCardProps> = ({ mascot, onSelect, onImag
                             <div className="absolute inset-0 flex flex-col justify-end p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-navy-950 via-navy-900/98 to-transparent z-10">
                                 <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
 
-                                    {/* Row 1: Aspect Ratio */}
-                                    <div className="flex gap-2">
-                                        {ASPECT_RATIOS.map(ratio => (
-                                            <button
-                                                key={ratio} onClick={() => setAspectRatio(ratio)}
-                                                className={`flex-1 text-[10px] py-2 rounded-md border font-bold uppercase transition-colors ${aspectRatio === ratio ? 'bg-white text-black border-white' : 'bg-black/50 border-white/10 text-slate-400 hover:text-white'}`}
-                                            >
-                                                {ratio}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    {!isGlowingAura && (
+                                        <>
+                                            {/* Row 1: Aspect Ratio */}
+                                            <div className="flex gap-2">
+                                                {ASPECT_RATIOS.map(ratio => (
+                                                    <button
+                                                        key={ratio} onClick={() => setAspectRatio(ratio)}
+                                                        className={`flex-1 text-[10px] py-2 rounded-md border font-bold uppercase transition-colors ${aspectRatio === ratio ? 'bg-white text-black border-white' : 'bg-black/50 border-white/10 text-slate-400 hover:text-white'}`}
+                                                    >
+                                                        {ratio}
+                                                    </button>
+                                                ))}
+                                            </div>
 
-                                    {/* Row 2: Model Selection */}
-                                    <div className="flex gap-2">
-                                        {['pro'].map(m => (
-                                            <button
-                                                key={m} onClick={() => toggleModel(m)}
-                                                className={`flex-1 text-[10px] py-2 rounded-md border font-bold uppercase transition-colors ${selectedModels.includes(m) ? 'bg-accent text-black border-accent' : 'bg-black/50 border-white/10 text-slate-400 hover:text-white'}`}
-                                            >
-                                                PRO
-                                            </button>
-                                        ))}
-                                        <button disabled={true} className="flex-1 text-[10px] py-2 rounded-md border font-bold uppercase transition-colors bg-black/50 border-white/10 text-slate-500 opacity-50 cursor-not-allowed flex items-center justify-center gap-1" title="Temporarily Disabled">
-                                            BASIC
-                                            <svg className="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                        </button>
-                                    </div>
+                                            {/* Row 2: Model Selection */}
+                                            <div className="flex gap-2">
+                                                {['pro'].map(m => (
+                                                    <button
+                                                        key={m} onClick={() => toggleModel(m)}
+                                                        className={`flex-1 text-[10px] py-2 rounded-md border font-bold uppercase transition-colors ${selectedModels.includes(m) ? 'bg-accent text-black border-accent' : 'bg-black/50 border-white/10 text-slate-400 hover:text-white'}`}
+                                                    >
+                                                        PRO
+                                                    </button>
+                                                ))}
+                                                <button disabled={true} className="flex-1 text-[10px] py-2 rounded-md border font-bold uppercase transition-colors bg-black/50 border-white/10 text-slate-500 opacity-50 cursor-not-allowed flex items-center justify-center gap-1" title="Temporarily Disabled">
+                                                    BASIC
+                                                    <svg className="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                </button>
+                                            </div>
 
-                                    {/* Row 3: Count + Large Input */}
-                                    <div className="flex gap-2 h-10">
-                                        {COUNTS.map(c => (
-                                            <button
-                                                key={c} onClick={() => { setCount(c); setManualCount(""); }}
-                                                className={`flex-1 text-xs rounded-md border font-bold transition-colors ${count === c && manualCount === "" ? 'bg-white text-black border-white' : 'bg-black/50 border-white/10 text-slate-400 hover:text-white'}`}
-                                            >
-                                                {c}
-                                            </button>
-                                        ))}
-                                        <input
-                                            type="text" placeholder="#" value={manualCount} onChange={handleManualCountChange}
-                                            className={`w-14 text-sm text-center bg-black/50 border rounded-md outline-none focus:border-accent text-white font-bold ${manualCount !== "" ? 'border-accent text-accent' : 'border-white/10'}`}
-                                        />
-                                    </div>
+                                            {/* Row 3: Count + Large Input */}
+                                            <div className="flex gap-2 h-10">
+                                                {COUNTS.map(c => (
+                                                    <button
+                                                        key={c} onClick={() => { setCount(c); setManualCount(""); }}
+                                                        className={`flex-1 text-xs rounded-md border font-bold transition-colors ${count === c && manualCount === "" ? 'bg-white text-black border-white' : 'bg-black/50 border-white/10 text-slate-400 hover:text-white'}`}
+                                                    >
+                                                        {c}
+                                                    </button>
+                                                ))}
+                                                <input
+                                                    type="text" placeholder="#" value={manualCount} onChange={handleManualCountChange}
+                                                    className={`w-14 text-sm text-center bg-black/50 border rounded-md outline-none focus:border-accent text-white font-bold ${manualCount !== "" ? 'border-accent text-accent' : 'border-white/10'}`}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
 
                                     {/* Row 4: Banners */}
                                     <div className="flex gap-2">
@@ -297,11 +302,11 @@ export const MascotCard: React.FC<MascotCardProps> = ({ mascot, onSelect, onImag
                                     {/* Generate Button */}
                                     <Button
                                         onClick={handleGenerateClick}
-                                        disabled={(count === 0 && !includeDex && !includeXComm) || selectedModels.length === 0}
+                                        disabled={(!isGlowingAura && ((count === 0 && !includeDex && !includeXComm) || selectedModels.length === 0)) || (isGlowingAura && !includeDex && !includeXComm)}
                                         size="md"
                                         className="w-full font-black tracking-widest text-xs h-11 shadow-lg"
                                     >
-                                        GENERATE SCENES
+                                        {isGlowingAura ? 'GENERATE BANNERS' : 'GENERATE SCENES'}
                                     </Button>
                                 </div>
                             </div>

@@ -72,11 +72,14 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
     const [editNarrative, setEditNarrative] = useState(mascot.narrative);
 
     const scenes = mascot.scenes || [];
+    const isGlowingAura = mascot.styleId === 'glowing_aura';
 
     const calculatedCredits = React.useMemo(() => {
         let req = 0;
-        for (const model of selectedModels) {
-            req += count * (model === 'pro' ? 1 : 1);
+        if (!isGlowingAura) {
+            for (const model of selectedModels) {
+                req += count * (model === 'pro' ? 1 : 1);
+            }
         }
         if (includeDex) req += 2;
         if (includeXComm) req += 2;
@@ -134,10 +137,14 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
 
     const handleGenerateScenarios = async () => {
         if (!currentUser) return;
-        if (count === 0 && !includeDex && !includeXComm) return;
-        if (selectedModels.length === 0) {
-            alert("Select at least one Model Quality.");
-            return;
+        if (isGlowingAura) {
+            if (!includeDex && !includeXComm) return;
+        } else {
+            if (count === 0 && !includeDex && !includeXComm) return;
+            if (selectedModels.length === 0) {
+                alert("Select at least one Model Quality.");
+                return;
+            }
         }
 
         const requiredCredits = calculatedCredits;
@@ -154,7 +161,7 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
         setProgress("Initializing tasks...");
 
         try {
-            let totalPromptsCount = count * selectedModels.length;
+            let totalPromptsCount = !isGlowingAura ? count * selectedModels.length : 0;
             let prompts: string[] = [];
             if (totalPromptsCount > 0) {
                 const existingPrompts = (mascot.scenes || []).map(s => s.description);
@@ -172,23 +179,25 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
             }
 
             // Distribute prompts across models: Each model gets its own UNIQUE set of prompts
-            let pIndex = 0;
-            selectedModels.forEach(model => {
-                for (let i = 0; i < count; i++) {
-                    const currentPrompt = prompts[pIndex++];
-                    if (currentPrompt) {
-                        tasks.push(() => generateSceneImage(
-                            currentPrompt,
-                            aspectRatio,
-                            mascot.imageUrl,
-                            "1K",
-                            model as 'pro' | 'basic',
-                            mascot.preserveOriginal,
-                            mascot.styleId
-                        ));
+            if (!isGlowingAura) {
+                let pIndex = 0;
+                selectedModels.forEach(model => {
+                    for (let i = 0; i < count; i++) {
+                        const currentPrompt = prompts[pIndex++];
+                        if (currentPrompt) {
+                            tasks.push(() => generateSceneImage(
+                                currentPrompt,
+                                aspectRatio,
+                                mascot.imageUrl,
+                                "1K",
+                                model as 'pro' | 'basic',
+                                mascot.preserveOriginal,
+                                mascot.styleId
+                            ));
+                        }
                     }
-                }
-            });
+                });
+            }
 
             const totalTasks = tasks.length;
             let completedCount = 0;
@@ -389,62 +398,66 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
 
                         {/* Generator Controls */}
                         <div className="space-y-6 pt-6 border-t border-white/5">
-                            <div>
-                                <label className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-2 block">Aspect Ratio</label>
-                                <div className="grid grid-cols-5 gap-1">
-                                    {ASPECT_RATIOS.map(r => (
-                                        <button
-                                            key={r}
-                                            onClick={() => setAspectRatio(r)}
-                                            disabled={isGenerating}
-                                            className={`text-[10px] py-1.5 rounded-sm border transition-all ${aspectRatio === r ? 'bg-accent text-black border-accent font-bold' : 'bg-navy-800 border-navy-700 text-slate-400 hover:bg-navy-700'}`}
-                                        >
-                                            {r}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-2 block">Render Engine</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button onClick={() => toggleModel('pro')} disabled={isGenerating} className={`text-xs py-2 px-3 rounded border flex items-center justify-between group ${selectedModels.includes('pro') ? 'bg-navy-800 border-accent text-white' : 'bg-navy-950 border-white/5 text-slate-500'}`}>
-                                        <span className="font-bold">PRO</span>
-                                        <div className={`w-2 h-2 rounded-full ${selectedModels.includes('pro') ? 'bg-accent' : 'bg-slate-700'}`}></div>
-                                    </button>
-                                    <button disabled={true} className={`relative text-xs py-2 px-3 rounded border flex items-center justify-between group bg-navy-950 border-white/5 text-slate-500 opacity-50 cursor-not-allowed`} title="Temporarily disabled">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="font-bold">BASIC</span>
-                                            <svg className="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                            {!isGlowingAura && (
+                                <>
+                                    <div>
+                                        <label className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-2 block">Aspect Ratio</label>
+                                        <div className="grid grid-cols-5 gap-1">
+                                            {ASPECT_RATIOS.map(r => (
+                                                <button
+                                                    key={r}
+                                                    onClick={() => setAspectRatio(r)}
+                                                    disabled={isGenerating}
+                                                    className={`text-[10px] py-1.5 rounded-sm border transition-all ${aspectRatio === r ? 'bg-accent text-black border-accent font-bold' : 'bg-navy-800 border-navy-700 text-slate-400 hover:bg-navy-700'}`}
+                                                >
+                                                    {r}
+                                                </button>
+                                            ))}
                                         </div>
-                                        <div className={`w-2 h-2 rounded-full bg-slate-700`}></div>
-                                    </button>
-                                </div>
-                            </div>
+                                    </div>
 
-                            <div>
-                                <label className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-2 block">Batch Size</label>
-                                <div className="flex bg-navy-950 rounded p-1 border border-white/5 gap-1">
-                                    {COUNTS.map(c => (
-                                        <button
-                                            key={c}
-                                            onClick={() => { setCount(c); setManualCount(""); }}
-                                            disabled={isGenerating}
-                                            className={`flex-1 text-[10px] py-1.5 rounded-sm transition-all ${count === c && manualCount === "" ? 'bg-navy-700 text-white font-bold shadow' : 'text-slate-500 hover:text-slate-300'}`}
-                                        >
-                                            {c}
-                                        </button>
-                                    ))}
-                                    <input
-                                        type="text"
-                                        placeholder="+"
-                                        value={manualCount}
-                                        onChange={handleManualCountChange}
-                                        disabled={isGenerating}
-                                        className={`w-12 text-[10px] text-center bg-navy-800 border rounded-sm outline-none focus:border-accent font-bold transition-all ${manualCount !== "" ? 'border-accent text-accent' : 'border-white/5 text-slate-500'}`}
-                                    />
-                                </div>
-                            </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-2 block">Render Engine</label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button onClick={() => toggleModel('pro')} disabled={isGenerating} className={`text-xs py-2 px-3 rounded border flex items-center justify-between group ${selectedModels.includes('pro') ? 'bg-navy-800 border-accent text-white' : 'bg-navy-950 border-white/5 text-slate-500'}`}>
+                                                <span className="font-bold">PRO</span>
+                                                <div className={`w-2 h-2 rounded-full ${selectedModels.includes('pro') ? 'bg-accent' : 'bg-slate-700'}`}></div>
+                                            </button>
+                                            <button disabled={true} className={`relative text-xs py-2 px-3 rounded border flex items-center justify-between group bg-navy-950 border-white/5 text-slate-500 opacity-50 cursor-not-allowed`} title="Temporarily disabled">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="font-bold">BASIC</span>
+                                                    <svg className="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                                </div>
+                                                <div className={`w-2 h-2 rounded-full bg-slate-700`}></div>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-2 block">Batch Size</label>
+                                        <div className="flex bg-navy-950 rounded p-1 border border-white/5 gap-1">
+                                            {COUNTS.map(c => (
+                                                <button
+                                                    key={c}
+                                                    onClick={() => { setCount(c); setManualCount(""); }}
+                                                    disabled={isGenerating}
+                                                    className={`flex-1 text-[10px] py-1.5 rounded-sm transition-all ${count === c && manualCount === "" ? 'bg-navy-700 text-white font-bold shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                                                >
+                                                    {c}
+                                                </button>
+                                            ))}
+                                            <input
+                                                type="text"
+                                                placeholder="+"
+                                                value={manualCount}
+                                                onChange={handleManualCountChange}
+                                                disabled={isGenerating}
+                                                className={`w-12 text-[10px] text-center bg-navy-800 border rounded-sm outline-none focus:border-accent font-bold transition-all ${manualCount !== "" ? 'border-accent text-accent' : 'border-white/5 text-slate-500'}`}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
                             <div className="grid grid-cols-1 gap-2">
                                 <div
@@ -502,11 +515,11 @@ export const MascotDetailView: React.FC<MascotDetailViewProps> = ({ mascot, onUp
                                 )}
                                 <Button
                                     onClick={handleGenerateScenarios}
-                                    disabled={isGenerating || (nothingSelected) || selectedModels.length === 0 || (!currentUser?.can_use_art && !currentUser?.is_admin)}
+                                    disabled={isGenerating || (isGlowingAura && !includeDex && !includeXComm) || (!isGlowingAura && (nothingSelected || selectedModels.length === 0)) || (!currentUser?.can_use_art && !currentUser?.is_admin)}
                                     className="w-full"
                                     size="lg"
                                 >
-                                    {isGenerating ? 'Rendering Assets...' : 'Generate Batch'}
+                                    {isGenerating ? 'Rendering Assets...' : (isGlowingAura ? 'Generate Banners' : 'Generate Batch')}
                                 </Button>
                                 {isGenerating && (
                                     <div className="mt-3 bg-navy-950 rounded-full h-1.5 overflow-hidden">
