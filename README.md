@@ -1,10 +1,9 @@
 <div align="center">
-  <img src="./public/pepe_forge.png" alt="MemeForge Logo" width="150" />
+  <img src="./public/pepe_forge.png" alt="MemeForge Logo" width="250" />
   <br />
   <br />
 
-  <h1>MemeForge</h1>
-  <p><b>The Ultimate All-in-One Content Studio & Digital Workbench</b></p>
+  <p><b>All-in-one dev tool for memecoin and token developers</b></p>
   <p><i>Built for the Bags.fm Hackathon</i></p>
 
   <p>
@@ -17,41 +16,40 @@
 
 ---
 
-## 🚀 Overview
+## Overview
 
-**MemeForge** is a unified, high-performance web platform designed specifically for digital creators, communities, and digital artists. It centralizes digital branding by providing an enterprise-grade digital art engine, comprehensive cross-platform viral research scraping, and automated lore generation—all wrapped in a sleek, hardware-accelerated user interface.
+MemeForge is a web platform designed to help memecoin and token developers centralize their content generation. It combines a visual editing suite, a multi-platform feed scraper for trend research, and automated context generation into a single dashboard. 
 
-With **MemeForge**, what used to take specialized teams of artists, social media managers, and copywriters can now be accomplished autonomously through a single dashboard.
+The goal of this project is to simplify the process of maintaining a consistent digital brand while keeping up with fast-moving internet trends.
 
-## ✨ Core Features
+## Core Features
 
-### 🎨 1. Dynamic Mascot & Art Studio
-The heart of MemeForge is our proprietary visual rendering dashboard.
-- **Multi-Format Generation:** Instantly generate character mascots, X (Twitter) Banners, Dex Headers, and contextual Scenes.
-- **Custom Trait Mixer:** Upload a base character and use the mixer (Mix Mode or Scenes Mode) to automatically apply dynamic variations and traits, ensuring consistency across your project's visual identity.
-- **Extensive Art Styles Catalog:** Generate and remix visuals in an expansive catalog of deeply nostalgic and viral styles: 
-  - **Original, MS Paint, Retro 3D (PS2 Era), Wojak Style, Deep Fried, GTA, Internet Junk, Cryptid CCTV, Weirdcore (Dreamcore), Viral Mugshot, and Glowing Aura.**
+### 1. Mascot & Art Studio
+The visual dashboard allows you to create and maintain consistent character designs.
+- **Multiple Formats:** Generate standard character assets, X (Twitter) profile banners, Dex header images, and contextual scenes.
+- **Trait Mixer:** Upload a base character and use the mixer (Mix Mode or Scenes Mode) to test out dynamic variations and traits while keeping the original character identity intact.
+- **Style Catalog:** Generate and remix images using familiar internet aesthetics including: Original, MS Paint, Retro 3D (PS2 Era), Wojak Style, Deep Fried, GTA, Internet Junk, Cryptid CCTV, Weirdcore (Dreamcore), Viral Mugshot, and Glowing Aura.
 
-### 📡 2. "God Mode" Deep Viral Scraper
-Never miss a trend. Our integrated scraper pulls real-time sentiment, memes, and viral topics directly into your dashboard.
-- **Cross-Platform Recon:** Parallel scraping of X, Reddit, 4chan, TikTok, and KnowYourMeme.
-- **Global News Integration:** Fetches top-tier global news feeds tailored to your target narratives.
-- **One-Click Remixing:** Spot a trend? Instantly convert scraping results into character traits and lore with one click.
+### 2. Viral Trend Scraper
+A built-in research module to help track internet culture and sentiment.
+- **Cross-Platform Search:** Scrapes current topics from X, Reddit, 4chan, TikTok, and KnowYourMeme.
+- **News Integration:** Pulls relevant global feeds to match against current trends.
+- **Instant Remix:** Converting a scraped trend into a new character concept or visual trait takes just one click.
 
-### 📜 3. Automated Lore & Branding
-Generate cohesive branding packages effortlessly.
-- **Narrative Engine:** Feed the system a basic premise, and it generates deep lore, character backgrounds, and suggested custom tickers.
-- **Remix Workflows:** Drag and drop existing images to reverse-engineer and mutate characters into entirely new designs.
+### 3. Lore & Branding Automation
+Tools to flesh out the backstory of a digital asset.
+- **Narrative Building:** Provide a basic premise, and the system generates background context and suggested naming conventions or tickers.
+- **Reverse-Engineering:** Drop in existing images to extract visual rules and generate fresh but related concepts.
 
-## 🏗️ Technical Architecture
+## Architecture
 
-MemeForge is engineered for speed, scalability, and UX excellence:
-- **Frontend Framework:** Built on React 19 and Vite for lightning-fast HMR and optimized production bundles.
-- **Styling & Animations:** Custom TailwindCSS configuration paired with GSAP and Framer Motion for buttery-smooth, 60fps micro-animations and page transitions.
-- **Backend & Auth:** Supabase handles real-time user state synchronization, credit deductions, role-based access control (RBAC), and persistent data storage.
-- **Processing Pipelines:** Custom asynchronous concurrency limits implemented for heavy visual generation tasks, preventing network bottlenecks during bulk creation.
+Built with speed and user experience in mind:
+- **Frontend:** React 19 and Vite for fast local development and optimized production builds.
+- **UI/UX:** TailwindCSS for styling, with GSAP and Framer Motion handling complex animations and page transitions.
+- **Backend:** Supabase handles real-time user states, role-based access control, and persistent storage.
+- **Request Handling:** Custom asynchronous concurrency limits to manage heavy parallel generation requests and prevent network timeouts.
 
-## 🔒 License & Usage
+## License & Usage
 
 **MemeForge** is a proprietary software application built as a showcase for the **Bags.fm Hackathon**.
 
