@@ -30,6 +30,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
     const [discountError, setDiscountError] = useState('');
     const [discountSuccess, setDiscountSuccess] = useState('');
+
+    const [solPrice, setSolPrice] = useState<number | null>(null);
+
+    // Fetch live SOL price
+    useEffect(() => {
+        const fetchSolPrice = async () => {
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT');
+                const data = await response.json();
+                if (data && data.price) {
+                    setSolPrice(parseFloat(data.price));
+                }
+            } catch (error) {
+                console.error("Error fetching SOL price:", error);
+            }
+        };
+        fetchSolPrice();
+        // Optional: refresh every 60 seconds
+        const intervalId = setInterval(fetchSolPrice, 60000);
+        return () => clearInterval(intervalId);
+    }, []);
+
     const [showDiscountInput, setShowDiscountInput] = useState(false);
 
     // Scroll-driven cinematic zoom — continuous rAF loop, delta-time lerp, GPU-only
@@ -263,7 +285,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
         }
     };
 
-    const paymentBaseAmount = selectedPlan === 'Starter' ? 1 : selectedPlan === 'Pro' ? (billingCycle === 'monthly' ? 8 : 3) : (billingCycle === 'monthly' ? 30 : 10);
+    const paymentBaseAmount = selectedPlan === 'Starter' ? 50 : selectedPlan === 'Pro' ? (billingCycle === 'monthly' ? 300 : 150) : (billingCycle === 'monthly' ? 300 : 150);
     const paymentFinalAmount = appliedDiscount
         ? Number((paymentBaseAmount - (paymentBaseAmount * (appliedDiscount.percentage / 100))).toFixed(2))
         : paymentBaseAmount;
@@ -702,7 +724,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                     </div>
                 </section>
 
-                {/* Section 4: Pricing */}
+                {/* ====== OLD 3-PLAN PRICING (HIDDEN) ====== */}
+{false && (<>
+{/* Section 4: Pricing */}
                 <section className="py-32 px-6 max-w-[1400px] mx-auto relative overflow-hidden">
                     {/* Background Glows */}
                     <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-accent/5 blur-[200px] rounded-full pointer-events-none hidden md:block"></div>
@@ -755,11 +779,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
                                 <div className="mb-8 pb-8 border-b border-white/5">
                                     <div className="flex items-end gap-1">
-                                        <span className="text-5xl font-black text-white flex items-center">
-                                            1
-                                            <img src="/solana-sol-logo.png" alt="Solana Logo" className="w-8 h-8 ml-3" />
-                                        </span>
-                                        <span className="text-slate-500 font-medium mb-1.5 ml-1">/week</span>
+                                        <div className="flex items-start">
+                                            <span className="text-2xl font-black text-slate-400 mt-1.5 mr-0.5">$</span>
+                                            <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-slate-500 leading-none tracking-tighter">
+                                                50
+                                            </span>
+                                        </div>
+                                        <span className="text-slate-500 font-bold mb-1 ml-1.5 text-xs">/week</span>
                                     </div>
                                 </div>
 
@@ -841,11 +867,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
                                 <div className="relative mb-8 pb-8 border-b border-accent/10 flex items-center justify-between">
                                     <div className="flex items-end gap-1">
-                                        <span className="text-5xl font-black text-white flex items-center">
-                                            {billingCycle === 'monthly' ? '8' : '3'}
-                                            <img src="/solana-sol-logo.png" alt="Solana Logo" className="w-8 h-8 ml-3" />
-                                        </span>
-                                        <span className="text-accent/60 font-medium mb-1.5 ml-1">
+                                        <div className="flex items-start">
+                                            <span className="text-2xl font-black text-accent/80 mt-1.5 mr-0.5">$</span>
+                                            <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-accent to-accent leading-none tracking-tighter drop-shadow-[0_0_20px_rgba(222,253,65,0.15)]">
+                                                {billingCycle === 'monthly' ? '300' : '150'}
+                                            </span>
+                                        </div>
+                                        <span className="text-accent/60 font-bold mb-1 ml-1.5 text-xs">
                                             {billingCycle === 'monthly' ? '/month' : '/week'}
                                         </span>
                                     </div>
@@ -853,7 +881,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                     <div className={`transition-all duration-500 ease-in-out absolute right-0 -translate-y-2 mb-4 md:mb-0 md:-translate-y-0 md:static ${billingCycle === 'monthly' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none hidden md:block'}`}>
                                         <div className="inline-flex animate-fade-in-up items-center gap-1.5 bg-accent text-black px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-[0_0_20px_rgba(222,253,65,0.4)]">
                                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                                            Save 5 SOL
+                                            Save $300
                                         </div>
                                     </div>
                                 </div>
@@ -1002,6 +1030,226 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         </div>
 
                     </div>
+
+                    {/* Footer Note */}
+                    <p className="text-center text-slate-600 text-sm mt-12 relative z-10">Need more? <button onClick={() => setActiveModal('support')} className="text-accent hover:text-white transition-colors underline underline-offset-2">Contact us</button> for custom plans.</p>
+                </section>
+
+            
+</>)}
+{/* ========================================= */}
+
+{/* Section 4: Pricing */}
+                <section className="py-32 px-6 max-w-[1400px] mx-auto relative overflow-hidden">
+                    {/* Background Glows */}
+                    <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-accent/5 blur-[200px] rounded-full pointer-events-none hidden md:block"></div>
+                    <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-purple-500/5 blur-[200px] rounded-full pointer-events-none hidden md:block"></div>
+
+                    <div id="pricing" className="scroll-mt-32 text-center mb-16 relative z-10">
+                        <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">Choose Your Plan</h2>
+                        <p className="text-slate-400 text-lg max-w-xl mx-auto leading-relaxed mb-10">From solo builders to full-blown degen operations. Pick the plan that matches your grind.</p>
+
+                        {/* Weekly / Monthly Toggle */}
+                        <div className="inline-flex items-center p-1 bg-white/5 border border-white/10 rounded-full mx-auto relative backdrop-blur-md">
+                            <button
+                                onClick={() => setBillingCycle('weekly')}
+                                className={`relative z-10 px-8 py-3 rounded-full text-sm font-bold uppercase tracking-widest transition-all ${billingCycle === 'weekly' ? 'text-black' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                Weekly
+                            </button>
+                            <button
+                                onClick={() => setBillingCycle('monthly')}
+                                className={`relative z-10 px-8 py-3 rounded-full text-sm font-bold uppercase tracking-widest transition-all ${billingCycle === 'monthly' ? 'text-black' : 'text-slate-400 hover:text-white'}`}
+                            >
+                                Monthly
+                            </button>
+                            {/* Toggle Slider Background */}
+                            <div
+                                className="absolute top-1 bottom-1 w-[50%] bg-accent rounded-full transition-transform duration-300 ease-out shadow-[0_0_15px_rgba(222,253,65,0.4)]"
+                                style={{ transform: billingCycle === 'weekly' ? 'translateX(0)' : 'translateX(calc(100% - 8px))', width: 'calc(50% + 4px)' }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-12 max-w-[900px] mx-auto relative z-10 items-stretch">
+
+                        {/* --- STARTER PLAN --- */}
+                        <div className={`group relative bg-[#0B1221] border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col justify-between transition-all duration-500 overflow-hidden ${billingCycle === 'monthly' ? 'border-white/5 opacity-80' : 'hover:border-slate-400/40'}`}>
+
+                            {/* Subtle grid pattern */}
+                            <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none"></div>
+
+                            <div className={`relative z-10 transition-all duration-500`}>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-300 uppercase tracking-widest mb-1">Starter</h3>
+                                        <p className="text-[10px] text-slate-600 uppercase font-bold tracking-widest">Try MemeForge</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    </div>
+                                </div>
+
+                                <div className="mb-8 pb-8 border-b border-white/5">
+                                    <div className="flex items-end gap-1">
+                                        <div className="flex items-start">
+                                            <span className="text-2xl font-black text-slate-400 mt-1.5 mr-0.5">$</span>
+                                            <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-slate-500 leading-none tracking-tighter">
+                                                50
+                                            </span>
+                                        </div>
+                                        <span className="text-slate-500 font-bold mb-1 ml-1.5 text-xs">/week</span>
+                                    </div>
+                                </div>
+
+                                {/* Credits */}
+                                <div className="grid grid-cols-1 gap-3 mb-8">
+                                    <div className="bg-black/40 border border-white/5 rounded-xl p-3 text-center">
+                                        <div className="text-2xl font-black text-white">30</div>
+                                        <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Art Credits</div>
+                                    </div>
+                                </div>
+
+                                {/* Features */}
+                                <ul className="space-y-4 mb-8">
+                                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Art Styles
+                                    </li>
+                                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Formats (DEX, X Banner)
+                                    </li>
+                                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Image Gen Modes
+                                    </li>
+                                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        Optional credit top ups
+                                    </li>
+                                    <li className="flex items-center gap-3 text-slate-500 text-sm line-through">
+                                        <svg className="w-4 h-4 text-slate-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                        Full Scraper + God Mode
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <button onClick={() => {
+                                setIsGeneratingWallet(true);
+                                setReadyToConfirm(false);
+                                setSelectedPlan('Starter');
+                                const wallets = ['8iy54it4XzpDWxGnRKkvegNBQK3PYcsNoVBGQpr4ZkXg', 'EkuEs7vuxmQ7kypyv6mU53TKL7sSAJsRmQCam1mhmYi8', 'GDACcTncHQQrkr3RjoQzewiQdMyEzBmWAuvoJUy5qyfj', 'Ee43Zwf271hAXzW9JZRk57bu2HzkSVhpmmZ2xZyHs9yd', 'EcccU3bxUZdVrj6RMobgzEzCUKBm5SJsLaVxKMXkyiKq'];
+                                setSelectedWallet(wallets[Math.floor(Math.random() * wallets.length)]);
+                                setPaymentConfirmed(false);
+                                setActiveModal('payment');
+                            }} disabled={billingCycle === 'monthly'} className={`w-full py-4 rounded-xl border text-sm font-black tracking-widest uppercase transition-all flex items-center justify-center gap-2 ${billingCycle === 'monthly' ? 'border-white/5 bg-white/5 text-slate-400 cursor-not-allowed opacity-80' : 'border-white/10 text-slate-300 hover:bg-white/5 hover:border-white/30'}`}>
+                                {billingCycle === 'monthly' ? (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        Weekly Only
+                                    </>
+                                ) : 'Get Started'}
+                            </button>
+                        </div>
+
+                        {/* --- PRO PLAN (RECOMMENDED) --- */}
+                        <div className="group relative bg-[#070b14] border-2 border-accent/50 rounded-2xl p-6 md:p-8 flex flex-col justify-between shadow-[0_0_60px_rgba(222,253,65,0.08)] hover:shadow-[0_0_80px_rgba(222,253,65,0.15)] transition-all duration-500">
+                            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                                {/* Top Glow Bar */}
+                                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+                                {/* Corner Glow */}
+                                <div className="absolute -top-20 -right-20 w-40 h-40 bg-accent/10 rounded-full blur-3xl"></div>
+                            </div>
+
+                            {/* Recommended Badge */}
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-accent text-black font-black uppercase tracking-[0.15em] text-[10px] py-1.5 px-5 rounded-full shadow-[0_0_20px_rgba(222,253,65,0.4)] z-20">
+                                Recommended
+                            </div>
+
+                            <div className="relative z-10 mt-2">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="text-xl font-black text-accent uppercase tracking-widest mb-1">Pro</h3>
+                                        <p className="text-[10px] text-accent/50 uppercase font-bold tracking-widest">For everyday deployers</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                    </div>
+                                </div>
+
+                                <div className="relative mb-8 pb-8 border-b border-accent/10 flex items-center justify-between">
+                                    <div className="flex items-end gap-1">
+                                        <div className="flex items-start">
+                                            <span className="text-2xl font-black text-accent/80 mt-1.5 mr-0.5">$</span>
+                                            <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-accent to-accent leading-none tracking-tighter drop-shadow-[0_0_20px_rgba(222,253,65,0.15)]">
+                                                {billingCycle === 'monthly' ? '300' : '150'}
+                                            </span>
+                                        </div>
+                                        <span className="text-accent/60 font-bold mb-1 ml-1.5 text-xs">
+                                            {billingCycle === 'monthly' ? '/month' : '/week'}
+                                        </span>
+                                    </div>
+                                    {/* Discount / Savings Highlight Badge */}
+                                    <div className={`transition-all duration-500 ease-in-out absolute right-0 -translate-y-2 mb-4 md:mb-0 md:-translate-y-0 md:static ${billingCycle === 'monthly' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none hidden md:block'}`}>
+                                        <div className="inline-flex animate-fade-in-up items-center gap-1.5 bg-accent text-black px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-[0_0_20px_rgba(222,253,65,0.4)]">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                            Save $300
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Credits */}
+                                <div className="grid grid-cols-2 gap-3 mb-8">
+                                    <div className="bg-accent/5 border border-accent/10 rounded-xl p-3 text-center transition-all duration-300">
+                                        <div className="text-2xl font-black text-accent">{billingCycle === 'monthly' ? '480' : '120'}</div>
+                                        <div className="text-[9px] font-bold text-accent/40 uppercase tracking-widest">Art Credits</div>
+                                    </div>
+                                    <div className="bg-accent/5 border border-accent/10 rounded-xl p-3 text-center transition-all duration-300">
+                                        <div className="text-2xl font-black text-accent">{billingCycle === 'monthly' ? '480' : '120'}</div>
+                                        <div className="text-[9px] font-bold text-accent/40 uppercase tracking-widest">Lore Credits</div>
+                                    </div>
+                                </div>
+
+                                {/* Features */}
+                                <ul className="space-y-4 mb-8">
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Art Styles
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Formats (DEX, X Banner)
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        All Image Gen Modes
+                                    </li>
+                                    <li className="flex items-center gap-3 text-accent text-sm font-black">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                        <span>Viral News Scraper</span>
+                                    </li>
+                                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                                        <svg className="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                        Optional credit top ups
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <button onClick={() => {
+                                setIsGeneratingWallet(true);
+                                setReadyToConfirm(false);
+                                setSelectedPlan('Pro');
+                                const wallets = ['8iy54it4XzpDWxGnRKkvegNBQK3PYcsNoVBGQpr4ZkXg', 'EkuEs7vuxmQ7kypyv6mU53TKL7sSAJsRmQCam1mhmYi8', 'GDACcTncHQQrkr3RjoQzewiQdMyEzBmWAuvoJUy5qyfj', 'Ee43Zwf271hAXzW9JZRk57bu2HzkSVhpmmZ2xZyHs9yd', 'EcccU3bxUZdVrj6RMobgzEzCUKBm5SJsLaVxKMXkyiKq'];
+                                setSelectedWallet(wallets[Math.floor(Math.random() * wallets.length)]);
+                                setPaymentConfirmed(false);
+                                setActiveModal('payment');
+                            }} className="w-full py-4 rounded-xl bg-accent text-black font-black tracking-widest uppercase text-sm hover:bg-white transition-all shadow-[0_0_25px_rgba(222,253,65,0.2)] hover:shadow-[0_0_35px_rgba(222,253,65,0.4)]">
+                                Go Pro
+                            </button>
+                        </div>
+
+                         </div>
 
                     {/* Footer Note */}
                     <p className="text-center text-slate-600 text-sm mt-12 relative z-10">Need more? <button onClick={() => setActiveModal('support')} className="text-accent hover:text-white transition-colors underline underline-offset-2">Contact us</button> for custom plans.</p>
@@ -1290,16 +1538,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
                             {/* Amount Display */}
                             <div className="text-center mb-6">
-                                <div className="text-4xl md:text-5xl lg:text-6xl font-black text-accent tracking-tight flex items-center justify-center gap-2 md:gap-3">
-                                    {appliedDiscount ? (
-                                        <>
-                                            <span className="text-2xl md:text-3xl text-slate-500 line-through decoration-slate-600 decoration-2">{paymentBaseAmount}</span>
-                                            <span>{paymentFinalAmount} SOL</span>
-                                        </>
-                                    ) : (
-                                        <span>{paymentFinalAmount} SOL</span>
-                                    )}
-                                </div>
+                                {solPrice ? (
+                                    <>
+                                        {/* Primary display: SOL amount */}
+                                        <div className="text-4xl md:text-5xl lg:text-6xl font-black text-accent tracking-tight flex items-center justify-center gap-2 md:gap-3">
+                                            <span>{(paymentFinalAmount / solPrice).toFixed(2)} SOL</span>
+                                        </div>
+                                        {/* Secondary display: USD equivalent */}
+                                        <div className="text-slate-400 text-lg md:text-xl font-bold mt-2 flex items-center justify-center gap-2">
+                                            {appliedDiscount ? (
+                                                <>
+                                                    <span className="text-sm md:text-base text-slate-600 line-through decoration-slate-700 decoration-2">${paymentBaseAmount}</span>
+                                                    <span>≈ ${paymentFinalAmount} USD</span>
+                                                </>
+                                            ) : (
+                                                <span>≈ ${paymentFinalAmount} USD</span>
+                                            )}
+                                        </div>
+                                    </>
+                                ) : (
+                                    /* Fallback if SOL price isn't loaded yet */
+                                    <div className="text-4xl md:text-5xl lg:text-6xl font-black text-accent tracking-tight flex items-center justify-center gap-2 md:gap-3">
+                                        {appliedDiscount ? (
+                                            <>
+                                                <span className="text-2xl md:text-3xl text-slate-500 line-through decoration-slate-600 decoration-2">${paymentBaseAmount}</span>
+                                                <span>${paymentFinalAmount}</span>
+                                            </>
+                                        ) : (
+                                            <span>${paymentFinalAmount}</span>
+                                        )}
+                                    </div>
+                                )}
+                                
                                 <div className="text-slate-500 text-sm mt-3 font-medium">
                                     {selectedPlan} · <span className="capitalize">{billingCycle}</span>
                                 </div>
@@ -1375,7 +1645,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                         <p className="text-slate-400 text-xs mt-1">Our team needs to manually verify the transaction to activate your plan.</p>
                                     </div>
 
-                                    <a href={`https://t.me/fizzd3gen?text=${encodeURIComponent(`Hi, I have just made a payment for the ${selectedPlan || 'Pro'} plan (${billingCycle}).\n\n- Amount: ${paymentFinalAmount} SOL${appliedDiscount ? ` (with ${appliedDiscount.percentage}% discount via code ${appliedDiscount.code})` : ''}\n- Sent to wallet: ${selectedWallet}\n\nPlease verify and activate my account. Thanks!`)}`} target="_blank" rel="noopener noreferrer" className="w-full py-4 rounded-full bg-accent text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white transition-all hover:scale-[1.02]">
+                                    <a href={`https://t.me/fizzd3gen?text=${encodeURIComponent(`Hi, I have just made a payment for the ${selectedPlan || 'Pro'} plan (${billingCycle}).\n\n- Value: $${paymentFinalAmount} USD${solPrice ? ` (≈ ${(paymentFinalAmount / solPrice).toFixed(2)} SOL)` : ''}${appliedDiscount ? `\n- Discount: ${appliedDiscount.percentage}% via code ${appliedDiscount.code}` : ''}\n- Sent to wallet: ${selectedWallet}\n\nPlease verify and activate my account. Thanks!`)}`} target="_blank" rel="noopener noreferrer" className="w-full py-4 rounded-full bg-accent text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white transition-all hover:scale-[1.02]">
                                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" /></svg>
                                         Verify on Telegram
                                     </a>
