@@ -147,6 +147,9 @@ const App: React.FC = () => {
 
     const [mascots, setMascots] = useState<Mascot[]>([]);
     const [isGenerating, setIsGenerating] = useState(false); // Global initial generation
+    const [copiedSceneId, setCopiedSceneId] = useState<string | null>(null);
+    const [isSelectMode, setIsSelectMode] = useState(false);
+    const [selectedScenes, setSelectedScenes] = useState<Set<string>>(new Set());
     const [activeGenerations, setActiveGenerations] = useState<Set<string>>(new Set()); // IDs of mascots currently generating scenes
 
     const [loadingStep, setLoadingStep] = useState<string>("");
@@ -976,6 +979,58 @@ const App: React.FC = () => {
         saveAs(scene.imageUrl, `${mascotName.replace(/\s+/g, '_')}_${scene.id.substring(0, 6)}.${ext}`);
     };
 
+    const handleCopyScene = async (scene: Scene, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = () => reject(new Error("Failed to load image. If it's data URI, try direct fetch."));
+                img.src = scene.imageUrl;
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error("Could not get canvas context");
+            
+            ctx.drawImage(img, 0, 0);
+
+            const blob = await new Promise<Blob | null>((resolve) => {
+                canvas.toBlob((b) => resolve(b), 'image/png');
+            });
+
+            if (!blob) throw new Error("Failed to create PNG blob");
+
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': blob })
+            ]);
+
+            setCopiedSceneId(scene.id);
+            setTimeout(() => setCopiedSceneId(null), 2000);
+        } catch (err) {
+            console.error("Failed to copy image:", err);
+            if (scene.imageUrl.startsWith('data:')) {
+                try {
+                    const response = await fetch(scene.imageUrl);
+                    const directBlob = await response.blob();
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ [directBlob.type]: directBlob })
+                    ]);
+                    setCopiedSceneId(scene.id);
+                    setTimeout(() => setCopiedSceneId(null), 2000);
+                    return;
+                } catch (innerErr) {
+                    console.error("Fallback Failed", innerErr);
+                }
+            }
+            alert("Failed to copy image: " + (err instanceof Error ? err.message : "CORS or browser restriction might apply. Only HTTPS supported for copy."));
+        }
+    };
+
+
     const handleDownloadAllScenes = async () => {
         if (mascots.length === 0) return;
         setIsZippingAll(true);
@@ -1011,6 +1066,44 @@ const App: React.FC = () => {
             saveAs(content, `${safeFolderName}.zip`);
         } catch (e) { console.error("Zip generation failed", e); alert("Failed to zip files."); } finally { setIsZippingAll(false); }
     };
+
+    const handleDownloadSelectedScenes = async () => {
+        if (selectedScenes.size === 0) return;
+        setIsZippingAll(true);
+        try {
+            const zip = new JSZip();
+            let fileCounter = 1;
+            const firstMascotName = mascots[0]?.name || "selected_assets";
+            const safeFolderName = sanitizeFilename(firstMascotName + "_selected");
+            const folder = zip.folder(safeFolderName);
+            if (!folder) throw new Error("Could not create folder in zip");
+
+            const selectedList = allScenes.filter(item => selectedScenes.has(item.scene.id));
+
+            for (const item of selectedList) {
+                if (item.scene.imageUrl && item.scene.imageUrl.startsWith('data:')) {
+                    try {
+                        const sceneImgData = await base64ToJpg(item.scene.imageUrl);
+                        folder.file(`${fileCounter}.jpg`, sceneImgData.split(',')[1], { base64: true });
+                        fileCounter++;
+                    } catch (e) {
+                         console.warn("Failed to add selected item data URL to zip");
+                    }
+                }
+            }
+
+            const content = await zip.generateAsync({ type: "blob" });
+            saveAs(content, `${safeFolderName}.zip`);
+            setIsSelectMode(false);
+            setSelectedScenes(new Set());
+        } catch (e) {
+            console.error("Zip generation failed", e);
+            alert("Failed to zip files.");
+        } finally {
+            setIsZippingAll(false);
+        }
+    };
+
 
     if (selectedMascotId) {
         const selectedMascot = mascots.find(m => m.id === selectedMascotId);
@@ -2285,9 +2378,46 @@ const App: React.FC = () => {
                                         <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter">Live Scene Feed</h2>
                                         <span className="text-xs md:text-sm font-mono text-slate-500 uppercase tracking-widest">({allScenes.length} Rendered)</span>
                                     </div>
-                                    <Button onClick={handleDownloadAllScenes} disabled={isZippingAll} variant="secondary" className="w-full md:w-auto" icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}>
-                                        {isZippingAll ? 'Zipping All Images...' : 'Download All Images'}
-                                    </Button>
+                                    <div className="flex items-center gap-2 w-full md:w-auto">
+                                        {!isSelectMode ? (
+                                            <>
+                                                <Button onClick={() => setIsSelectMode(true)} variant="secondary" className="max-md:flex-1 text-xs px-3">
+                                                    Select
+                                                </Button>
+                                                <Button onClick={handleDownloadAllScenes} disabled={isZippingAll} variant="secondary" className="max-md:flex-1 text-xs" icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}>
+                                                    {isZippingAll ? 'Zipping...' : 'Download All'}
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Button onClick={() => { setIsSelectMode(false); setSelectedScenes(new Set()); }} variant="secondary" className="max-md:flex-1 text-xs">
+                                                    Cancel
+                                                </Button>
+                                                <Button 
+                                                    onClick={() => {
+                                                        const allIds = allScenes.map(item => item.scene.id);
+                                                        const nextSet = new Set();
+                                                        if (!allIds.every(id => selectedScenes.has(id))) {
+                                                            allIds.forEach(id => nextSet.add(id));
+                                                        }
+                                                        setSelectedScenes(nextSet);
+                                                    }} 
+                                                    variant="outline" 
+                                                    className="max-md:flex-1 text-xs"
+                                                >
+                                                    {allScenes.every(item => selectedScenes.has(item.scene.id)) && allScenes.length > 0 ? 'Deselect All' : 'Select All'}
+                                                </Button>
+                                                <Button 
+                                                    onClick={handleDownloadSelectedScenes} 
+                                                    disabled={isZippingAll || selectedScenes.size === 0} 
+                                                    className="max-md:flex-1 text-xs font-black bg-accent text-black"
+                                                    icon={<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
+                                                >
+                                                    {isZippingAll ? 'Zipping...' : `Download (${selectedScenes.size})`}
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {allScenes.length > 0 && (
@@ -2301,8 +2431,29 @@ const App: React.FC = () => {
                                             const isFlash = item.scene.modelUsed?.includes('flash');
 
                                             return (
-                                                <div key={item.scene.id} onClick={() => setViewingScene({ scene: item.scene, mascotName: item.mascot.name })} className={`group relative bg-navy-900 border border-white/5 rounded-xl overflow-hidden cursor-pointer hover:border-accent hover:shadow-lg transition-all ${gridClass}`}>
+                                                <div 
+                                                    key={item.scene.id} 
+                                                    onClick={() => {
+                                                        if (isSelectMode) {
+                                                            const next = new Set(selectedScenes);
+                                                            if (next.has(item.scene.id)) next.delete(item.scene.id);
+                                                            else next.add(item.scene.id);
+                                                            setSelectedScenes(next);
+                                                        } else {
+                                                            setViewingScene({ scene: item.scene, mascotName: item.mascot.name });
+                                                        }
+                                                    }} 
+                                                    className={`group relative bg-navy-900 border border-white/5 rounded-xl overflow-hidden cursor-pointer hover:border-accent hover:shadow-lg transition-all ${gridClass} ${selectedScenes.has(item.scene.id) ? 'ring-2 ring-accent border-accent' : ''}`}
+                                                >
                                                     <img src={item.scene.imageUrl} className="w-full h-full object-cover" loading="lazy" />
+                                                    
+                                                    {isSelectMode && (
+                                                        <div className="absolute top-2 left-2 z-30">
+                                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center backdrop-blur-md transition-colors ${selectedScenes.has(item.scene.id) ? 'bg-accent border-accent text-black font-black' : 'border-white/50 bg-black/40'}`}>
+                                                                {selectedScenes.has(item.scene.id) && <svg className="w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                     <div className="absolute top-2 right-2 z-20 flex flex-col items-end gap-1">
                                                         <div className="bg-black/60 backdrop-blur-md border border-white/10 text-white text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide shadow-lg">
                                                             {AVAILABLE_ART_STYLES.find(s => s.id === item.mascot.styleId)?.name || (item.mascot.artStyle.length > 15 ? item.mascot.artStyle.substring(0, 12) + "..." : item.mascot.artStyle)}
@@ -2316,7 +2467,18 @@ const App: React.FC = () => {
                                                         {isXComm && (<div className="bg-blue-500/90 text-white text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shadow-lg backdrop-blur-sm border border-blue-400/30">X COMM HEADER</div>)}
                                                         {item.isMain && (<div className="bg-accent text-black text-[8px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shadow-lg backdrop-blur-sm border border-accent/30">MAIN CHARACTER</div>)}
                                                     </div>
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-end justify-end p-2 gap-2 opacity-0 group-hover:opacity-100">
+                                                    <div className={`absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-end justify-end p-2 gap-2 ${isSelectMode ? 'hidden' : 'opacity-0 group-hover:opacity-100'}`}>
+                                                        <button
+                                                            onClick={(e) => handleCopyScene(item.scene, e)}
+                                                            className={`p-1.5 rounded-lg shadow-xl transition-all hover:scale-110 ${item.scene.id === copiedSceneId ? 'bg-green-500 text-white animate-bounce' : 'bg-white text-black hover:bg-emerald-400'}`}
+                                                            title="Copy Image"
+                                                        >
+                                                            {item.scene.id === copiedSceneId ? (
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                                            ) : (
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                                                            )}
+                                                        </button>
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
